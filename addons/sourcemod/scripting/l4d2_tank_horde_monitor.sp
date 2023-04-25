@@ -159,7 +159,7 @@ public Action Timer_CheckTank(Handle timer)
 public void AnnounceTankSpawn()
 {
 	fProgressFlowPercent = GetFlowUntilBypass(fFurthestFlow, fBypassFlow);
-	CPrintToChatAll("<{olive}Horde{default}> Horde has {blue}paused{default} due to tank in play! Progressing by {blue}%0.1f%%{default} will start the horde.", fProgressFlowPercent);
+	CPrintToChatAll("<{olive}Horde{default}> 在克局尸潮将会{blue}暂停{default}刷新! 继续推进 {blue}%0.1f%%{default} 将重新开始刷新尸潮!.", fProgressFlowPercent);
 	announcedTankSpawn = true;
 
 	// Begin repeating flow checker
@@ -186,7 +186,7 @@ public Action FlowCheckTimer(Handle hTimer)
 
 	if (fProgressFlowPercent - fWarningPercent >= 1.0){
 		fProgressFlowPercent = fWarningPercent;
-		CPrintToChatAll("<{olive}Horde{default}> {blue}%0.1f%%{default} left until horde starts...", fWarningPercent);
+		CPrintToChatAll("<{olive}Horde{default}> 再推进 {blue}%0.1f%%{default} 将刷新尸潮...", fWarningPercent);
 	}
 
 	return Plugin_Continue;
@@ -224,7 +224,7 @@ public Action L4D_OnSpawnMob(int &amount)
 			if (!announcedHordeResume && tankInPlayDelay && fPushAmount >= 0.05){
 				fPushWarningPercent = fPushAmount;
 				int iPushPercent = RoundToNearest(fPushAmount * 100.0);
-				CPrintToChatAll("<{olive}Horde{default}> Horde has {blue}resumed{default} at {green}%i%% strength{default}, pushing will increase the horde.", iPushPercent);
+				CPrintToChatAll("<{olive}Horde{default}> 尸潮{blue}恢复{default}至 {green}%i%% 强度{default}, 推进将继续增加强度.", iPushPercent);
 				announcedHordeResume = true;
 			}
 
@@ -232,12 +232,12 @@ public Action L4D_OnSpawnMob(int &amount)
 			if (fPushAmount - fPushWarningPercent >= 0.20 && fPushAmount != 1.0 && announcedHordeResume){
 				fPushWarningPercent = fPushAmount;
 				int iPushPercent = RoundToNearest(fPushAmount * 100.0);
-				CPrintToChatAll("<{olive}Horde{default}> Horde is at {green}%i%% strength{default}...", iPushPercent);
+				CPrintToChatAll("<{olive}Horde{default}> 尸潮强度为 {green}%i%% {default}...", iPushPercent);
 			}
 
 			// Have survivors have pushed past the extra distance we allow?
 			if (fPushAmount == 1.0){
-				CPrintToChatAll("<{olive}Horde{default}> Survivors have pushed too far, horde is at {green}100%% strength{default}!");
+				CPrintToChatAll("<{olive}Horde{default}> 生还推进的太远了, 尸潮现在是 {green}100%% 强度{default}!");
 				announcedHordeMax = true;
 			}
 
