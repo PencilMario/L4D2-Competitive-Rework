@@ -3777,7 +3777,7 @@ void DisplayStatsMVP(int client, bool bTank = false, bool bMore = false, bool bR
 		Format(bufBasicHeader, CONBUFSIZE, "%s| Name                 | Specials   kills/dmg  | Commons         | Tank   | Witch  | FF    | Rcvd | Time |\n", bufBasicHeader);
 		Format(bufBasicHeader, CONBUFSIZE, "%s|----------------------|-----------------------|-----------------|--------|--------|-------|------|------|", bufBasicHeader);
 
-		if (!strlen(g_sConsoleBuf[g_iConsoleBufChunks])) { 
+		if (!strlen(g_sConsoleBuf[g_iConsoleBufChunks])) {
 			g_iConsoleBufChunks--; 
 		}
 		
@@ -6954,7 +6954,7 @@ int GetPlayerIndexForSteamId(const char[] steamId, int client = -1)
 		if (client != -1) {
 			GetClientName(client, g_sPlayerName[pIndex], MAXNAME);
 			strcopy(g_sPlayerNameSafe[pIndex], MAXNAME_TABLE, g_sPlayerName[pIndex]);
-			stripUnicode(g_sPlayerNameSafe[pIndex], MAXNAME_TABLE);
+			//stripUnicode(g_sPlayerNameSafe[pIndex], MAXNAME_TABLE);
 		}
 
 		g_iPlayers++;
@@ -7565,7 +7565,7 @@ bool IsMissionFinalMap()
 	return (mapType == MP_FINALE);
 }
 
-void stripUnicode(char testString[MAXNAME], int maxLength = 20)
+/*void stripUnicode(char testString[MAXNAME], int maxLength = 20)
 {
 	if (maxLength < 1) {
 		maxLength = MAXNAME;
@@ -7628,7 +7628,7 @@ void stripUnicode(char testString[MAXNAME], int maxLength = 20)
 	}
 
 	strcopy(testString, maxLength, tmpString);
-}
+}*/
 
 void PrintDebug(int debugLevel, const char[] Message, any ...)
 {

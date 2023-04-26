@@ -15,7 +15,7 @@
 	"MeleeSkeeted"
 	{
         "#format"   "{1:N},{2:N}" // 1:victim 2:attacker
-		"chi"    	"{olive}{1}{default} 被 {olive}{2}{default} blue}刀了{default}"
+		"chi"    	"{olive}{1}{default} 被 {olive}{2}{default} {blue}刀了{default}"
 	}
 	"Headshotted"
 	{
