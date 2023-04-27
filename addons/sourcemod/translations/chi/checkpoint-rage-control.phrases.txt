@@ -6,7 +6,7 @@
 	}
 	"LoseFrustration"
 	{
-		"chi"	"当生还者都在{olive}安全室{default}时，{red}Tank{default}{green}依旧会逐渐失去{default}控制权 ."
+		"chi"	"当生还者都在{olive}安全室{default}时，{red}Tank{default}{green}依旧会逐渐失去{default}控制权."
 	}
 	"KeepFrustration"
 	{
