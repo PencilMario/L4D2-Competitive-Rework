@@ -6,10 +6,18 @@
 	}
 	"10721"
 	{
-		"hostname"		"[zonemod]萌新喵喵屋"
+		"hostname"		"[Zonemod]萌新喵喵屋"
 	}
 	"20721"
 	{
-		"hostname"		"[zm TankFight]萌新不喵呜"
+		"hostname"		"[ZM TankFight]萌新不喵呜"
+	}
+	"53333"
+	{
+		"hostname"		"[Zonemod]萌新汪汪屋#1"
+	}
+	"56666"
+	{
+		"hostname"		"[Zonemod]萌新汪汪屋#2"
 	}
 }
