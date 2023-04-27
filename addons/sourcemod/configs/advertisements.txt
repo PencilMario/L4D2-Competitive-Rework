@@ -27,7 +27,7 @@
     }
     "3"
     {
-        "chat"      "{green}如果你怀疑有人开挂，可以用以下指令：\n{default}!rec (服务端录制dem) \n!report 提交举报 :)"
+        "chat"      "{green}如果你怀疑有人开挂，可以用以下指令：\n{default}!rec 服务端录制dem \n!report 提交举报"
     }
     "4"
     {
@@ -103,6 +103,10 @@
     }
     "21"
     {
-        "chat"      "{green}除了手动!rec Bot在检测到自瞄时也会开始录制（其他的当场就封了 :) ）"
+        "chat"      "{green}除了手动!rec Bot在检测到自瞄时也会开始录制 "
+    }
+    "22"
+    {
+        "chat"      "{green}玩的开心记得加一加服务器组 :D"
     }
 }
