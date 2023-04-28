@@ -7614,6 +7614,7 @@ void stripUnicode(char testString[MAXNAME], int maxLength = 20)
 			tmpCharLength = 0;
 		}
 
+
 		// decide if character is allowed
 		if (currentChar > CHARTHRESHOLD) {
 			uni++;
@@ -7629,10 +7630,15 @@ void stripUnicode(char testString[MAXNAME], int maxLength = 20)
 		tmpString[maxLength] = 0;
 	}
 	char[] tmpString2 = new char[maxLength + i_ExtraSpaceChar];
+	char[] tmpString3 = new char[i_ExtraSpaceChar];
+	for (int i = 0; i < i_ExtraSpaceChar; i++)
+	{
+		tmpString3[i] = 32;
+	}
 
 	if (i_ExtraSpaceChar)
 	{
-		Format(tmpString2, maxLength + i_ExtraSpaceChar, "%s%s", tmpString, tmpString2);
+		Format(tmpString2, maxLength + i_ExtraSpaceChar, "%s%s", tmpString, tmpString3);
 		strcopy(testString, maxLength, tmpString2);
 		return;
 	}
