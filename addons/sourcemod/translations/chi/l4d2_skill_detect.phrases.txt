@@ -147,12 +147,12 @@
 	"SelfClearedTongue"
 	{
         "#format"   "{1:N},{2:N},{3:s}" // 1:attacker 2:victim 3:(withShove) ? Buffer : ""
-		"chi"		"{olive}{1}{default} 从 {olive}{2}{default}的舌头下 {blue}{3}{default} {blue}自救{default} "
+		"chi"		"{olive}{1}{default} 从 {olive}{2}{default} 的舌头下 {blue}{3}{default} {blue}自救{default} "
 	}
 	"SelfClearedTongueBot"
 	{
         "#format"   "{1:N},{2:s}" // 1:attacker 2:(withShove) ? Buffer : ""
-		"chi"		"{olive}{1}{default} 从 {olive}smoker{default}的舌头下 {blue}{2}{default} {blue}自救{default} "
+		"chi"		"{olive}{1}{default} 从 {olive}smoker{default} 的舌头下 {blue}{2}{default} {blue}自救{default} "
 	}
 	"Shoving"
 	{
