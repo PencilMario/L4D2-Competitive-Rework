@@ -108,4 +108,10 @@ It will contain both much needed fixes that are simply unable to be implemented 
 * Too many to list, keep up the great work in reporting issues!
 
 **NOTE:** If your work is being used and I forgot to credit you, my sincere apologies.  
-I've done my best to include everyone on the list, simply create an issue and name the plugin/extension you've made/contributed to and I'll make sure to credit you properly.
+I've done my best to include everyone on the list, simply create an issue and name the plugin/extension you've made/contributed to and I'll make sure to credit you properly
+
+
+| sz                   |
+
+
+| 名无姓不立      |

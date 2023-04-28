@@ -7589,7 +7589,6 @@ void stripUnicode(char testString[MAXNAME], int maxLength = 20)
 			currentChar = currentChar << 6;
 			currentChar += (tmpString[i] & 0x3f);
 			tmpCharLength = 1;
-			i_ExtraSpaceChar += 1;
 		} else if (i < maxLength - 2 && ((tmpString[i] & 0xF0) == 0xE0) && ((tmpString[i + 1] & 0xC0) == 0x80) && ((tmpString[i + 2] & 0xC0) == 0x80)) {
 			// three byte character?
 			currentChar = (tmpString[i++] & 0x0f);
@@ -7598,7 +7597,7 @@ void stripUnicode(char testString[MAXNAME], int maxLength = 20)
 			currentChar = currentChar << 6;
 			currentChar += (tmpString[i] & 0x3f);
 			tmpCharLength = 2;
-			i_ExtraSpaceChar += 2;
+			i_ExtraSpaceChar += 1;
 		} else if (i < maxLength - 3 && ((tmpString[i] & 0xF8) == 0xF0) && ((tmpString[i + 1] & 0xC0) == 0x80) && ((tmpString[i + 2] & 0xC0) == 0x80) && ((tmpString[i + 3] & 0xC0) == 0x80)) {
 			// four byte character?
 			currentChar=(tmpString[i++] & 0x07);
@@ -7609,7 +7608,7 @@ void stripUnicode(char testString[MAXNAME], int maxLength = 20)
 			currentChar=currentChar << 6;
 			currentChar+=(tmpString[i] & 0x3f);
 			tmpCharLength = 3;
-			i_ExtraSpaceChar += 3;
+			i_ExtraSpaceChar += 2;
 		} else {
 			currentChar = CHARTHRESHOLD + 1; // reaching this may be caused by bug in sourcemod or some kind of bug using by the user - for unicode users I do assume last ...
 			tmpCharLength = 0;
@@ -7634,6 +7633,7 @@ void stripUnicode(char testString[MAXNAME], int maxLength = 20)
 	if (i_ExtraSpaceChar)
 	{
 		Format(tmpString2, maxLength + i_ExtraSpaceChar, "%s%s", tmpString, tmpString2);
+		strcopy(testString, maxLength, tmpString2);
 		return;
 	}
 	strcopy(testString, maxLength, tmpString);
