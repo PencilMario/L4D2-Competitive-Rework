@@ -6954,7 +6954,7 @@ int GetPlayerIndexForSteamId(const char[] steamId, int client = -1)
 		if (client != -1) {
 			GetClientName(client, g_sPlayerName[pIndex], MAXNAME);
 			strcopy(g_sPlayerNameSafe[pIndex], MAXNAME_TABLE, g_sPlayerName[pIndex]);
-			//stripUnicode(g_sPlayerNameSafe[pIndex], MAXNAME_TABLE);
+			stripUnicode(g_sPlayerNameSafe[pIndex], MAXNAME_TABLE);
 		}
 
 		g_iPlayers++;
@@ -7565,12 +7565,12 @@ bool IsMissionFinalMap()
 	return (mapType == MP_FINALE);
 }
 
-/*void stripUnicode(char testString[MAXNAME], int maxLength = 20)
+void stripUnicode(char testString[MAXNAME], int maxLength = 20)
 {
 	if (maxLength < 1) {
 		maxLength = MAXNAME;
 	}
-
+	int i_ExtraSpaceChar = 0;
 	char[] tmpString = new char[maxLength];
 
 	strcopy(tmpString, maxLength, testString);
@@ -7589,6 +7589,7 @@ bool IsMissionFinalMap()
 			currentChar = currentChar << 6;
 			currentChar += (tmpString[i] & 0x3f);
 			tmpCharLength = 1;
+			i_ExtraSpaceChar += 1;
 		} else if (i < maxLength - 2 && ((tmpString[i] & 0xF0) == 0xE0) && ((tmpString[i + 1] & 0xC0) == 0x80) && ((tmpString[i + 2] & 0xC0) == 0x80)) {
 			// three byte character?
 			currentChar = (tmpString[i++] & 0x0f);
@@ -7597,6 +7598,7 @@ bool IsMissionFinalMap()
 			currentChar = currentChar << 6;
 			currentChar += (tmpString[i] & 0x3f);
 			tmpCharLength = 2;
+			i_ExtraSpaceChar += 2;
 		} else if (i < maxLength - 3 && ((tmpString[i] & 0xF8) == 0xF0) && ((tmpString[i + 1] & 0xC0) == 0x80) && ((tmpString[i + 2] & 0xC0) == 0x80) && ((tmpString[i + 3] & 0xC0) == 0x80)) {
 			// four byte character?
 			currentChar=(tmpString[i++] & 0x07);
@@ -7607,6 +7609,7 @@ bool IsMissionFinalMap()
 			currentChar=currentChar << 6;
 			currentChar+=(tmpString[i] & 0x3f);
 			tmpCharLength = 3;
+			i_ExtraSpaceChar += 3;
 		} else {
 			currentChar = CHARTHRESHOLD + 1; // reaching this may be caused by bug in sourcemod or some kind of bug using by the user - for unicode users I do assume last ...
 			tmpCharLength = 0;
@@ -7618,17 +7621,23 @@ bool IsMissionFinalMap()
 			// replace this character
 			// 95 = _, 32 = space
 			for (int j = tmpCharLength; j >= 0; j--) {
-				tmpString[i - j] = 95;
+				//tmpString[i - j] = 95;
 			}
 		}
 	}
-
+	
 	if (strlen(tmpString) > maxLength) {
 		tmpString[maxLength] = 0;
 	}
+	char[] tmpString2 = new char[maxLength + i_ExtraSpaceChar];
 
+	if (i_ExtraSpaceChar)
+	{
+		Format(tmpString2, maxLength + i_ExtraSpaceChar, "%s%s", tmpString, tmpString2);
+		return;
+	}
 	strcopy(testString, maxLength, tmpString);
-}*/
+}
 
 void PrintDebug(int debugLevel, const char[] Message, any ...)
 {
