@@ -6,7 +6,8 @@
 #define L4D2_TEAM_SURVIVOR 2
 #define L4D2_TEAM_INFECTED 3
 
-bool fixTeam = false;
+
+bool fixTeam;
 
 ArrayList winners;
 ArrayList losers;
@@ -77,7 +78,7 @@ public Action EnableFixTeam_Timer(Handle timer)
 {
 	EnableFixTeam();
 	FixTeams();
-	CreateTimer(30.0, DisableFixTeam_Timer);
+	CreateTimer(18.0, DisableFixTeam_Timer);
 
 	return Plugin_Continue;
 }
@@ -85,7 +86,10 @@ public Action EnableFixTeam_Timer(Handle timer)
 public Action DisableFixTeam_Timer(Handle timer)
 {
 	DisableFixTeam();
-
+	for (int i = 1; i < MaxClients; i++){
+		if (GetClientTeam(i) == L4D2_TEAM_SPECTATOR && !IsFakeClient(i)) 
+			PrintToChat(i, "你现在可以进入其他队伍了");
+	}
 	return Plugin_Continue;
 }
 
@@ -145,7 +149,10 @@ public void MoveToSpectatorWhoIsNotInTheTeam(ArrayList arrayList, int team)
 			correctTeam = GetArrayCell(arrayList, i) == client;
 
 		if (!correctTeam)
+		{
+			PrintToChat(client, "为防止错位, 你暂时不能进入其他队伍, 请等待约10s后重试");
 			MovePlayerToSpectator(client);
+		}
 	}
 }
 
