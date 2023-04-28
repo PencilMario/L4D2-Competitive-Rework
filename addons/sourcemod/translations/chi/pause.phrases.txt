@@ -88,11 +88,7 @@
 	// AttemptPause
 	"PauseDeferred"
 	{
-		"chi"	"{red}暂停将推迟到扶人结束!"
-	}
-	"PauseDeferredAttacking"
-	{
-		"chi"	"{red}暂停将推迟到没有正在进攻的特感/进攻超过16s!!"
+		"chi"	"{red}暂停由于生还者正在拉人被推迟了!"
 	}
 	// Pause
 	"PausePreventSpawn"
@@ -112,55 +108,55 @@
 	"PanelSlots"
 	{
 		"#format"   "{1:s},{2:d},{3:d}" // 1:info, 2:GetSeriousClientCount(), 3:FindConVar("sv_maxplayers").IntValue
-		"chi"		"♞<[{1}] - [{2}/{3}]>"
+		"chi"		"▸ 服务器: {1}\n▸ 位置: {2}/{3}"
 	}
 	"PanelTitle"
 	{
-		"chi"	"♞<--准备状态-->"
+		"chi"	"▸ 准备状态"
 	}
 	"RequireAdmin"
 	{
-		"chi"	"<!!需要管理员解除暂停!!>"
+		"chi"	"->0. 需要管理员解除暂停"
 	}
 	"SurvivorUnPaused"
 	{
-		"chi"	"->1. 生还者: ★"
+		"chi"	"->1. 生还者: [√]"
 	}
 	"SurvivorPaused"
 	{
-		"chi"	"->1. 生还者: ☆"
+		"chi"	"->1. 生还者: [X]"
 	}
 	"InfectedUnPaused"
 	{
-		"chi"	"->2. 感染者: ★"
+		"chi"	"->2. 感染者: [√]"
 	}
 	"InfectedPaused"
 	{
-		"chi"	"->2. 感染者: ☆"
+		"chi"	"->2. 感染者: [X]"
 	}
 	"InitiatorUnPaused"
 	{
-		"chi"	"->0. 发起者: ★"
+		"chi"	"->0. 发起者: [√]"
 	}
 	"InitiatorPaused"
 	{
-		"chi"	"->0. 发起者: ☆"
+		"chi"	"->0. 发起者: [X]"
 	}
 	"AutoPauseCrash"
 	{
-		"chi"	"▸♞<强行暂停原因 -> 客户端崩溃>"
+		"chi"	"▸ 强行暂停原因 -> 客户端崩溃"
 	}
 	"ForcePauseAdmin"
 	{
-		"chi"	"♞<强行暂停原因 -> %s (管理员暂停)>"
+		"chi"	"▸ 强行暂停原因 -> %s (管理员暂停)"
 	}
 	"InitiatorPause"
 	{
-		"chi"	"♞<发起者 -> %s (%s)>"
+		"chi"	"▸ 发起者 -> %s (%s)"
 	}
 	"DurationPause"
 	{
-		"chi"	"♞<暂停持续时间: %02d:%02d>"
+		"chi"	"▸ 暂停持续时间: %02d:%02d"
 	}
 	// InitiateLiveCountdown
 	"CountdownCancelNotify"
