@@ -7638,7 +7638,7 @@ void stripUnicode(char testString[MAXNAME], int maxLength = 20)
 
 	if (i_ExtraSpaceChar)
 	{
-		strcopy(testString, maxLength, tmpString2);
+		strcopy(testString, maxLength + i_ExtraSpaceChar, tmpString2);
 		return;
 	}
 	strcopy(testString, maxLength, tmpString);
