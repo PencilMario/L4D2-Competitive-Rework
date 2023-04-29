@@ -77,7 +77,7 @@
 #define MAXSHOWROUNDS			10								// how many rounds to show in the general stats table, max
 
 #define MAXNAME					64
-#define MAXNAME_TABLE			20								// name size max in console tables
+#define MAXNAME_TABLE			40								// name size max in console tables
 #define MAXCHARACTERS			4
 #define MAXMAP					32
 #define MAXGAME					24
@@ -6953,8 +6953,8 @@ int GetPlayerIndexForSteamId(const char[] steamId, int client = -1)
 		// store name
 		if (client != -1) {
 			GetClientName(client, g_sPlayerName[pIndex], MAXNAME);
-			strcopy(g_sPlayerNameSafe[pIndex], MAXNAME_TABLE, g_sPlayerName[pIndex]);
-			stripUnicode(g_sPlayerNameSafe[pIndex], MAXNAME_TABLE);
+			strcopy(g_sPlayerNameSafe[pIndex], 40, g_sPlayerName[pIndex]);
+			stripUnicode(g_sPlayerNameSafe[pIndex], 20);
 		}
 
 		g_iPlayers++;
