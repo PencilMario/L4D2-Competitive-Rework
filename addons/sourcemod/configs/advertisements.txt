@@ -27,7 +27,7 @@
     }
     "3"
     {
-        "chat"      "{green}如果你怀疑有人开挂，可以用以下指令：\n{default}!rec 服务端录制dem \n!report 提交举报"
+        "chat"      "{green}如果你怀疑有人开挂，可以用以下指令：\n{default}!rec 服务端录制dem \n!report 提交举报\n{green}无demo的举报可能不会处理, 所以在举报前先!rec，最好说明所在的服务器。"
     }
     "4"
     {
