@@ -7629,17 +7629,22 @@ void stripUnicode(char testString[MAXNAME], int maxLength = 20)
 	if (strlen(tmpString) > maxLength) {
 		tmpString[maxLength] = 0;
 	}
-	char[] tmpString2 = new char[maxLength + i_ExtraSpaceChar + 4];
-	Format(tmpString2, maxLength + i_ExtraSpaceChar + 4, "%s", tmpString);
-	for (int i = 0; i < i_ExtraSpaceChar + 4; i++)
+	if (i_ExtraSpaceChar < 4){
+		i_ExtraSpaceChar += 4 -i_ExtraSpaceChar;
+	}else{
+		i_ExtraSpaceChar -= 4 -i_ExtraSpaceChar;
+	}
+	char[] tmpString2 = new char[maxLength + i_ExtraSpaceChar];
+	Format(tmpString2, maxLength + i_ExtraSpaceChar, "%s", tmpString);
+	for (int i = 0; i < i_ExtraSpaceChar; i++)
 	{
-		Format(tmpString2, maxLength + i_ExtraSpaceChar + 4, "%s ", tmpString2);
+		Format(tmpString2, maxLength + i_ExtraSpaceChar, "%s ", tmpString2);
 	}
 
 	if (i_ExtraSpaceChar)
 	{	
 		PrintToServer("use testString2");
-		strcopy(testString, maxLength + i_ExtraSpaceChar + 4, tmpString2);
+		strcopy(testString, maxLength + i_ExtraSpaceChar, tmpString2);
 		return;
 	}
 	strcopy(testString, maxLength, tmpString);
