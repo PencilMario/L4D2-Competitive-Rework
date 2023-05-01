@@ -6953,7 +6953,7 @@ int GetPlayerIndexForSteamId(const char[] steamId, int client = -1)
 		// store name
 		if (client != -1) {
 			GetClientName(client, g_sPlayerName[pIndex], MAXNAME);
-			strcopy(g_sPlayerNameSafe[pIndex], 40, g_sPlayerName[pIndex]);
+			strcopy(g_sPlayerNameSafe[pIndex],50, g_sPlayerName[pIndex]);
 			stripUnicode(g_sPlayerNameSafe[pIndex], 20);
 		}
 
@@ -7597,7 +7597,7 @@ void stripUnicode(char testString[MAXNAME], int maxLength = 20)
 			currentChar = currentChar << 6;
 			currentChar += (tmpString[i] & 0x3f);
 			tmpCharLength = 2;
-			i_ExtraSpaceChar += 1;
+			i_ExtraSpaceChar += 2;
 		} else if (i < maxLength - 3 && ((tmpString[i] & 0xF8) == 0xF0) && ((tmpString[i + 1] & 0xC0) == 0x80) && ((tmpString[i + 2] & 0xC0) == 0x80) && ((tmpString[i + 3] & 0xC0) == 0x80)) {
 			// four byte character?
 			currentChar=(tmpString[i++] & 0x07);
