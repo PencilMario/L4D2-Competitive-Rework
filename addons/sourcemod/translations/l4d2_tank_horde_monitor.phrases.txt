@@ -1,0 +1,32 @@
+"Phrases"
+{
+// The following uses bracket style color tags (see colors.inc)
+	"AnnounceHordePaused"
+	{
+		"#format"	"{1:0.1f}"
+		"en"		"<{olive}Horde{default}> Horde has {blue}paused{default} due to tank in play! Progressing by {blue}{1}%{default} will start the horde."
+	}
+
+	"AnnounceSurPushWarn"
+	{
+		"#format"	"{1:0.1f}"
+		"en"		"<{olive}Horde{default}> {blue}%0.1f%%{default} left until horde starts..."
+	}
+
+	"AnnounceHordeResume1"
+	{
+		"#format"	"{1:0.1f}"
+		"en"		"<{olive}Horde{default}> Horde has {blue}resumed{default} at {green}%i%% strength{default}, pushing will increase the horde."
+	}
+
+	"AnnounceHordeResume2"
+	{
+		"#format"	"{1:N}"
+		"en"		"<{olive}Horde{default}> Horde is at {green}%i%% strength{default}..."
+	}
+
+	"AnnounceHordeResume3"
+	{
+		"en"		"<{olive}Horde{default}> Survivors have pushed too far, horde is at {green}100%% strength{default}!"
+	}
+}

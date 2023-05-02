@@ -11,7 +11,7 @@
 
 #define ZOMBIEMANAGER_GAMEDATA "l4d2_zombiemanager"
 #define LEFT4FRAMEWORK_GAMEDATA "left4dhooks.l4d2"
-
+#define TRANSLATIONS            "l4d2_tank_horde_monitor.phrases"
 Address
 	pZombieManager = Address_Null;
 
@@ -47,8 +47,21 @@ public Plugin myinfo =
 	url = "https://github.com/SirPlease/L4D2-Competitive-Rework"
 };
 
+void InitTranslations()
+{
+	char sPath[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, sPath, PLATFORM_MAX_PATH, "translations/" ... TRANSLATIONS ... ".txt");
+
+	if (FileExists(sPath)) {
+		LoadTranslations(TRANSLATIONS);
+	} else {
+		SetFailState("Path %s not found", sPath);
+	}
+}
+
 public void OnPluginStart()
 {
+	InitTranslations();
 	InitGameData();
 	
 	g_hBypassFlowDistance = FindConVar("director_tank_bypass_max_flow_travel");
@@ -159,7 +172,7 @@ public Action Timer_CheckTank(Handle timer)
 public void AnnounceTankSpawn()
 {
 	fProgressFlowPercent = GetFlowUntilBypass(fFurthestFlow, fBypassFlow);
-	CPrintToChatAll("<{olive}Horde{default}> Horde has {blue}paused{default} due to tank in play! Progressing by {blue}%0.1f%%{default} will start the horde.", fProgressFlowPercent);
+	CPrintToChatAll("%t","AnnounceHordePaused" , fProgressFlowPercent);
 	announcedTankSpawn = true;
 
 	// Begin repeating flow checker
@@ -186,7 +199,7 @@ public Action FlowCheckTimer(Handle hTimer)
 
 	if (fProgressFlowPercent - fWarningPercent >= 1.0){
 		fProgressFlowPercent = fWarningPercent;
-		CPrintToChatAll("<{olive}Horde{default}> {blue}%0.1f%%{default} left until horde starts...", fWarningPercent);
+		CPrintToChatAll("%t", "AnnounceSurPushWarn", fWarningPercent);
 	}
 
 	return Plugin_Continue;
@@ -224,7 +237,7 @@ public Action L4D_OnSpawnMob(int &amount)
 			if (!announcedHordeResume && tankInPlayDelay && fPushAmount >= 0.05){
 				fPushWarningPercent = fPushAmount;
 				int iPushPercent = RoundToNearest(fPushAmount * 100.0);
-				CPrintToChatAll("<{olive}Horde{default}> Horde has {blue}resumed{default} at {green}%i%% strength{default}, pushing will increase the horde.", iPushPercent);
+				CPrintToChatAll("%t", "AnnounceHordeResume1", iPushPercent);
 				announcedHordeResume = true;
 			}
 
@@ -232,12 +245,12 @@ public Action L4D_OnSpawnMob(int &amount)
 			if (fPushAmount - fPushWarningPercent >= 0.20 && fPushAmount != 1.0 && announcedHordeResume){
 				fPushWarningPercent = fPushAmount;
 				int iPushPercent = RoundToNearest(fPushAmount * 100.0);
-				CPrintToChatAll("<{olive}Horde{default}> Horde is at {green}%i%% strength{default}...", iPushPercent);
+				CPrintToChatAll("%t", "AnnounceHordeResume2", iPushPercent);
 			}
 
 			// Have survivors have pushed past the extra distance we allow?
 			if (fPushAmount == 1.0){
-				CPrintToChatAll("<{olive}Horde{default}> Survivors have pushed too far, horde is at {green}100%% strength{default}!");
+				CPrintToChatAll("%t", "AnnounceHordeResume3");
 				announcedHordeMax = true;
 			}
 
