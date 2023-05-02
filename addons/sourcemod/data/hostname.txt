@@ -10,7 +10,7 @@
 	}
 	"20721"
 	{
-		"hostname"		"[ZM TankFight]萌新不喵呜"
+		"hostname"		"[Zonemod]萌新不喵呜"
 	}
 	"53333"
 	{
