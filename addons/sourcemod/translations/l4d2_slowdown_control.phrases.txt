@@ -1,0 +1,12 @@
+"Phrases"
+{
+	"SlowdownReduced"
+	{
+		"en"			"\x05Water Slowdown\x01 has been reduced while Tank is in play."
+	}
+	
+	"SlowdownRestored"
+	{
+		"en"			"\x05Water Slowdown\x01 has been restored to normal."
+	}	
+}

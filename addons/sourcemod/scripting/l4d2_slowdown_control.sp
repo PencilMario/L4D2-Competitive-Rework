@@ -31,6 +31,7 @@
 #define TEAM_SURVIVORS 2
 #define TEAM_INFECTED 3
 #define Z_TANK 8
+#define TRANSLATIONS            "l4d2_slowdown_control.phrases"
 
 ConVar
 	hCvarSdPistolMod,
@@ -81,8 +82,21 @@ public Plugin myinfo =
 	url = "https://github.com/SirPlease/L4D2-Competitive-Rework"
 };
 
+void InitTranslations()
+{
+	char sPath[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, sPath, PLATFORM_MAX_PATH, "translations/" ... TRANSLATIONS ... ".txt");
+
+	if (FileExists(sPath)) {
+		LoadTranslations(TRANSLATIONS);
+	} else {
+		SetFailState("Path %s not found", sPath);
+	}
+}
+
 public void OnPluginStart()
 {
+	InitTranslations();
 	hCvarSdGunfireSi = CreateConVar("l4d2_slowdown_gunfire_si", "0.0", "Maximum slowdown from gunfire for SI (-1: native slowdown; 0.0: No slowdown, 0.01-1.0: 1%%-100%% slowdown)", _, true, -1.0, true, 1.0);
 	hCvarSdGunfireTank = CreateConVar("l4d2_slowdown_gunfire_tank", "0.2", "Maximum slowdown from gunfire for the Tank (-1: native slowdown; 0.0: No slowdown, 0.01-1.0: 1%%-100%% slowdown)", _, true, -1.0, true, 1.0);
 	hCvarSdInwaterTank = CreateConVar("l4d2_slowdown_water_tank", "-1", "Maximum tank speed in the water (-1: ignore setting; 0: default; 210: default Tank Speed)", _, true, -1.0);
@@ -148,7 +162,7 @@ public void TankSpawn(Event event, const char[] name, bool dontBroadcast)
 	if (!tankInPlay) {
 		tankInPlay = true;
 		if (fSurvWaterSpeedDuringTank > 0.0) {
-			PrintToChatAll("\x05Water Slowdown\x01 has been reduced while Tank is in play.");
+			PrintToChatAll("%t", "SlowdownRestored");
 		}
 	}
 }
@@ -167,7 +181,7 @@ public Action Timer_CheckTank(Handle timer)
 	if (!tankclient || !IsPlayerAlive(tankclient)) {
 		tankInPlay = false;
 		if (fSurvWaterSpeedDuringTank > 0.0) {
-			PrintToChatAll("\x05Water Slowdown\x01 has been restored to normal.");
+			PrintToChatAll("%t", "SlowdownRestored");
 		}
 	}
 
