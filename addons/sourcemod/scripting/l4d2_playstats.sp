@@ -7571,6 +7571,7 @@ void stripUnicode(char testString[MAXNAME], int maxLength = 20)
 		maxLength = MAXNAME;
 	}
 	int i_ExtraSpaceChar = 0;
+	int i_DelSpaceChar = 0;
 	char[] tmpString = new char[maxLength];
 
 	strcopy(tmpString, maxLength, testString);
@@ -7582,6 +7583,7 @@ void stripUnicode(char testString[MAXNAME], int maxLength = 20)
 		if ((tmpString[i] & 0x80) == 0) {
 			// single byte character?
 			currentChar = tmpString[i];
+			i_DelSpaceChar++;
 			tmpCharLength = 0;
 		} else if (i < maxLength - 1 && ((tmpString[i] & 0xE0) == 0xC0) && ((tmpString[i + 1] & 0xC0) == 0x80)) {
 			// two byte character?
@@ -7634,17 +7636,18 @@ void stripUnicode(char testString[MAXNAME], int maxLength = 20)
 	}else{
 		i_ExtraSpaceChar -= 4 -i_ExtraSpaceChar;
 	}
-	char[] tmpString2 = new char[maxLength + i_ExtraSpaceChar + 3];
-	Format(tmpString2, maxLength + i_ExtraSpaceChar + 3, "%s", tmpString);
-	for (int i = 0; i < i_ExtraSpaceChar; i++)
+	i_ExtraSpaceChar -= i_DelSpaceChar;
+	char[] tmpString2 = new char[maxLength + i_ExtraSpaceChar + 4];
+	Format(tmpString2, maxLength + i_ExtraSpaceChar, "%s", tmpString);
+	for (int i = 1; i < i_ExtraSpaceChar - 1; i++) //从1开始，插件会补足末尾空格
 	{
-		Format(tmpString2, maxLength + i_ExtraSpaceChar + 3, "%s ", tmpString2);
+		Format(tmpString2, maxLength + i_ExtraSpaceChar, "%s ", tmpString2);
 	}
 
 	if (i_ExtraSpaceChar)
 	{	
 		PrintToServer("use testString2");
-		strcopy(testString, maxLength + i_ExtraSpaceChar + 3, tmpString2);
+		strcopy(testString, maxLength + i_ExtraSpaceChar, tmpString2);
 		return;
 	}
 	strcopy(testString, maxLength, tmpString);
