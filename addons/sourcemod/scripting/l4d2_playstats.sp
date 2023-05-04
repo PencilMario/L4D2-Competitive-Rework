@@ -7632,7 +7632,7 @@ void stripUnicode(char testString[MAXNAME], int maxLength = 20)
 		tmpString[maxLength] = 0;
 	}
 	if (i_ExtraSpaceChar < 4){
-		i_ExtraSpaceChar += 2 * (4 -(4 - i_ExtraSpaceChar));
+		i_ExtraSpaceChar += 2 * (4 - i_ExtraSpaceChar);
 	}else{
 		i_ExtraSpaceChar -= 4 - i_ExtraSpaceChar;
 	}
