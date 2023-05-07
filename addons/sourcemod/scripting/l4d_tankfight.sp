@@ -154,9 +154,23 @@ bool IsCanEndRound(){
     }
     return true;
 }
+
+bool AllSurInjured(){
+    for (int i = 1; i <= MaxClients; i++){
+        if (!IsClientInGame(i)) continue;
+        if (!IsPlayerAlive(i)) continue;
+        if (IsSurvivor(i)){
+            if (!(IsIncapacitated(i) || IsHangingFromLedge(i))) return false;
+        }
+    }
+    return true;
+}
 int healthbonus, damageBonus, pillsBonus;
 // 传送生还者到安全屋并结束本回合
 void EndTankFightRound(){
+    // 如果是团灭则不做处理
+    if (!AllSurInjured()) return;
+    
     if (g_iMapTFType == TYPE_FINISH){
         healthbonus = SMPlus_GetHealthBonus();
         damageBonus	= SMPlus_GetDamageBonus();
