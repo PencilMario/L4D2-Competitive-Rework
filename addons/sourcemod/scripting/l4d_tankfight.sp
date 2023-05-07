@@ -127,6 +127,8 @@ public Action IsTankFightEnd(Handle timer)
 {  
     if (IsTankInGame()) return Plugin_Continue;
     if (!IsCanEndRound()) return Plugin_Continue;
+    // 防止影响下一队
+    if (IsInReady()) return Plugin_Stop;
     EndTankFightRound();
     
     return Plugin_Stop;
