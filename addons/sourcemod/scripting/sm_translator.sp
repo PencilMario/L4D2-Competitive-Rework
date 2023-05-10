@@ -32,7 +32,7 @@ public Plugin myinfo =
     url = "http://steamcommunity.com/id/franug"
 };
 
-char ServerLang[3];
+char ServerLang[5];
 char ServerCompleteLang[32];
 
 bool g_translator[MAXPLAYERS + 1];
@@ -265,8 +265,9 @@ Handle CreateRequest(char[] input, char[] target, int client, int other = 0, boo
     Handle request = SteamWorks_CreateHTTPRequest(k_EHTTPMethodPOST, baiduapi);
     SteamWorks_SetHTTPRequestHeaderValue(request, "Content-Type", "application/json");
     SteamWorks_SetHTTPRequestHeaderValue(request, "Accept", "application/json");
-    if (StrEqual(target, "chi")) Format(target, 3, "zh");
-    if (StrEqual(target, "zho")) Format(target, 3, "cht");
+    if (StrEqual(target, "chi")) Format(target, 5, "zh");
+    if (StrEqual(target, "ch")) Format(target, 5, "zh");
+    if (StrEqual(target, "zho")) Format(target, 5, "cht");
     PrintToConsoleAll("Translator: Target Language: %s", target);
     JSONObject bodyjson = new JSONObject();
     bodyjson.SetString("from", "auto");
@@ -282,6 +283,7 @@ Handle CreateRequest(char[] input, char[] target, int client, int other = 0, boo
     }else{
         SteamWorks_SetHTTPCallbacks(request, Callback_OnHTTPResponse_Teammate);
     }
+    delete bodyjson;
     return request;
 }
 
