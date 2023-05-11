@@ -3,7 +3,7 @@
 cd /home/steam/L4D2-Competitive-Rework/;
 
 # Replace with your WebDAV URL
-url="http://sp2.0721play.icu/dav/"
+url="http://124.223.61.164:22102/dav/"
 
 # Replace with your WebDAV username
 username="versus"
@@ -11,16 +11,19 @@ username="versus"
 # Replace with your WebDAV password
 password="0578"
 
-sudo apt-get install davfs2
+sudo apt-get install davfs2 -y
 
+mkdir /mnt/webdav
 # Mount the WebDAV share
-sudo mount -t davfs -o uid=$UID,gid=$GROUPS $url /mnt/webdav
+sudo mount -t davfs -o uid=0,gid=0 $url /mnt/webdav
 
 # Enter the username and password when prompted
-echo "$url $username $password" > ~/.davfs2/secrets
-chmod 600 ~/.davfs2/secrets
+echo "$url $username $password" > /etc/davfs2/secrets
+chmod 600 /etc/davfs2/secrets
 
-sh map_sync.sh
+bash map_sync.sh
+
+pip install webdav3
 
 # Unmount the WebDAV share when finished
 sudo umount /mnt/webdav
