@@ -413,7 +413,7 @@ void LostControl(int client)
 	if(client>0 && DummyEnt[client] && EntRefToEntIndex(DummyEnt[client]) != INVALID_ENT_REFERENCE)
 	{
 		RemoveHelicopter(client);
-		DropHelicopter(client);
+		//DropHelicopter(client);
 	}
 	SDKUnhook(client, SDKHook_PreThink, PreThink);
 	SDKUnhook(client, SDKHook_PostThinkPost, PostThinkPost);
@@ -821,6 +821,9 @@ void Fly(int client, int button, int flag, float intervual, float time)
 
 bool IsAlone(int client)
 {
+	l4d2_helicopter_range.FloatValue;
+	GetClientTeam(client);
+	return false;/*
 	float pos[3];
 	float pos2[3];
 	GetClientEyePosition(client, pos);
@@ -844,7 +847,7 @@ bool IsAlone(int client)
 	}
 
 	if(Min>range)return true;
-	return false;
+	return false;*/
 }
 
 void Shot(int client, float helpos[3], float clientEyePos[3], float clientAngle[3])
