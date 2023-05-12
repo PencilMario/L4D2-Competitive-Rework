@@ -3,6 +3,7 @@
 #include <sdktools>
 #include <sdkhooks>
 #include <readyup>
+#include <left4dhooks>
 #include <l4d2util_infected>
 
 int g_iVelocity;
@@ -124,7 +125,7 @@ public Action sm_h(int client, int args)
 	}
  	if(client>0 && IsClientInGame(client) && IsPlayerAlive(client))
 	{
-		if (IsInfectedGhost(client)) return Plugin_Handled;
+		if (IsInfectedGhost(client) && !IsInReady()) return Plugin_Handled;
 		if(DummyEnt[client] && EntRefToEntIndex(DummyEnt[client]) != INVALID_ENT_REFERENCE)
 		{
 			RemoveHelicopter(client);
@@ -1132,7 +1133,10 @@ public Action tank_killed(Event hEvent, const char[] strName, bool DontBroadcast
 	}
 	return Plugin_Continue;
 }
-
+public void L4D_OnEnterGhostState(int client){
+	LostControl(client);
+	ResetClientState(client);
+}
 public void player_changed_team(Event Spawn_Event, const char[] Spawn_Name, bool Spawn_Broadcast)
 {
 	int client = GetClientOfUserId(Spawn_Event.GetInt("userid"));
