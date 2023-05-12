@@ -168,7 +168,6 @@ public OnPluginStart()
 }
 
 public void OnRoundLiveCountdownPre(){
-	ResetAllState();
 	for (int i=1; i<=MaxClients; i++){
 		Stop(i); 
 	}
