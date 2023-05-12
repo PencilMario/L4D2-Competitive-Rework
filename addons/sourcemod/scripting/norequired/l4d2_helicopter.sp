@@ -3,6 +3,7 @@
 #include <sdktools>
 #include <sdkhooks>
 #include <readyup>
+#include <l4d2util_infected>
 
 int g_iVelocity;
 int GameMode;
@@ -58,12 +59,12 @@ public void OnPluginStart()
 	
 	l4d2_helicopter_size = CreateConVar("l4d2_helicopter_size", "1.0", "Helicopter size [0.5, 2.0]");
 	l4d2_helicopter_speed = CreateConVar("l4d2_helicopter_speed", "325.0", "Flight speed [100.0, 500.0]");
-	l4d2_helicopter_gun_accuracy = CreateConVar("l4d2_helicopter_gun_accuracy", "0.7", "Machine gun accuracy [0.0, 1.0]");
-	l4d2_helicopter_gun_damage = CreateConVar("l4d2_helicopter_gun_damage", "20", "Machine gun bullet damage [1.0, 200.0]");
+	l4d2_helicopter_gun_accuracy = CreateConVar("l4d2_helicopter_gun_accuracy", "0.5", "Machine gun accuracy [0.0, 1.0]");
+	l4d2_helicopter_gun_damage = CreateConVar("l4d2_helicopter_gun_damage", "0.5", "Machine gun bullet damage [1.0, 200.0]");
 	l4d2_helicopter_password = CreateConVar("l4d2_helicopter_password", "", "Type !h 'password' in chat");
 	l4d2_helicopter_chance_tankdrop = CreateConVar("l4d2_helicopter_chance_tankdrop", "0.0", "Chance of a helicopter spawn when tank dies [0.0, 100.0]");
 	l4d2_helicopter_fuel= CreateConVar("l4d2_helicopter_fuel", "2000.0", "Fuel amount in seconds [1.0, 2000.0]");
-	l4d2_helicopter_bullet = CreateConVar("l4d2_helicopter_bullet", "1600", "Machine gun ammo amount [100.0, 1600.0]");
+	l4d2_helicopter_bullet = CreateConVar("l4d2_helicopter_bullet", "9999", "Machine gun ammo amount [100.0, 1600.0]");
 	l4d2_helicopter_bomb = CreateConVar("l4d2_helicopter_bomb", "400", "Bomb ammo amount [100.0, 400.0]");
 	l4d2_helicopter_range = CreateConVar("l4d2_helicopter_range", "9000.0", "Max distance you can fly from your team [100.0, 1600.0]");
 
@@ -74,6 +75,7 @@ public void OnPluginStart()
 	HookEvent("player_death", player_death);
 	HookEvent("player_bot_replace", player_bot_replace);	  
 	HookEvent("bot_player_replace", bot_player_replace); 	
+	HookEvent("player_team", player_changed_team); 
 	HookEvent("round_start", round_start);
 	HookEvent("round_end", round_end);
 	HookEvent("map_transition", map_transition, EventHookMode_Pre);
@@ -93,7 +95,6 @@ public void OnRoundLiveCountdownPre(){
 	RemoveHelicopterAll();
 	ResetAllState();
 }
-
 int DummyEnt[MAXPLAYERS+1];
 int HelicopterEnt[MAXPLAYERS+1];
 int HelicopterEnt_other[MAXPLAYERS+1];
@@ -123,6 +124,7 @@ public Action sm_h(int client, int args)
 	}
  	if(client>0 && IsClientInGame(client) && IsPlayerAlive(client))
 	{
+		if (IsInfectedGhost(client)) return Plugin_Handled;
 		if(DummyEnt[client] && EntRefToEntIndex(DummyEnt[client]) != INVALID_ENT_REFERENCE)
 		{
 			RemoveHelicopter(client);
@@ -151,6 +153,7 @@ void CreateHelicopter(int client, int infoIndex)
 	float modelScale=l4d2_helicopter_size.FloatValue;
 	if(modelScale<1.0)modelScale=1.0;
 	else if(modelScale>2.0)modelScale=2.0;
+	modelScale = GetRandomFloat(1.0, 2.0);
 	
 	if(IsValidClient(client))
 	{
@@ -1128,6 +1131,13 @@ public Action tank_killed(Event hEvent, const char[] strName, bool DontBroadcast
 		}
 	}
 	return Plugin_Continue;
+}
+
+public void player_changed_team(Event Spawn_Event, const char[] Spawn_Name, bool Spawn_Broadcast)
+{
+	int client = GetClientOfUserId(Spawn_Event.GetInt("userid"));
+	LostControl(client);
+	ResetClientState(client);
 }
 
 public void player_bot_replace(Event Spawn_Event, const char[] Spawn_Name, bool Spawn_Broadcast)
