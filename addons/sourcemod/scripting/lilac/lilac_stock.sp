@@ -59,6 +59,14 @@ void lilac_warn_admins(int client, int cheat, int detections)
 		PrintToChat(admins[i],
 			"[Lilac] %T", "admin_chat_warning_generic",
 			admins[i], name, type, detections);
+
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientSourceTV(i)){
+			PrintToChat(i, "[Lilac] %s 疑似使用 %s (检测：%d)",
+			name, type, detections);
+		}
+	}
 }
 
 /* Useless Todo: I should update this soon... But I won't :P */
