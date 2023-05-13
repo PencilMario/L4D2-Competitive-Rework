@@ -131,7 +131,11 @@ public Action sm_h(int client, int args)
 	}
  	if(client>0 && IsClientInGame(client) && IsPlayerAlive(client))
 	{
-		if (IsInfectedGhost(client) && !IsInReady()) return Plugin_Handled;
+		if (IsInfectedGhost(client) && !IsInReady()) {
+			PrintToChat(client, "你不能在灵魂状态使用直升机");
+			return Plugin_Handled;
+		}
+
 		if(DummyEnt[client] && EntRefToEntIndex(DummyEnt[client]) != INVALID_ENT_REFERENCE)
 		{
 			RemoveHelicopter(client);
