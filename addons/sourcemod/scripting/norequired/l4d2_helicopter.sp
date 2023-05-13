@@ -948,6 +948,9 @@ public void BombTouch(int ent, int other)
 
 void Explode(int client, float pos[3], float radius = 160.0, float damage = 100.0)
 {
+	if (GetClientTeam(client) == L4D2Team_Infected){
+		damage = damage * 0.07;
+	}
 	int push = CreateEntityByName("point_push");
   	DispatchKeyValueFloat (push, "magnitude",damage*2.0);
 	DispatchKeyValueFloat (push, "radius", radius);
