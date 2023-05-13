@@ -96,6 +96,10 @@ public void OnRoundLiveCountdownPre(){
 	RemoveHelicopterAll();
 	ResetAllState();
 }
+
+public void OnRoundIsLivePre(){
+	OnRoundLiveCountdownPre();
+}
 int DummyEnt[MAXPLAYERS+1];
 int HelicopterEnt[MAXPLAYERS+1];
 int HelicopterEnt_other[MAXPLAYERS+1];
