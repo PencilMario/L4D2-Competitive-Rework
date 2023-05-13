@@ -122,6 +122,8 @@ public Action sm_h(int client, int args)
 			PrintToChat(client, "游戏已经开始了!");
 			return Plugin_Handled;
 		}
+	}else{
+		PrintToChat(client, "Ctrl+E 离开直升机 | E 显示HUD");
 	}
  	if(client>0 && IsClientInGame(client) && IsPlayerAlive(client))
 	{
@@ -1368,10 +1370,10 @@ public bool TraceRayDontHitSelfAndSurvivor(int entity, int mask, any data)
 
 	if(entity>=1 && entity<=MaxClients)
 	{
-		if(GetClientTeam(entity)==2)
+		/*if(GetClientTeam(entity)==2)
 		{
 			return false;
-		}
+		}*/
 	}
 	return true;
 }
@@ -1395,10 +1397,16 @@ void DoPointHurtForInfected(int victim, int attacker = 0)
 	{
 		if(victim>0 && IsValidEdict(victim))
 		{
+			float dmg;
+			if (GetClientTeam(victim)==L4D2Team_Survivor){
+				dmg = l4d2_helicopter_gun_damage.FloatValue/2.0;
+			}else{
+				dmg = l4d2_helicopter_gun_damage.FloatValue;
+			}
 			Format(sTargetName, 20, "target%d", victim);
 			DispatchKeyValue(victim,"targetname", sTargetName);
 			DispatchKeyValue(g_PointHurt, "DamageTarget", sTargetName);
-			DispatchKeyValueFloat(g_PointHurt, "Damage", l4d2_helicopter_gun_damage.FloatValue);
+			DispatchKeyValueFloat(g_PointHurt, "Damage", dmg);
 			DispatchKeyValue(g_PointHurt, "DamageType", "-2130706430");
 			AcceptEntityInput(g_PointHurt, "Hurt", (attacker>0)?attacker:-1);
 		}
