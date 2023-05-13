@@ -686,7 +686,7 @@ void Fly(int client, int button, int flag, float intervual, float time)
 	{
 		if(time>ShotTime[client])
 		{
-			ShotTime[client]=time+0.06;
+			ShotTime[client]=time+0.037;
 			if(Bullet[client]>0)
 			{
 				Bullet[client]--;
@@ -880,7 +880,6 @@ void Shot(int client, float helpos[3], float clientEyePos[3], float clientAngle[
 
 	float acc=l4d2_helicopter_gun_accuracy.FloatValue;
 	if(acc<0.0)acc=0.0;
-	else if(acc>1.0)acc=1.0;	
 
 	acc=0.005+acc*0.018;
 
