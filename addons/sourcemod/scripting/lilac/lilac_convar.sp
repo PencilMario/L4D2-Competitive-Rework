@@ -29,7 +29,9 @@ static char query_list[][] = {
 	"r_shadowwireframe",
 	"r_showenvcubemap",
 	"r_drawrenderboxes",
-	"r_modelwireframedecal"
+	"r_modelwireframedecal",
+	"z_gun_vertical_punch",
+	"r_flashlightfov"
 };
 
 static int query_index[MAXPLAYERS + 1];
@@ -113,10 +115,14 @@ public void query_reply(QueryCookie cookie, int client, ConVarQueryResult result
 
 	int val = StringToInt(cvarValue);
 
-	/* Check for invalid convar responses.
-	 * Other than drawothermodels, a value of non-zero is invalid. */
+	/* 检查不合法的值
+	 * 除了部分cvar （drawothermodels）以外，非0值为不合法的*/
 	if (StrEqual("r_drawothermodels", cvarName, false) && val == 1)
 		return;
+	else if (StrEqual("z_gun_vertical_punch", cvarName, false) && val == 1)
+		return;
+	else if (StrEqual("r_flashlightfov", cvarName, false)){
+		if(StringToFloat(cvarValue) == 53.0) return;}
 	else if (val == 0)
 		return;
 
