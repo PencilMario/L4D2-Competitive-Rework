@@ -571,9 +571,10 @@ stock void CampaignNumMap(int client, int iMaps, int iVote)
 				if (hGM.JumpToKey(sNum))
 				{
 					hGM.GetString("Map", sBuffer, sizeof(sBuffer)-1, "");
+					hGM.GetString("DisplayName", sBuffer2, sizeof(sBuffer2)-1, "");
 					NativeVote vote = new NativeVote(YesNoHandler, NativeVotesType_Custom_YesNo);
 					vote.Initiator = client;
-					vote.SetDetails("将地图更换为%s", sBuffer);
+					vote.SetDetails("将地图更换为%s（%s m%s - %s）", sBuffer, sDisplayTitle, sNum, sBuffer2);
 					vote.DisplayVoteToAll(30);
 					/*switch (iVote)
 					{
@@ -630,7 +631,7 @@ public int YesNoHandler(NativeVote vote, MenuAction action, int param1, int para
 					{
 						case 0:
 						{
-							ServerCommand("changelevel %s", sBuffer);
+							ServerCommand("sm_map %s", sBuffer);
 						}
 						case 1: {
 							int client;
