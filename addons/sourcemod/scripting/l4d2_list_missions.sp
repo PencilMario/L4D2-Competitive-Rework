@@ -33,7 +33,6 @@
 #include <adminmenu>
 #include <localizer>
 #include <nativevotes>
-#tryinclude <l4d2_changelevel>
 
 TopMenu hTopMenuHandle;
 
@@ -631,11 +630,7 @@ public int YesNoHandler(NativeVote vote, MenuAction action, int param1, int para
 					{
 						case 0:
 						{
-						#if defined _l4d2_changelevel_included
-							L4D2_ChangeLevel(sBuffer);
-						#else
 							ServerCommand("changelevel %s", sBuffer);
-						#endif
 						}
 						case 1: {
 							int client;

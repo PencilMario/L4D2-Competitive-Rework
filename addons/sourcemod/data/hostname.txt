@@ -20,4 +20,8 @@
 	{
 		"hostname"		"[Zonemod]萌新汪汪屋#2"
 	}
+	"58888"
+	{
+		"hostname"		"狗窝"
+	}
 }
