@@ -1,6 +1,7 @@
 #include <sourcemod>
 #include <sdktools>
 #include <colors>
+#include <sourcebanspp>
 // We only care about these detections,
 // 	since they don't cause instant bans.
 #define CHEAT_AIMBOT 	5
@@ -36,10 +37,15 @@ public Plugin:myinfo = {
 	version = "1.1.0",
 	url = ""
 };
-
+public void SBPP_OnReportPlayer(int iReporter, int iTarget, const char[] sReason){
+	CPrintToChat(iReporter, "[{green}!{default}] 已将 %N 添加进服务端录制demo名单!", iTarget);
+	CPrintToChat(iReporter, "[{green}!{default}] 该消息仅对你可见!");
+	Format(line, sizeof(line), "//Added by report (%N Request to record %N)//", iReporter, iTarget);
+	log_line(0);
+	update_recording_list(iTarget, true);
+}
 public Action CMD_ManuallyRecord(int iClient, int iArgs)
 {
-
 	if(iArgs != 1) 
 	{
 		ReplyToCommand(iClient, "使用方式: sm_rec <target>");
@@ -66,7 +72,7 @@ public Action CMD_ManuallyRecord(int iClient, int iArgs)
 	}
 	CPrintToChat(iClient, "[{green}!{default}] 已将 %N 添加进服务端录制demo名单!", target);
 	CPrintToChat(iClient, "[{green}!{default}] 该消息仅对你可见!");
-	CPrintToChat(iClient, "[{green}!{default}] 请结合指令{olive}!report{default}进行举报并详细说明理由");
+	CPrintToChat(iClient, "[{green}!{default}] 建议结合指令{olive}!report{default}进行举报并详细说明理由");
 	Format(line, sizeof(line), "//Added by Command (%N Request to record %N)//", iClient, target);
 	log_line(0);
 	update_recording_list(target, true);
