@@ -32,6 +32,7 @@
 #include <sdktools>
 #include <adminmenu>
 #include <localizer>
+#include <nativevotes>
 #tryinclude <l4d2_changelevel>
 
 TopMenu hTopMenuHandle;
@@ -62,7 +63,7 @@ public void OnPluginStart()
 {
 	loc = new Localizer(LC_INSTALL_MODE_FULLCACHE); 
 	
-	RegAdminCmd("sm_map_list", CMD_Maps, ADMFLAG_UNBAN, "");
+	RegConsoleCmd("sm_map_list", CMD_Maps, "更换三方图");
 	RegAdminCmd("sm_map_list_update", CMD_MLU, ADMFLAG_UNBAN, "");
 	RegConsoleCmd("sm_votedlc", CMD_VoteDlc, "", 0);
 	
@@ -571,8 +572,62 @@ stock void CampaignNumMap(int client, int iMaps, int iVote)
 				if (hGM.JumpToKey(sNum))
 				{
 					hGM.GetString("Map", sBuffer, sizeof(sBuffer)-1, "");
-					
-					switch (iVote)
+					NativeVote vote = new NativeVote(YesNoHandler, NativeVotesType_Custom_YesNo);
+					vote.Initiator = client;
+					vote.SetDetails("将地图更换为%s", sBuffer);
+					vote.DisplayVoteToAll(30);
+					/*switch (iVote)
+					{
+						case 0:
+						{
+						
+						#if defined _l4d2_changelevel_included
+							L4D2_ChangeLevel(sBuffer);
+						#else
+							ServerCommand("changelevel %s", sBuffer);
+						#endif
+						}
+						case 1: FakeClientCommand(client, "callvote changelevel %s", sBuffer);
+					}*/
+				}
+			}
+		}
+		delete hGM;
+	}
+}
+
+public int YesNoHandler(NativeVote vote, MenuAction action, int param1, int param2)
+{
+	switch (action)
+	{
+		case MenuAction_End:
+		{
+			vote.Close();
+		}
+		
+		case MenuAction_VoteCancel:
+		{
+			if (param1 == VoteCancel_NoVotes)
+			{
+				vote.DisplayFail(NativeVotesFail_NotEnoughVotes);
+			}
+			else
+			{
+				vote.DisplayFail(NativeVotesFail_Generic);
+			}
+		}
+		
+		case MenuAction_VoteEnd:
+		{
+			if (param1 == NATIVEVOTES_VOTE_NO)
+			{
+				vote.DisplayFail(NativeVotesFail_Loses);
+			}
+			else
+			{
+				vote.DisplayPass("地图即将更换!");
+				// Do something because it passed
+				switch (0)
 					{
 						case 0:
 						{
@@ -582,13 +637,19 @@ stock void CampaignNumMap(int client, int iMaps, int iVote)
 							ServerCommand("changelevel %s", sBuffer);
 						#endif
 						}
-						case 1: FakeClientCommand(client, "callvote changelevel %s", sBuffer);
+						case 1: {
+							int client;
+							for (int i = 1; i <= MaxClients; i++){
+								if (IsClientInGame(i)) client = i;
+								break;
+							}
+							FakeClientCommand(client, "callvote changelevel %s", sBuffer);
+						}
 					}
-				}
 			}
 		}
-		delete hGM;
 	}
+	return 0;
 }
 
 //====================================
