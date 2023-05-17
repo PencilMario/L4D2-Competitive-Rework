@@ -6,19 +6,19 @@
 	}
 	"10721"
 	{
-		"hostname"		"[N&B Zonemod]萌新喵喵屋"
+		"hostname"		"[N&B.Zonemod]萌新喵喵屋"
 	}
 	"20721"
 	{
-		"hostname"		"[N&B Zonemod]萌新不喵呜"
+		"hostname"		"[N&B.Zonemod]萌新不喵呜"
 	}
 	"53333"
 	{
-		"hostname"		"[N&B Zonemod]萌新汪汪屋#1"
+		"hostname"		"[N&B.Zonemod]萌新汪汪屋#1"
 	}
 	"56666"
 	{
-		"hostname"		"[N&B Zonemod]萌新汪汪屋#2"
+		"hostname"		"[N&B.Zonemod]萌新汪汪屋#2"
 	}
 	"58888"
 	{
