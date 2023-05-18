@@ -1002,9 +1002,9 @@ public Vote_Map(iVote, iVoter, iMap)
 	SetMenuTitle(hMenu, "%s", strBuffer);
 	SetMenuExitButton(hMenu, false);
 
+	/*AddMenuItem(hMenu, "", " ", ITEMDRAW_NOTEXT);
 	AddMenuItem(hMenu, "", " ", ITEMDRAW_NOTEXT);
-	AddMenuItem(hMenu, "", " ", ITEMDRAW_NOTEXT);
-	AddMenuItem(hMenu, "", " ", ITEMDRAW_NOTEXT);
+	AddMenuItem(hMenu, "", " ", ITEMDRAW_NOTEXT);*/
 	AddMenuItem(hMenu, "Yes", "Yes");
 	AddMenuItem(hMenu, "No", "No");
 
