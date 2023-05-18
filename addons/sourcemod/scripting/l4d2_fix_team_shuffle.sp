@@ -84,7 +84,7 @@ public Action EnableFixTeam_Timer(Handle timer)
 {
     EnableFixTeam();
     FixTeams();
-    CreateTimer(21.0, DisableFixTeam_Timer);
+    CreateTimer(30.0, DisableFixTeam_Timer);
 
     return Plugin_Continue;
 }
