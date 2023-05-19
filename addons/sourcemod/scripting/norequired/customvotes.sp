@@ -656,9 +656,9 @@ public Vote_Players(iVote, iVoter, iTarget)
 	SetMenuTitle(hMenu, "%s", strBuffer);
 	SetMenuExitButton(hMenu, false);
 
+	/*AddMenuItem(hMenu, "", " ", ITEMDRAW_NOTEXT);
 	AddMenuItem(hMenu, "", " ", ITEMDRAW_NOTEXT);
-	AddMenuItem(hMenu, "", " ", ITEMDRAW_NOTEXT);
-	AddMenuItem(hMenu, "", " ", ITEMDRAW_NOTEXT);
+	AddMenuItem(hMenu, "", " ", ITEMDRAW_NOTEXT);*/
 
 	AddMenuItem(hMenu, "Yes", "Yes");
 	AddMenuItem(hMenu, "No", "No");
@@ -1289,9 +1289,9 @@ public Vote_List(iVote, iVoter, iOption)
 	SetMenuTitle(hMenu, "%s", strBuffer);
 	SetMenuExitButton(hMenu, false);
 
+	/*AddMenuItem(hMenu, "", " ", ITEMDRAW_NOTEXT);
 	AddMenuItem(hMenu, "", " ", ITEMDRAW_NOTEXT);
-	AddMenuItem(hMenu, "", " ", ITEMDRAW_NOTEXT);
-	AddMenuItem(hMenu, "", " ", ITEMDRAW_NOTEXT);
+	AddMenuItem(hMenu, "", " ", ITEMDRAW_NOTEXT);*/
 	AddMenuItem(hMenu, "Yes", "Yes");
 	AddMenuItem(hMenu, "No", "No");
 
@@ -1520,9 +1520,9 @@ public Vote_Simple(iVote, iVoter)
 	SetMenuTitle(hMenu, "%s", strName);
 	SetMenuExitButton(hMenu, false);
 
+	/*AddMenuItem(hMenu, "", " ", ITEMDRAW_NOTEXT);
 	AddMenuItem(hMenu, "", " ", ITEMDRAW_NOTEXT);
-	AddMenuItem(hMenu, "", " ", ITEMDRAW_NOTEXT);
-	AddMenuItem(hMenu, "", " ", ITEMDRAW_NOTEXT);
+	AddMenuItem(hMenu, "", " ", ITEMDRAW_NOTEXT);*/
 	AddMenuItem(hMenu, "Yes", "Yes");
 	AddMenuItem(hMenu, "No", "No");
 
