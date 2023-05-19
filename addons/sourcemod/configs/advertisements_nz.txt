@@ -1,0 +1,125 @@
+// Advertisements 2.1
+// by Tsunami
+//
+// Types
+// -----
+// center: Center message
+// chat: Chat message
+// hint: Hint message
+// menu: Menu message
+// top: Top message
+//
+// Flags (optional)
+// -----
+// Accepts flags of admins that will not see the advertisement.
+// When omitted everyone will see the advertisement.
+// When left empty only admins will see the advertisement.
+
+"Advertisements"
+{
+    "1"
+    {
+        "chat"		"{green}本服没啥高防，被d就寄"
+    }
+    "2"
+    {
+        "chat"		"{green}拳不扩散，请不要随意拳收路人，小心恩怨"
+    }
+    "3"
+    {
+        "chat"      "{green}如果你怀疑有人开挂，可以用以下指令：\n{default}!report 提交举报\n{green}当举报提交后，服务端将自动录制demo"
+    }
+    "4"
+    {
+        "chat"      "{green}改lerp：cl_interp 0;cl_interp_ratio 0"
+    }
+    "5"
+    {
+        "chat"      "{green}hy指的是混野，所以配置名是我随便起的 :)"
+    }
+    "6"
+    {
+        "chat"      "{green}旁观占位不上？快用!kickspecs，恩怨我替你打"
+    }
+    "7"
+    {
+        "chat"      "{green}z: 又黑我一点血 sp: 你背后有猴子"
+    }
+    "8"
+    {
+        "chat"      "{green}本服暂时没qq群，不过你可以去隔壁558382058看看，每月有高达200多的红包局"
+    }
+    "9"
+    {
+        "chat"      "{green}准备阶段你看到的怪东西开始后就没了"
+    }
+    "10"
+    {
+        "chat"      "{green}本服萌新居多，请多加体谅一下"
+    }
+    "11"
+    {
+        "chat"      "!rmatch/!match{green}能换配置，看谁不爽直接切1v1恩怨他，记着叫我来乐"
+    }
+    "12"
+    {
+        "chat"      "{green}被炸烦了？可以试一试l4d2love.com，国内的匹配平台，不过小心被骂 :)"
+    }
+    "13"
+    {
+        "chat"      "{green}有人抢萌新tank 我不说是谁"
+    }
+    "14"
+    {
+        "chat"      "{green}我宣布安可是喵喵屋大爹"
+    }
+    "15"
+    {
+        "chat"      "{green}本服偶尔会卡匹配，如果长时间进不来可以试试{default}!votemenu{green}关闭匹配"
+    }
+    "15"
+    {
+        "chat"      "{green}服务器每天凌晨3点半重启一次更新插件，不过真有人在本服玩到3点半吗..？"
+    }
+    "16"
+    {
+        "chat"      "{green}暖服半小时可以凭status找我要服务器vip玩 :)"
+    }
+    "17"
+    {
+        "chat"      "{green}能不能打完再退;_; 暖服不容易"
+    }
+    "18"
+    {
+        "chat"      "{green}本服有热更新，所以你偶尔也许能看到一些可能加在下个版本的东西，比如僵尸消失"
+    }
+    "19"
+    {
+        "chat"      "{green}虽然组被狗屋拿下了，不过俩服插件都是我的，赢！"
+    }
+    "20"
+    {
+        "chat"      "{green}旁观的{default}[LAC]Recorder{green}是服务器录制demo的bot，本身不占匹配位置，踢了就不能录demo了"
+    }
+    "21"
+    {
+        "chat"      "{green}除了手动!rec Bot在检测到自瞄时也会开始录制 "
+    }
+    "22"
+    {
+        "chat"      "{green}玩的开心记得加一加服务器组 :D"
+    }
+    "23"
+    {
+        "chat"      "{green}本服新增机翻插件，打的菜可以开翻译器装老外"
+    }
+    "24"
+    {
+        "chat"      "{green}别找屁股位别找屁股位别找屁股位别找屁股位别找屁股位别找屁股位，除非你想吃生还的屁"
+    }
+    "25"
+    {
+        "chat"      "{green}双方武装直升机已经入境"
+    }
+}
+
