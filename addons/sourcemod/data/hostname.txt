@@ -12,6 +12,14 @@
 	{
 		"hostname"		"[N&B.Zonemod]萌新不喵呜"
 	}
+	"30100"
+	{
+		"hostname"		"[N&B.Zonemod]旧病复发也"
+	}	
+	"30101"
+	{
+		"hostname"		"[N&B.Zonemod]事已至此，先恰饭吧"
+	}
 	"53333"
 	{
 		"hostname"		"[N&B.Zonemod]萌新汪汪屋#1"
