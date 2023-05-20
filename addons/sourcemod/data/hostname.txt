@@ -18,7 +18,7 @@
 	}	
 	"30201"
 	{
-		"hostname"		"[N&B.Zonemod]事已至此，先恰饭吧"
+		"hostname"		"[N&B.Zonemod]想了解一切"
 	}
 	"53333"
 	{
