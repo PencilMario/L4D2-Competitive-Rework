@@ -16,7 +16,7 @@
 	{
 		"hostname"		"[N&B.Zonemod]旧病复发也"
 	}	
-	"30101"
+	"30201"
 	{
 		"hostname"		"[N&B.Zonemod]事已至此，先恰饭吧"
 	}
