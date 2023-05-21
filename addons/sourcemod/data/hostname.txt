@@ -1,5 +1,21 @@
 "hostname"
 {	
+	"1601"
+	{
+		"hostname"		"[N&B.Zonemod]Chikko#1"
+	}
+	"1602"
+	{
+		"hostname"		"[N&B.Zonemod]Chikko#2"
+	}
+	"1603"
+	{
+		"hostname"		"[N&B.Zonemod]Chikko#3"
+	}
+	"1604"
+	{
+		"hostname"		"[N&B.Zonemod]Chikko#4"
+	}
 	"27015"
 	{
 		"hostname"		"funny"
