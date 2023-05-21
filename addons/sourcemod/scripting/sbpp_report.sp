@@ -18,7 +18,6 @@ enum
 };
 
 ConVar Convars[Settings_Count];
-
 bool bInReason[MAXPLAYERS + 1];
 
 int iMinLen = 10
@@ -133,7 +132,12 @@ public Action OnClientSayCommand(int iClient, const char[] sCommand, const char[
 		return Plugin_Stop;
 	}
 
-	SBPP_ReportPlayer(iClient, iTargetCache[iClient], sArgs);
+	ConVar SVname = FindConVar("hostname");
+	char buffer[32];
+	char buffer2[128];
+	SVname.GetString(buffer, 32);
+	Format(buffer2, sizeof(buffer2), "%s|%s", buffer, sArgs);
+	SBPP_ReportPlayer(iClient, iTargetCache[iClient], buffer2);
 
 	AddCooldown(iClient);
 
