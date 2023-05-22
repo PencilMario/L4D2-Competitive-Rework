@@ -83,7 +83,7 @@
     }
     "16"
     {
-        "chat"      "{green}暖服半小时可以凭status找我要服务器vip玩 :)"
+        "chat"      "{green}计划加个萌新Only服，但是我是懒狗"
     }
     "17"
     {
