@@ -30,6 +30,14 @@
 	}
 	"30100"
 	{
+		"hostname"		"[N&B.Zonemod]我去 None"
+	}	
+	"30201"
+	{
+		"hostname"		"[N&B.Zonemod]巧克力批发市场"
+	}
+	"30100"
+	{
 		"hostname"		"[N&B.Zonemod]旧病复发也"
 	}	
 	"30201"
