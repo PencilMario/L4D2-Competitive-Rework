@@ -1,5 +1,9 @@
 #!/bin/bash
 
+echo "upload demos"
+
+bash map_init.sh
+
 echo "Get Plugin updates";
 cd /home/steam/L4D2-Competitive-Rework/;
 git reset --hard
