@@ -25,4 +25,4 @@ bash demo_upload.sh
 
 
 # Unmount the WebDAV share when finished
-sudo umount /mnt/webdav
+#sudo umount /mnt/webdav
