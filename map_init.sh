@@ -21,9 +21,8 @@ sudo mount -t davfs -o uid=0,gid=0 $url /mnt/webdav
 echo "$url $username $password" > /etc/davfs2/secrets
 chmod 600 /etc/davfs2/secrets
 
-bash map_sync.sh
+bash demo_upload.sh
 
-pip install webdav3
 
 # Unmount the WebDAV share when finished
 sudo umount /mnt/webdav
