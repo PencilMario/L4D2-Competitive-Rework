@@ -30,7 +30,7 @@
 	}
 	"30006"
 	{
-		"hostname"		"[N&B.Zonemod]我去 None"
+		"hostname"		"[N&B.Zonemod]Ciallo～(∠・ω< )⌒☆"
 	}	
 	"30007"
 	{
