@@ -2,7 +2,7 @@
 
 echo "upload demos"
 
-bash map_init.sh
+bash /home/steam/L4D2-Competitive-Rework/map_init.sh
 
 echo "Get Plugin updates";
 cd /home/steam/L4D2-Competitive-Rework/;
