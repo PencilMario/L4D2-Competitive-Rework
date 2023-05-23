@@ -28,11 +28,11 @@
 	{
 		"hostname"		"[N&B.Zonemod]萌新不喵呜"
 	}
-	"30100"
+	"30006"
 	{
 		"hostname"		"[N&B.Zonemod]我去 None"
 	}	
-	"30201"
+	"30007"
 	{
 		"hostname"		"[N&B.Zonemod]巧克力批发市场"
 	}
