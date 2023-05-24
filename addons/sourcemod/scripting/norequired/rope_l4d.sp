@@ -137,6 +137,9 @@ ResetClientState(client)
 }
 
 public void OnRoundLiveCountdownPre(){
+	for(int i=1; i<MaxClients; i++){
+		if (IsClientInGame(i)) StopRope(i);
+	}
 	ResetAllState();
 }
 
@@ -288,10 +291,10 @@ EnableRope(client)
 	g_rope_enabled[client]=true;
 	g_rope_state[client]=state_none;
 	
-	PrintToChatAll("%N have enabled rope",client);
+	PrintToChatAll("%N 启用了绳子",client);
 	 
-	PrintToChat(client, "you have enabled rope, use middle mouse button to use rope");
-	PrintToChat(client, "when jumped press shift and ctrl");
+	PrintToChat(client, "你启用了绳子, 使用瞄准键来使用");
+	PrintToChat(client, "在空中使用shift和ctrl来控制长度");
 
 
 }
