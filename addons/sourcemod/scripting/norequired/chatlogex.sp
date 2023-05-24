@@ -295,7 +295,7 @@ public Action:LogOnMapStart(Handle:timer)
 	SetCurrentGameMode();
 
 	if(StrEqual(m_mode, ""))
-		Format(text, sizeof(text), "Map started (%s)", mapname);
+		Format(text, sizeof(text), "地图开始 (%s)", mapname);
 	else
 	{
 		if(StrEqual(m_mode, "coop"))
@@ -303,10 +303,10 @@ public Action:LogOnMapStart(Handle:timer)
 			decl String:difficulty[16];
 			GetConVarString(z_difficulty, difficulty, sizeof(difficulty));
 	
-			Format(text, sizeof(text), "Map started (%s:%c%s:%s)", m_mode, CharToLower(difficulty[0]), difficulty[1], mapname);
+			Format(text, sizeof(text), "地图开始 (%s:%c%s:%s)", m_mode, CharToLower(difficulty[0]), difficulty[1], mapname);
 		}
 		else
-			Format(text, sizeof(text), "Map started (%s:%s)", m_mode, mapname);
+			Format(text, sizeof(text), "地图开始 (%s:%s)", m_mode, mapname);
 	}
 
 	logSomeTextYo2("", "", text, -1, srvid, -1);
@@ -350,7 +350,7 @@ public OnMapEnd()
 	GetCurrentMap(mapname, sizeof(mapname));
 
 	if(StrEqual(m_mode, ""))
-		Format(text, sizeof(text), "Map ended (%s)", mapname);
+		Format(text, sizeof(text), "地图结束 (%s)", mapname);
 	else
 	{
 		if(StrEqual(m_mode, "coop"))
@@ -358,10 +358,10 @@ public OnMapEnd()
 			decl String:difficulty[16];
 			GetConVarString(z_difficulty, difficulty, sizeof(difficulty));
 	
-			Format(text, sizeof(text), "Map ended (%s:%c%s:%s)", m_mode, CharToLower(difficulty[0]), difficulty[1], mapname);
+			Format(text, sizeof(text), "地图结束 (%s:%c%s:%s)", m_mode, CharToLower(difficulty[0]), difficulty[1], mapname);
 		}
 		else
-			Format(text, sizeof(text), "Map ended (%s:%s)", m_mode, mapname);
+			Format(text, sizeof(text), "地图结束 (%s:%s)", m_mode, mapname);
 	}
 
 	logSomeTextYo2("", "", text, -1, srvid, -1);
@@ -483,7 +483,7 @@ public Action:Event_PlayerChangename(Handle:event, const String:name[], bool:don
 	
 	GetClientAuthString(client, authid, sizeof(authid));
 
-	Format(text, sizeof(text), "Player %s changed name to %s", oldname, newname);
+	Format(text, sizeof(text), "玩家 %s 的名称修改为 %s", oldname, newname);
 
 	logSomeTextYo2("", authid, text, -1, srvid, -1);
 	
@@ -513,7 +513,7 @@ public Action:LogPlayerConnect(Handle:event)
 	}
 
 	GetEventString(event, "name", username, sizeof(username));
-	Format(text, sizeof(text), "Player %s connected", username);
+	Format(text, sizeof(text), "玩家 %s 已连接", username);
 
 	logSomeTextYo2("", "", text, -1, srvid, -1);
 
@@ -560,7 +560,7 @@ public Action:Event_PlayerDisconnect(Handle:event, const String:name[], bool:don
 	GetEventString(event, "name", username, sizeof(username));
 	GetEventString(event, "reason", reason, sizeof(reason));
 	
-	Format(text, sizeof(text), "Player %s disconnected (%s)", username, reason);
+	Format(text, sizeof(text), "玩家 %s 离开游戏 (%s)", username, reason);
 
 	GetClientAuthString(client, authid, sizeof(authid));
 	
@@ -706,7 +706,7 @@ LogPlayerCount()
 	
 	decl String:text[256];
 	
-	Format(text, sizeof(text), "%d/%d players online", m_lastplayercount, m_lastmaxplayercount);
+	Format(text, sizeof(text), "---当前在线 %d/%d---", m_lastplayercount, m_lastmaxplayercount);
 	
 	logSomeTextYo2("", "", text, -1, srvid, -1);
 }
