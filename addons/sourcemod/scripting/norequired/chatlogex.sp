@@ -66,6 +66,19 @@ new Handle:mp_gamemode = INVALID_HANDLE;
 new Handle:z_difficulty = INVALID_HANDLE;
 new Handle:hostname = INVALID_HANDLE;
 
+#define CHEAT_ANGLES             0
+#define CHEAT_CHATCLEAR          1
+#define CHEAT_CONVAR             2
+#define CHEAT_NOLERP             3
+#define CHEAT_BHOP               4
+#define CHEAT_AIMBOT             5
+#define CHEAT_AIMLOCK            6
+#define CHEAT_ANTI_DUCK_DELAY    7
+#define CHEAT_NOISEMAKER_SPAM    8
+#define CHEAT_MACRO              9 
+#define CHEAT_NEWLINE_NAME      10
+#define CHEAT_MAX               11
+
 public OnPluginStart()
 {
 	sm_chatlogex_id = CreateConVar("sm_chatlogex_id", "", "The id to use for logging this server's chat to the database. Must be set for this plugin to function.");
@@ -131,6 +144,55 @@ public OnPluginStart()
 	SetCurrentGameMode();
 	
 	m_lastmaxplayercount = GetMaxPlayersForCurrentGameMode();
+}
+
+public Action lilac_cheater_detected(int client, int cheat)
+{
+	char srvid[64];
+	
+	GetConVarString(sm_chatlogex_id, srvid, sizeof(srvid));
+	char Buffer[512];
+	switch (cheat) {
+	    case CHEAT_ANGLES: {
+	        Format(Buffer, 512, "[LAC] %N 检测到角度作弊", client);
+	    }
+	    case CHEAT_AIMLOCK: {
+	        Format(Buffer, 512, "[LAC] %N 检测到暴力自瞄", client);
+	    }
+	    case CHEAT_CHATCLEAR: {
+	        Format(Buffer, 512, "[LAC] %N 检测到刷屏", client);
+	    }
+	    case CHEAT_CONVAR: {
+	        Format(Buffer, 512, "[LAC] %N 检测到作弊指令", client);
+	    }
+	    case CHEAT_NOLERP: {
+	        Format(Buffer, 512, "[LAC] %N 检测到利用lerp值", client);
+	    }
+	    case CHEAT_BHOP: {
+	        Format(Buffer, 512, "[LAC] %N 检测到连跳", client);
+	    }
+	    case CHEAT_AIMBOT: {
+	        Format(Buffer, 512, "[LAC] %N 检测到微自瞄", client);
+	    }
+	    case CHEAT_ANTI_DUCK_DELAY: {
+	        Format(Buffer, 512, "[LAC] %N 检测到下蹲辅助", client);
+	    }
+	    case CHEAT_NOISEMAKER_SPAM: {
+	        Format(Buffer, 512, "[LAC] %N 检测到麦克风噪音干扰", client);
+	    }
+	    case CHEAT_MACRO: {
+	        Format(Buffer, 512, "[LAC] %N 检测到麦克风噪音干扰", client);
+	    }
+	    case CHEAT_NEWLINE_NAME: {
+	        Format(Buffer, 512, "[LAC] %N 检测到名称非法字符", client);
+	    }
+	    default:{
+	        Format(Buffer, 512, "[LAC] %N 检测到作弊type: %i", client, cheat);
+		}
+	}
+
+	logSomeTextYo2("Little Anti Cheat", "DETECTED", Buffer, 1, srvid, 0);
+	return Plugin_Continue;
 }
 
 public OnPluginEnd()
