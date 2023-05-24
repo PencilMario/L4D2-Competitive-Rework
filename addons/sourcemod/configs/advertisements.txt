@@ -137,5 +137,9 @@
     {
         "chat"      "{green}服务端demo可以在 {default}http://sp2.0721play.icu/L4D2相关/服务端demo {green}查看"
     }
+    "30"
+    {
+        "chat"      "{green}如果服务器掉帧卡顿，可以使用{default}!votemenu{green}投票修改demo录制帧率，可以有效缓解"
+    }
 }
 
