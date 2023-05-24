@@ -103,27 +103,27 @@ public OnPluginStart()
 
 	RegAdminCmd("sm_chatlogex_clean", Command_SmChatLogExClean, ADMFLAG_ROOT, "sm_chatlogex_clean [days] - cleans chatlog messages older than days given in parameter (default value set by sm_chatlogex_cleandays)");
 
-	if (!HookEventEx("player_say", Event_PlayerChat, EventHookMode_Post))
+	if (!HookEventEx("player_say", Event_PlayerChat, EventHookMode_Pre))
 	{
 		LogError("Failed to hook player_say, sm_chatlogex_filtermode 1 will not work");
 	}
 	
-	if (!HookEventEx("player_connect", Event_PlayerConnect, EventHookMode_Post))
+	if (!HookEventEx("player_connect", Event_PlayerConnect, EventHookMode_Pre))
 	{
 		LogError("Failed to hook player_connect!");
 	}
 	
-	if (!HookEventEx("player_disconnect", Event_PlayerDisconnect, EventHookMode_Post))
+	if (!HookEventEx("player_disconnect", Event_PlayerDisconnect, EventHookMode_Pre))
 	{
 		LogError("Failed to hook player_disconnect!");
 	}
 	
-	if (!HookEventEx("player_changename", Event_PlayerChangename, EventHookMode_Post))
+	if (!HookEventEx("player_changename", Event_PlayerChangename, EventHookMode_Pre))
 	{
 		LogError("Failed to hook player_info!");
 	}
 	
-	if (!HookEventEx("player_death", Event_PlayerDeath, EventHookMode_Post))
+	if (!HookEventEx("player_death", Event_PlayerDeath, EventHookMode_Pre))
 	{
 		LogError("Failed to hook player_info!");
 	}
