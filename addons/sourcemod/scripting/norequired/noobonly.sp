@@ -78,9 +78,8 @@ public void GetVoteDisplayMessage(int iClient, char[] sDisplayMsg) {
 
 public void OnClientConnected(int client){
     if(IsFakeClient(client)) return;
-    PlayerInfo tPlayer;
-    tPlayer.rating = CalculatePlayerRating(GetPlayerStats(client));
-    PlayRt[client] = tPlayer.rating;
+    PlayRt[client] = CalculatePlayerRating(GetPlayerStats(client));
+    PrintToConsoleAll("%N - %f", client, PlayRt[client]);
 }
 
 public void PlayerTeam_Event(Event event, const char[] name, bool dontBroadcast)
