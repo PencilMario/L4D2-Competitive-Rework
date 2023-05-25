@@ -47,7 +47,7 @@
  * @return 0
  * 
  */
-native int AddToChatLog(const char[] clientname, const char[] clientAuthID, const char[] text, 
+native int AddToChatLog(char[] clientname, char[] clientAuthID, char[] text, 
                             int team, int type);
 
 /**
@@ -57,7 +57,7 @@ native int AddToChatLog(const char[] clientname, const char[] clientAuthID, cons
  * 
  * @return 0
  */
-native bool AddToChatLog2(const char[] text);
+native bool AddToChatLog2(char[] text);
 
 public SharedPlugin __pl_chatlogex =
 {
