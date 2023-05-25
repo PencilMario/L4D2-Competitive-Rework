@@ -146,48 +146,79 @@ public OnPluginStart()
 	m_lastmaxplayercount = GetMaxPlayersForCurrentGameMode();
 }
 
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+	CreateNative("AddToChatLog", Native_AddToChatLog);
+	CreateNative("AddToChatLog2", Native_AddToChatLog2);
+	RegPluginLibrary("chatlogex");
+	return APLRes_Success;
+}
+
+int Native_AddToChatLog(Handle plugin, int numParams){
+	char name[64];
+	char authid[128];
+	char text[512];
+	int team, type;
+	char srvid[64];
+	GetConVarString(sm_chatlogex_id, srvid, sizeof(srvid));
+	GetNativeString(1, name, sizeof(name));
+    GetNativeString(2, authid, sizeof(authid));
+	GetNativeString(3, text, sizeof(text));
+	team = GetNativeCell(4);
+	type = GetNativeCell(5);
+	logSomeTextYo2(name, authid, text, team, srvid, type);
+	return 0;
+}
+
+int Native_AddToChatLog2(Handle plugin, int numParams){
+	char srvid[64];
+	GetConVarString(sm_chatlogex_id, srvid, sizeof(srvid));
+	char text[512];
+	logSomeTextYo2("", "", text, -1, srvid, -1);
+	return 0;
+}
+
 public Action lilac_cheater_detected(int client, int cheat)
 {
 	char srvid[64];
-	
 	GetConVarString(sm_chatlogex_id, srvid, sizeof(srvid));
 	char Buffer[512];
 	switch (cheat) {
-	    case CHEAT_ANGLES: {
-	        Format(Buffer, 512, "[LAC] %N - CHEAT_ANGLES", client);
-	    }
-	    case CHEAT_AIMLOCK: {
-	        Format(Buffer, 512, "[LAC] %N - CHEAT_AIMLOCK", client);
-	    }
-	    case CHEAT_CHATCLEAR: {
-	        Format(Buffer, 512, "[LAC] %N - CHEAT_CHATCLEAR", client);
-	    }
-	    case CHEAT_CONVAR: {
-	        Format(Buffer, 512, "[LAC] %N - CHEAT_CONVAR", client);
-	    }
-	    case CHEAT_NOLERP: {
-	        Format(Buffer, 512, "[LAC] %N - CHEAT_NOLERP", client);
-	    }
-	    case CHEAT_BHOP: {
-	        Format(Buffer, 512, "[LAC] %N - CHEAT_BHOP", client);
-	    }
-	    case CHEAT_AIMBOT: {
-	        Format(Buffer, 512, "[LAC] %N - CHEAT_AIMBOT", client);
-	    }
-	    case CHEAT_ANTI_DUCK_DELAY: {
-	        Format(Buffer, 512, "[LAC] %N - CHEAT_ANTI_DUCK_DELAY", client);
-	    }
-	    case CHEAT_NOISEMAKER_SPAM: {
-	        Format(Buffer, 512, "[LAC] %N - CHEAT_NOISEMAKER_SPAM", client);
-	    }
-	    case CHEAT_MACRO: {
-	        Format(Buffer, 512, "[LAC] %N - CHEAT_MACRO", client);
-	    }
-	    case CHEAT_NEWLINE_NAME: {
-	        Format(Buffer, 512, "[LAC] %N - CHEAT_NEWLINE_NAME", client);
-	    }
-	    default:{
-	        Format(Buffer, 512, "[LAC] %N - CHEAT TYPE: %i", client, cheat);
+		case CHEAT_ANGLES: {
+			Format(Buffer, 512, "[LAC] %N - CHEAT_ANGLES", client);
+		}
+		case CHEAT_AIMLOCK: {
+			Format(Buffer, 512, "[LAC] %N - CHEAT_AIMLOCK", client);
+		}
+		case CHEAT_CHATCLEAR: {
+			Format(Buffer, 512, "[LAC] %N - CHEAT_CHATCLEAR", client);
+		}
+		case CHEAT_CONVAR: {
+			Format(Buffer, 512, "[LAC] %N - CHEAT_CONVAR", client);
+		}
+		case CHEAT_NOLERP: {
+			Format(Buffer, 512, "[LAC] %N - CHEAT_NOLERP", client);
+		}
+		case CHEAT_BHOP: {
+			Format(Buffer, 512, "[LAC] %N - CHEAT_BHOP", client);
+		}
+		case CHEAT_AIMBOT: {
+			Format(Buffer, 512, "[LAC] %N - CHEAT_AIMBOT", client);
+		}
+		case CHEAT_ANTI_DUCK_DELAY: {
+			Format(Buffer, 512, "[LAC] %N - CHEAT_ANTI_DUCK_DELAY", client);
+		}
+		case CHEAT_NOISEMAKER_SPAM: {
+			Format(Buffer, 512, "[LAC] %N - CHEAT_NOISEMAKER_SPAM", client);
+		}
+		case CHEAT_MACRO: {
+			Format(Buffer, 512, "[LAC] %N - CHEAT_MACRO", client);
+		}
+		case CHEAT_NEWLINE_NAME: {
+			Format(Buffer, 512, "[LAC] %N - CHEAT_NEWLINE_NAME", client);
+		}
+		default:{
+			Format(Buffer, 512, "[LAC] %N - CHEAT TYPE: %i", client, cheat);
 		}
 	}
 
@@ -780,7 +811,7 @@ public Action:LogPlayerCountTimer(Handle:timer)
 
 public IsValidClient(client)
 {
-	if (client > 0 && client <= GetMaxClients())
+	if (client > 0 && client <= MaxClients)
 		return true;
 	else
 		return false;
