@@ -174,6 +174,7 @@ int Native_AddToChatLog2(Handle plugin, int numParams){
     char srvid[64];
     GetConVarString(sm_chatlogex_id, srvid, sizeof(srvid));
     char text[512];
+    GetNativeString(1, text, sizeof(text));
     logSomeTextYo2("", "", text, -1, srvid, -1);
     return 0;
 }
