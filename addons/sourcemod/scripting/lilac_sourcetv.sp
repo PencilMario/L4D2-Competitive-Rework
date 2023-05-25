@@ -297,7 +297,7 @@ void update_recording_list(int client, bool status)
 		stv_recording = true;
 
 		if (icvar[CVAR_LOG]) {
-			Format(line, sizeof(line), "Recording SourceTV demo \"%s\". - %N", stv_demo_name, client);
+			Format(line, sizeof(line), "Recording SourceTV demo \"%s\". <= %N", stv_demo_name, client);
 			AddToChatLog("LAC SourceTV", "DETECTED_DEMO", line, 1, 0);
 			log_line(0);
 		}
