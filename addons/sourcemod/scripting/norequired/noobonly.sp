@@ -29,7 +29,7 @@ public Plugin myinfo = {
 #define L4D2_TEAM_SURVIVOR 2
 #define L4D2_TEAM_INFECTED 3
 
-float PlayRt[MAXPLAYERS + 1];
+float PlayRt[MAXPLAYERS + 1] = {-1.0};
 enum struct PlayerInfo {
     int id;
     float rating;
@@ -68,6 +68,8 @@ void InitTranslations()
 public void OnPluginStart() {
     InitTranslations();
     HookEvent("player_team", PlayerTeam_Event, EventHookMode_Post);
+    HookEvent("player_connect", Event_PlayerConnect, EventHookMode_Pre);
+    HookEvent("player_disconnect", Event_PlayerDisconnect, EventHookMode_Pre);
 }
 
 
@@ -76,15 +78,19 @@ public void GetVoteDisplayMessage(int iClient, char[] sDisplayMsg) {
     Format(sDisplayMsg, DISPLAY_MSG_SIZE, "%T", "VOTE_DISPLAY_MSG", iClient);
 }
 
-public void OnClientConnected(int client){
+public void Event_PlayerConnect(Event event, const char[] name, bool dontBroadcast){
+    int client = GetClientOfUserId(GetEventInt(event, "userid"));
     if(IsFakeClient(client)) return;
     PlayRt[client] = CalculatePlayerRating(GetPlayerStats(client));
     PrintToConsoleAll("%N - %f", client, PlayRt[client]);
 }
-
+public void Event_PlayerDisconnect(Event event, const char[] name, bool dontBroadcast){
+    int client = GetClientOfUserId(GetEventInt(event, "userid"));
+    PlayRt[client] = -1.0;
+}
 public void PlayerTeam_Event(Event event, const char[] name, bool dontBroadcast)
 {
-
+    
     int client = GetClientOfUserId(GetEventInt(event, "userid"));
     if (!IsClientInGame(client) || IsFakeClient(client))
         return;
@@ -92,7 +98,8 @@ public void PlayerTeam_Event(Event event, const char[] name, bool dontBroadcast)
     int team = GetEventInt(event, "team");
     if (team == L4D2_TEAM_SPECTATOR)
         return;
-
+    if (PlayRt[client] == -1.0) PlayRt[client] = CalculatePlayerRating(GetPlayerStats(client));
+    PrintToConsoleAll("%N - %f(conn_event)", client, PlayRt[client]);
     if (PlayRt[client] > 800){
         CPrintToChat(client, "[{green}!{default}] 你已经超出萌新水平了，你可以观战下饭或者找更合适你的服务器({olive}%.2f{default} > 800)", PlayRt[client]);
     }/*else{
