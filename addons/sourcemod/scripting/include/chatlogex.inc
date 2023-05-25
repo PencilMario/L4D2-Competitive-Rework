@@ -35,6 +35,28 @@
 #endif
 #define _chatlogex_included
 
+enum ChatType
+{
+    // 玩家击杀信息
+    CHATTYPE_KILL = -2,
+    // 进入/离开消息通知类 地图修改/名称修改类
+    CHATTYPE_EVENT = -1,
+    // 存活客户端
+    CHATTYPE_ALIVEALL = 0,
+    CHATTYPE_ALIVETEAM = 2,
+    // 死亡的客户端 (旁观者为死亡状态)
+    CHATTYPE_DEATHALL = 1,
+    CHATTYPE_DEATHTEAM = 3 
+};
+
+enum ChatTeam
+{
+    CHATTEAM_ANNOUNCE = -1,
+    CHATTEAM_SPEC = 1,
+    CHATTEAM_SURVIVOR = 2,
+    CHATTEAM_INFECTED = 3
+};
+
 /**
  * 向Chatlog database中添加一条消息
  * 
@@ -42,7 +64,7 @@
  * @param clientAuthID 发送者的steamid
  * @param text 发送的文本
  * @param team 发送者所属队伍
- * @param type 发送的消息类型 -2/-1/0/1/2/3，建议为0
+ * @param type 发送的消息类型 
  * 
  * @return 0
  * 
@@ -57,7 +79,7 @@ native int AddToChatLog(char[] clientname, char[] clientAuthID, char[] text,
  * 
  * @return 0
  */
-native bool AddToChatLog2(char[] text);
+native int AddToChatLog2(char[] text);
 
 public SharedPlugin __pl_chatlogex =
 {
