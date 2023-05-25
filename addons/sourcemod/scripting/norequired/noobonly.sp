@@ -46,7 +46,6 @@ enum struct PlayerStats {
     int killByPump;
 }
 
-
 /**
  * Loads dictionary files. On failure, stops the plugin execution.
  */
@@ -72,7 +71,13 @@ public void OnPluginStart() {
     HookEvent("player_disconnect", Event_PlayerDisconnect, EventHookMode_Pre);
 }
 
-
+public void CheckAllPlayer(){
+    for (int i = 1; i<MaxClients; i++){
+        if(IsFakeClient(i)) continue;
+        if(!IsClientInGame(i)) continue;
+        if(PlayRt[i] > 800 && GetClientTeam(i) != L4D2_TEAM_SPECTATOR) MovePlayerToTeam(i, L4D2_TEAM_SPECTATOR);
+    }
+}
 
 public void GetVoteDisplayMessage(int iClient, char[] sDisplayMsg) {
     Format(sDisplayMsg, DISPLAY_MSG_SIZE, "%T", "VOTE_DISPLAY_MSG", iClient);
@@ -81,7 +86,7 @@ public void GetVoteDisplayMessage(int iClient, char[] sDisplayMsg) {
 public void Event_PlayerConnect(Event event, const char[] name, bool dontBroadcast){
     int client = GetClientOfUserId(GetEventInt(event, "userid"));
     if(IsFakeClient(client)) return;
-    PlayRt[client] = CalculatePlayerRating(GetPlayerStats(client));
+    CalculatePlayerRating(GetPlayerStats(client), client);
     PrintToConsoleAll("%N - %f", client, PlayRt[client]);
 }
 public void Event_PlayerDisconnect(Event event, const char[] name, bool dontBroadcast){
@@ -98,13 +103,9 @@ public void PlayerTeam_Event(Event event, const char[] name, bool dontBroadcast)
     int team = GetEventInt(event, "team");
     if (team == L4D2_TEAM_SPECTATOR)
         return;
-    if (PlayRt[client] == -1.0) PlayRt[client] = CalculatePlayerRating(GetPlayerStats(client));
+    if (PlayRt[client] == -1.0) CalculatePlayerRating(GetPlayerStats(client), client);
     PrintToConsoleAll("%N - %f(conn_event)", client, PlayRt[client]);
-    if (PlayRt[client] > 800){
-        CPrintToChat(client, "[{green}!{default}] 你已经超出萌新水平了，你可以观战下饭或者找更合适你的服务器({olive}%.2f{default} > 800)", PlayRt[client]);
-    }/*else{
-        CPrintToChat(client, "[{green}!{default}] 本服为萌新ONLY服，享受互啄~(%.2f)", PlayRt[client])
-    }*/
+    if(PlayRt[client] > 800) MovePlayerToTeam(client, L4D2_TEAM_SPECTATOR);
 }
 
 public void SteamWorks_OnValidateClient(int iOwnerAuthId, int iAuthId)
@@ -150,7 +151,7 @@ public void MovePlayerToTeam(int client, int team)
 }
 
 
-float CalculatePlayerRating(PlayerStats tPlayerStats)
+float CalculatePlayerRating(PlayerStats tPlayerStats, int client)
 {
     float fPlayedHours = SecToHours(tPlayerStats.playedTime);
 
@@ -166,10 +167,11 @@ float CalculatePlayerRating(PlayerStats tPlayerStats)
     if(iVersusGame >= 700) {
         fWinRounds = float(tPlayerStats.gamesWon) / float(iVersusGame);
     }
-
-    return fWinRounds * (0.55 * fPlayedHours + fRockPerHours + float(iKillTotal) * 0.005);
+    float res = fWinRounds * (0.55 * fPlayedHours + fRockPerHours + float(iKillTotal) * 0.005);
+    PlayRt[client] = res;
+    PrintToConsoleAll("Cal - %N - %f", client, res);
+    return res;
 }
-
 
 
 float SecToHours(int iSeconds) {
