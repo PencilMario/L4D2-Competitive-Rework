@@ -42,7 +42,7 @@
  * @param clientAuthID 发送者的steamid
  * @param text 发送的文本
  * @param team 发送者所属队伍
- * @param type 发送的消息类型 -1/0/1/2/3，建议为0
+ * @param type 发送的消息类型 -2/-1/0/1/2/3，建议为0
  * 
  * @return 0
  * 

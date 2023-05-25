@@ -2,6 +2,7 @@
 #include <sdktools>
 #include <colors>
 #include <sourcebanspp>
+#include <chatlogex>
 // We only care about these detections,
 // 	since they don't cause instant bans.
 #define CHEAT_AIMBOT 	5
@@ -297,6 +298,7 @@ void update_recording_list(int client, bool status)
 
 		if (icvar[CVAR_LOG]) {
 			Format(line, sizeof(line), "Recording SourceTV demo \"%s\".", stv_demo_name);
+			AddToChatLog("LAC SourceTV", "DETECTED_DEMO", line, 1, 0);
 			log_line(0);
 		}
 	}
