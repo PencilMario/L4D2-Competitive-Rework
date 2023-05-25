@@ -18,11 +18,6 @@
 #define CVAR_RATE 	3
 #define CVAR_MAX 	4
 
-#define SPECMODE_NONE 				0
-#define SPECMODE_FIRSTPERSON 		4
-#define SPECMODE_3RDPERSON 			5
-#define SPECMODE_FREELOOK	 		6
-
 Handle cvar[CVAR_MAX];
 int icvar[CVAR_MAX];
 
@@ -282,18 +277,6 @@ void update_recording_list(int client, bool status)
 			"%Y_%m_%d__%H_%M_%S.dem", GetTime());
 
 		ServerCommand("tv_record %s", stv_demo_name);
-
-		int stv = get_sourcetv_bot();
-		int iSpecMode = GetEntProp(stv, Prop_Send, "m_iObserverMode");
-		
-		// The client isn't spectating any one person, so ignore them.
-		if (iSpecMode != SPECMODE_FIRSTPERSON)
-			SetEntProp(stv, Prop_Send, "m_iObserverMode", SPECMODE_FIRSTPERSON);
-
-		int iTarget = GetEntPropEnt(stv, Prop_Send, "m_hObserverTarget");
-		if (iTarget != client)
-			SetEntProp(stv, Prop_Send, "m_hObserverTarget", client);
-
 		stv_recording = true;
 
 		if (icvar[CVAR_LOG]) {
