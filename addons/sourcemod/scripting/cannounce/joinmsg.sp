@@ -128,7 +128,7 @@ OnPostAdminCheck_JoinMsg(const String:steamId[])
 			Format(output, sizeof(output), "%c\"%c%s%c\"", 4, 1, message, 4);
 
 			PrintFormattedMessageToAll(output, -1);
-			AddToChatLog2(output);
+			
 		}
 		
 		//Custom join SOUND

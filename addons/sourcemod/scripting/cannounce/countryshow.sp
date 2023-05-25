@@ -73,7 +73,7 @@ OnPostAdminCheck_CountryShow(client)
 		{
 			PrintFormattedMessageToAll( rawmsg, client );
 		}
-		
+		AddToChatLog2(rawmsg);
 	}	
 }
 
@@ -139,7 +139,7 @@ public Action:event_PlayerDisc_CountryShow(Handle:event, const String:name[], bo
 				ReplaceString(rawmsg, sizeof(rawmsg), "\n", " ");
 			}
 		}
-		
+		AddToChatLog2(rawmsg);
 		//if sm_ca_showenhancedadmins - show diff messages to admins
 		if( GetConVarInt(g_CvarShowEnhancedToAdmins) )
 		{
@@ -150,7 +150,7 @@ public Action:event_PlayerDisc_CountryShow(Handle:event, const String:name[], bo
 		{
 			PrintFormattedMessageToAll( rawmsg, client );
 		}
-		AddToChatLog2(rawmsg);
+		
 		KvRewind(hKVCountryShow);
 	}
 }
