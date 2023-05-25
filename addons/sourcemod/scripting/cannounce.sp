@@ -282,7 +282,7 @@ PrintFormattedMessageToAdmins( String:rawmsg[301], client )
 	
 	GetFormattedMessage( rawmsg, client, message, sizeof(message) );
 	
-	for (new i = 1; i <= GetMaxClients(); i++)
+	for (new i = 1; i <= MaxClients; i++)
 	{
 		if( IsClientInGame(i) && CheckCommandAccess( i, "", ADMFLAG_GENERIC, true ) )
 		{
@@ -297,7 +297,7 @@ PrintFormattedMsgToNonAdmins( String:rawmsg[301], client )
 	
 	GetFormattedMessage( rawmsg, client, message, sizeof(message) );
 	
-	for (new i = 1; i <= GetMaxClients(); i++)
+	for (new i = 1; i <= MaxClients; i++)
 	{
 		if( IsClientInGame(i) && !CheckCommandAccess( i, "", ADMFLAG_GENERIC, true ) )
 		{
@@ -311,9 +311,9 @@ GetFormattedMessage( String:rawmsg[301], client, String:outbuffer[], outbuffersi
 {
 	decl String:buffer[256];
 	decl String:ip[16];
-	decl String:city[46];
-	decl String:region[46];
-	decl String:country[46];
+	decl String:city[45];
+	decl String:region[45];
+	decl String:country[45];
 	decl String:ccode[3];
 	decl String:ccode3[4];
 	decl String:sPlayerAdmin[32];

@@ -11,6 +11,7 @@ new Handle:g_CvarShowEnhancedToAdmins = INVALID_HANDLE;
 
 new Handle:hKVCountryShow = INVALID_HANDLE;
 
+#include <chatlogex>
 
 /*****************************************************************
 
@@ -72,6 +73,7 @@ OnPostAdminCheck_CountryShow(client)
 		{
 			PrintFormattedMessageToAll( rawmsg, client );
 		}
+		
 	}	
 }
 
@@ -148,7 +150,7 @@ public Action:event_PlayerDisc_CountryShow(Handle:event, const String:name[], bo
 		{
 			PrintFormattedMessageToAll( rawmsg, client );
 		}
-		
+		AddToChatLog2(rawmsg);
 		KvRewind(hKVCountryShow);
 	}
 }

@@ -61,19 +61,19 @@ native bool AddToChatLog2(const char[] text);
 
 public SharedPlugin __pl_chatlogex =
 {
-	name = "chatlogex",
-	file = "chatlogex.smx",
+    name = "chatlogex",
+    file = "chatlogex.smx",
 #if defined REQUIRE_PLUGIN
-	required = 1,
+    required = 1,
 #else
-	required = 0,
+    required = 0,
 #endif
 };
 
 #if !defined REQUIRE_PLUGIN
 public void __pl_chatlogex_SetNTVOptional()
 {
-	MarkNativeAsOptional("AddToChatLog");
+    MarkNativeAsOptional("AddToChatLog");
     MarkNativeAsOptional("AddToChatLog2");
 }
 #endif

@@ -595,6 +595,7 @@ public Action C_Event_MapStart(Event event, const char[] name, bool dontBroadcas
 
 	MuCo_LoopClients(i)
 		C_SkipList[i] = false;
+	return Plugin_Continue;
 }
 
 /**
