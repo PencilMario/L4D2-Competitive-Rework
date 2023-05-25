@@ -154,40 +154,40 @@ public Action lilac_cheater_detected(int client, int cheat)
 	char Buffer[512];
 	switch (cheat) {
 	    case CHEAT_ANGLES: {
-	        Format(Buffer, 512, "[LAC] %N 检测到角度作弊", client);
+	        Format(Buffer, 512, "[LAC] %N - CHEAT_ANGLES", client);
 	    }
 	    case CHEAT_AIMLOCK: {
-	        Format(Buffer, 512, "[LAC] %N 检测到暴力自瞄", client);
+	        Format(Buffer, 512, "[LAC] %N - CHEAT_AIMLOCK", client);
 	    }
 	    case CHEAT_CHATCLEAR: {
-	        Format(Buffer, 512, "[LAC] %N 检测到刷屏", client);
+	        Format(Buffer, 512, "[LAC] %N - CHEAT_CHATCLEAR", client);
 	    }
 	    case CHEAT_CONVAR: {
-	        Format(Buffer, 512, "[LAC] %N 检测到作弊指令", client);
+	        Format(Buffer, 512, "[LAC] %N - CHEAT_CONVAR", client);
 	    }
 	    case CHEAT_NOLERP: {
-	        Format(Buffer, 512, "[LAC] %N 检测到利用lerp值", client);
+	        Format(Buffer, 512, "[LAC] %N - CHEAT_NOLERP", client);
 	    }
 	    case CHEAT_BHOP: {
-	        Format(Buffer, 512, "[LAC] %N 检测到连跳", client);
+	        Format(Buffer, 512, "[LAC] %N - CHEAT_BHOP", client);
 	    }
 	    case CHEAT_AIMBOT: {
-	        Format(Buffer, 512, "[LAC] %N 检测到微自瞄", client);
+	        Format(Buffer, 512, "[LAC] %N - CHEAT_AIMBOT", client);
 	    }
 	    case CHEAT_ANTI_DUCK_DELAY: {
-	        Format(Buffer, 512, "[LAC] %N 检测到下蹲辅助", client);
+	        Format(Buffer, 512, "[LAC] %N - CHEAT_ANTI_DUCK_DELAY", client);
 	    }
 	    case CHEAT_NOISEMAKER_SPAM: {
-	        Format(Buffer, 512, "[LAC] %N 检测到麦克风噪音干扰", client);
+	        Format(Buffer, 512, "[LAC] %N - CHEAT_NOISEMAKER_SPAM", client);
 	    }
 	    case CHEAT_MACRO: {
-	        Format(Buffer, 512, "[LAC] %N 检测到麦克风噪音干扰", client);
+	        Format(Buffer, 512, "[LAC] %N - CHEAT_MACRO", client);
 	    }
 	    case CHEAT_NEWLINE_NAME: {
-	        Format(Buffer, 512, "[LAC] %N 检测到名称非法字符", client);
+	        Format(Buffer, 512, "[LAC] %N - CHEAT_NEWLINE_NAME", client);
 	    }
 	    default:{
-	        Format(Buffer, 512, "[LAC] %N 检测到作弊type: %i", client, cheat);
+	        Format(Buffer, 512, "[LAC] %N - CHEAT TYPE: %i", client, cheat);
 		}
 	}
 
