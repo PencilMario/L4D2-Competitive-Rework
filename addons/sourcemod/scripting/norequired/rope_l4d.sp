@@ -610,7 +610,7 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
 				g_hurt_time[client]=engine_time;
 			}
 			
-			if(hurt_target && IsInfectedTeam(target))
+			if(hurt_target)
 			{
 				float dmgper = 1.0;
 				if (GetClientTeam(target) == L4D2Team_Survivor){

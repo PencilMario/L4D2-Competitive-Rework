@@ -103,7 +103,7 @@
     }
     "21"
     {
-        "chat"      "{green}除了手动!rec Bot在检测到自瞄时也会开始录制 "
+        "chat"      "{green}如果服务器掉帧卡顿，可以使用{default}!votemenu{green}投票修改demo录制帧率，可以有效缓解"
     }
     "22"
     {
