@@ -435,7 +435,8 @@ void LostControl(int client)
 }
 
 public void PreThink(int client)
-{
+{	
+	if(!IsClient(client)) LostControl(client);
 	if(IsClientInGame(client) && IsPlayerAlive(client))
 	{
 		float time=GetEngineTime();
