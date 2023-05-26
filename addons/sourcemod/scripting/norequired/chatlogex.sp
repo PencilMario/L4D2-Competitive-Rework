@@ -136,10 +136,10 @@ public OnPluginStart()
         LogError("Failed to hook player_info!");
     }
     
-    if (!HookEventEx("player_death", Event_PlayerDeath, EventHookMode_Pre))
+    /*if (!HookEventEx("player_death", Event_PlayerDeath, EventHookMode_Pre))
     {
         LogError("Failed to hook player_info!");
-    }
+    }*/
     
     SetCurrentGameMode();
     
