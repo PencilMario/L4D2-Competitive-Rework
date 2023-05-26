@@ -17,7 +17,7 @@ do
     if [ -d "$dir" ]
     then
         # 移动目录中的所有.dem文件到目标目录
-        find "$dir" -type f -name "*.dem" -exec mv {} "$destination" \;
+        find "$dir" -type f -name "*.dem" -mmin +30 -exec mv {} "$destination" \;
         echo "已移动 $dir 中的所有 .dem 文件到 $destination"
     else
         echo "目录 $dir 不存在"
