@@ -389,7 +389,7 @@ public Action:LogOnMapStart(Handle:timer)
     SetCurrentGameMode();
 
     if(StrEqual(m_mode, ""))
-        Format(text, sizeof(text), "地图开始 (%s)", mapname);
+        Format(text, sizeof(text), "=====地图开始 (%s)=====", mapname);
     else
     {
         if(StrEqual(m_mode, "coop"))
@@ -397,10 +397,10 @@ public Action:LogOnMapStart(Handle:timer)
             decl String:difficulty[16];
             GetConVarString(z_difficulty, difficulty, sizeof(difficulty));
     
-            Format(text, sizeof(text), "地图开始 (%s:%c%s:%s)", m_mode, CharToLower(difficulty[0]), difficulty[1], mapname);
+            Format(text, sizeof(text), "=====地图开始 (%s:%c%s:%s)=====", m_mode, CharToLower(difficulty[0]), difficulty[1], mapname);
         }
         else
-            Format(text, sizeof(text), "地图开始 (%s:%s)", m_mode, mapname);
+            Format(text, sizeof(text), "=====地图开始 (%s:%s)=====", m_mode, mapname);
     }
 
     logSomeTextYo2("", "", text, -1, srvid, -1);
@@ -444,7 +444,7 @@ public OnMapEnd()
     GetCurrentMap(mapname, sizeof(mapname));
 
     if(StrEqual(m_mode, ""))
-        Format(text, sizeof(text), "地图结束 (%s)", mapname);
+        Format(text, sizeof(text), "=====地图结束 (%s)=====", mapname);
     else
     {
         if(StrEqual(m_mode, "coop"))
@@ -452,10 +452,10 @@ public OnMapEnd()
             decl String:difficulty[16];
             GetConVarString(z_difficulty, difficulty, sizeof(difficulty));
     
-            Format(text, sizeof(text), "地图结束 (%s:%c%s:%s)", m_mode, CharToLower(difficulty[0]), difficulty[1], mapname);
+            Format(text, sizeof(text), "=====地图结束 (%s:%c%s:%s)=====", m_mode, CharToLower(difficulty[0]), difficulty[1], mapname);
         }
         else
-            Format(text, sizeof(text), "地图结束 (%s:%s)", m_mode, mapname);
+            Format(text, sizeof(text), "=====地图结束 (%s:%s)=====", m_mode, mapname);
     }
 
     logSomeTextYo2("", "", text, -1, srvid, -1);
