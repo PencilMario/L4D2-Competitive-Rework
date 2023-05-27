@@ -27,7 +27,7 @@
     }
     "3"
     {
-        "chat"      "{green}如果你怀疑有人开挂，可以用以下指令：\n{default}!report 提交举报\n{green}当举报提交后，服务端将自动录制demo"
+        "chat"      "{green}开摆!"
     }
     "4"
     {

@@ -27,7 +27,7 @@
     }
     "3"
     {
-        "chat"      "{green}如果你怀疑有人开挂，可以用以下指令：\n{default}!report 提交举报\n{green}当举报提交后，服务端将自动录制demo。如果有透视嫌疑，请尽量在目标玩生还时进行举报，你总不能举报特感开透视吧。"
+        "chat"      "{green}demo bot因为太吃性能取消了，以后看到挂建议4个report，看到我就处理"
     }
     "4"
     {
@@ -99,11 +99,11 @@
     }
     "20"
     {
-        "chat"      "{green}旁观的{default}[LAC]Recorder{green}是服务器录制demo的bot，本身不占匹配位置，踢了就不能录demo了"
+        "chat"      "{green}开摆！"
     }
     "21"
     {
-        "chat"      "{green}除了手动!rec Bot在检测到自瞄时/举报时也会开始录制 "
+        "chat"      "{green}NB服Q群558382058，每月有高达200多的红包局"
     }
     "22"
     {
@@ -132,14 +132,6 @@
     "28"
     {
         "chat"      "{green}再谢谢珠宝姐vivo的两个服务器，宝门"
-    }
-    "29"
-    {
-        "chat"      "{green}服务端demo可以在 {default}http://sp2.0721play.icu/L4D2相关/服务端demo {green}查看"
-    }
-    "30"
-    {
-        "chat"      "{green}如果服务器掉帧卡顿，可以使用{default}!votemenu{green}投票修改demo录制帧率，可以有效缓解"
     }
 }
 
