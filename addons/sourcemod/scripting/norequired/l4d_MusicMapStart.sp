@@ -73,6 +73,7 @@
 #include <sourcemod>
 #include <sdktools>
 #include <clientprefs>
+#include <readyup>
 
 public Plugin myinfo =
 {
@@ -119,6 +120,7 @@ ConVar g_hCvarShowMenu;
 ConVar g_hCvarUseNewly;
 ConVar g_hCvarDisplayName;
 ConVar g_hCvarPlayRoundStart;
+ConVar g_hMusicPath;
 
 bool g_bEnabled;
 
@@ -135,6 +137,7 @@ public void OnPluginStart()
 	g_hCvarUseNewly = CreateConVar(			"l4d_music_mapstart_use_firstconnect_list",	"0",			"Use separate music list for newly connected players? (1 - Yes, 0 - No)", CVAR_FLAGS );
 	g_hCvarDisplayName = CreateConVar(		"l4d_music_mapstart_display_in_chat",		"1",			"Display music name in chat? (1 - Yes, 0 - No)", CVAR_FLAGS );
 	g_hCvarPlayRoundStart = CreateConVar(	"l4d_music_mapstart_play_roundstart",		"1",			"Play music on round start as well? (1 - Yes, 0 - No, mean play on new map start only)", CVAR_FLAGS );
+	g_hMusicPath =  CreateConVar(			"l4d_music_mapstart_play_path",				"data/music_mapstart.txt",	"Play music list path", CVAR_FLAGS );
 	
 	AutoExecConfig(true,			"l4d_music_mapstart");
 	
@@ -153,9 +156,18 @@ public void OnPluginStart()
 	g_hCookieMusic = RegClientCookie("music_mapstart_cookie", "", CookieAccess_Protected);
 	
 	HookConVarChange(g_hCvarEnable,				ConVarChanged);
+	HookConVarChange(g_hMusicPath,				ConVarChangedPath);
 	GetCvars();
 	
 	SetRandomSeed(GetTime());
+}
+
+public void OnRoundIsLive(){
+	for (int i = 1; i <= MaxClients; i++){
+		if (IsClientInGame(i)){
+			StopCurrentSound(i);
+		}
+	}
 }
 
 public void OnPluginEnd()
@@ -209,6 +221,11 @@ public Action Cmd_Music(int client, int args)
 public void ConVarChanged(ConVar convar, const char[] oldValue, const char[] newValue)
 {
 	InitHook();
+}
+public void ConVarChangedPath(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+	BuildPath(Path_SM, g_sListPath, sizeof(g_sListPath), newValue);
+	BuildPath(Path_SM, g_sListPathNewly, sizeof(g_sListPathNewly), "data/music_mapstart_newly.txt");
 }
 
 void GetCvars()
