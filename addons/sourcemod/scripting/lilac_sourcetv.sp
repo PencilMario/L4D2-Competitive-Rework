@@ -81,11 +81,22 @@ public Action CMD_ManuallyRecord(int iClient, int iArgs)
 }
 
 
-
+public Action CMD_Fps(int iArgs)
+{
+	if(iArgs != 1) 
+	{
+		PrintToServer("使用方式: sm_tvfps <fps>");
+		return Plugin_Handled;
+	}
+	int fps = GetCmdArgInt(1);
+	FakeClientCommand(get_sourcetv_bot(), "fps_max %i", fps);
+	PrintToServer("已重新调整source tv帧率为 %i", fps);
+	return Plugin_Handled;
+}
 public void OnPluginStart()
 {
 	RegConsoleCmd("sm_rec", CMD_ManuallyRecord, "手动录制demo");
-
+	RegServerCmd("sm_tvfps", CMD_Fps, "使用方式: sm_tvfps <fps>");
 	Handle tcvar;
 
 	cvar[CVAR_ENABLE] = CreateConVar("lilac_stv_enable", "1",
