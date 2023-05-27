@@ -10,26 +10,23 @@
 {
     "Congratulation1"
 	{
-		"en"		"Dear friends!"
+		"en"		"Hello, my friend! Wishing you the best of luck in your endeavors!"
 		"ru"		"Дорогие друзья!"
 		"chi" 		"嗨bro!祝你这把稳赢!!!"
 	}
 	"Congratulation2"
 	{
-		"en"		"Happy Winter!!!"
-		"ru"		"Счастливой зимушки!!!"
-		"chi" 		"我能力有限, 所以对局开始时请自行停止音乐:("
+		"en"		"I hope you will find satisfaction in this game."
+		"chi" 		"希望你能满足于这场游戏喵~"
 	}
 	"Congratulation3"
 	{
 		"en"		"Watch out of deer :D"
-		"ru"		"Остерегайтесь оленей :D"
 		"chi"		"如果想禁用开局音乐, 可以在设置里关闭(重载配置失效)"
 	}
 	"StopMusic"
 	{
 		"en"		"Stop music"
-		"ru"		"Остановить музыку"
 		"chi"  		"停止音乐"
 	}
 	"PlayAgain"
