@@ -24,6 +24,10 @@
 	{
 		"hostname"		"[N&B.Zonemod]萌新喵喵屋"
 	}
+	"11721"
+	{
+		"hostname"		"[N&B.Zonemod]测测顶针的马"
+	}
 	"20721"
 	{
 		"hostname"		"[N&B.Zonemod]萌新不喵呜"
