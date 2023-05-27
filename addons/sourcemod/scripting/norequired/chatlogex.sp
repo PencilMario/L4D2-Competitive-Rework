@@ -31,7 +31,7 @@
 #pragma semicolon 1
 
 #include <sourcemod>
-
+#include <colors>
 public Plugin:myinfo = 
 {
     name = "ChatLogEx",
@@ -224,6 +224,14 @@ public Action lilac_cheater_detected(int client, int cheat)
     }
 
     logSomeTextYo2("Little Anti Cheat", "DETECTED", Buffer, 1, srvid, 0);
+
+    if (GetClientTeam(client) == 2)
+    {
+        CPrintToChatAll("[{green}!{default}] 检测到作弊嫌疑");
+        CPrintToChatAll(Buffer);
+        CPrintToChatAll("{olive}如果你只是偶尔看见此消息，那么不必在意，如果你看到两次以上，那就自行决策吧");
+    }
+
     return Plugin_Continue;
 }
 
