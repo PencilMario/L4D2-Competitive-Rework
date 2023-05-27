@@ -434,9 +434,18 @@ void LostControl(int client)
 	SDKUnhook(client, SDKHook_SetTransmit, OnSetTransmitClient);
 }
 
+stock bool IsClientAndInGame(int index)
+{
+	return (index > 0 && index <= MaxClients && IsClientInGame(index));
+}
+
+
 public void PreThink(int client)
 {	
-	if(!IsClient(client)) LostControl(client);
+	if(!IsClientAndInGame(client)) {
+		LostControl(client); 
+		return;
+	}
 	if(IsClientInGame(client) && IsPlayerAlive(client))
 	{
 		float time=GetEngineTime();
@@ -1409,11 +1418,14 @@ void DoPointHurtForInfected(int victim, int attacker = 0)
 		if(victim>0 && IsValidEdict(victim))
 		{
 			float dmg;
-			if (GetClientTeam(victim)==L4D2Team_Survivor){
-				dmg = l4d2_helicopter_gun_damage.FloatValue/2.0;
-			}else{
-				dmg = l4d2_helicopter_gun_damage.FloatValue;
+			if (IsClientAndInGame(victim)){
+				if (GetClientTeam(victim)==L4D2Team_Survivor){
+					dmg = l4d2_helicopter_gun_damage.FloatValue/2.0;
+				}else{
+					dmg = l4d2_helicopter_gun_damage.FloatValue;
+				}
 			}
+			else dmg = 10.0
 			Format(sTargetName, 20, "target%d", victim);
 			DispatchKeyValue(victim,"targetname", sTargetName);
 			DispatchKeyValue(g_PointHurt, "DamageTarget", sTargetName);
