@@ -48,6 +48,10 @@
 	{
 		"hostname"		"[N&B.Zonemod]想了解一切"
 	}
+	"42300"
+	{
+		"hostname"		"[N&B.Zonemod]我去，喵都！"
+	}
 	"53333"
 	{
 		"hostname"		"[N&B.Zonemod]萌新汪汪屋#1"
