@@ -320,8 +320,8 @@ static void lilac_detected_aimbot(int client, float delta, float td, int flags)
 	if (lilac_forward_allow_cheat_detection(client, CHEAT_AIMBOT) == false)
 		return;
 
-	/* Detection expires in 10 minutes. */
-	CreateTimer(600.0, timer_decrement_aimbot, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+	/* Detection expires in 30 minutes. */
+	CreateTimer(1800.0, timer_decrement_aimbot, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 
 	lilac_forward_client_cheat(client, CHEAT_AIMBOT);
 
