@@ -226,6 +226,7 @@ public void ConVarChangedPath(ConVar convar, const char[] oldValue, const char[]
 {
 	BuildPath(Path_SM, g_sListPath, sizeof(g_sListPath), newValue);
 	BuildPath(Path_SM, g_sListPathNewly, sizeof(g_sListPathNewly), "data/music_mapstart_newly.txt");
+	UpdateList();
 }
 
 void GetCvars()
