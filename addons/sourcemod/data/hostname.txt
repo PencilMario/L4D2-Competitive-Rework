@@ -34,11 +34,11 @@
 	}
 	"30006"
 	{
-		"hostname"		"[N&B.Zonemod]Ciallo～(∠・ω< )⌒☆|T1"
+		"hostname"		"[N&B.Zonemod]Ciallo～(∠・ω< )⌒☆|T1-"
 	}	
 	"30007"
 	{
-		"hostname"		"[N&B.Zonemod]巧克力批发市场|T1"
+		"hostname"		"[N&B.Zonemod]巧克力批发市场|T1-"
 	}
 	"30100"
 	{
@@ -50,7 +50,7 @@
 	}
 	"42300"
 	{
-		"hostname"		"[N&B.Zonemod]我去，喵都！|T1.5?"
+		"hostname"		"[N&B.Zonemod]我去，喵都！|T1"
 	}
 	"53333"
 	{
