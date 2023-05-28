@@ -17,10 +17,12 @@ do
     if [ -d "$dir" ]
     then
         # 压缩目录中的所有 .dem 文件为 zip 文件
-        find "$dir" -type f -name "*.dem" -mmin +30 -exec zip -j {}.zip {} \;
+        find "$dir" -type f -name "*.dem" -mmin +30 -exec zip -9 -j {}.zip {} \;
         
-        # 移动压缩后的文件到目标目录，并删除原始的 .dem 文件
-        find "$dir" -type f -name "*.dem" -mmin +30 -exec sh -c 'mv "$1.zip" "$destination" && rm "$1"' sh {} \;
+        find "$dir" -type f -name "*.dem.zip" -mmin +30 -exec mv {} "$destination" \;
+
+        find "$dir" -type f -name "*.dem" -mmin +30 -exec rm -f {} \;
+
 
         echo "已移动 $dir 中的所有 .dem 文件到 $destination"
     else
