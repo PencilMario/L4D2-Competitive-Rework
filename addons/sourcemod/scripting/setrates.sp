@@ -5,7 +5,7 @@ int iTickrate;
 ConVar fps_override;
 public OnPluginStart() {
 	iTickrate = GetCommandLineParamInt("-tickrate", 30);
-	fps_override = CreateConVar("sm_fps_override", 0, "fps最大值");
+	fps_override = CreateConVar("sm_fps_override", "0", "fps最大值");
 	//SetRates();
 }
 
