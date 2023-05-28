@@ -19,7 +19,7 @@ public Plugin myinfo =
 	name = "MixTeam",
 	author = "TouchMe",
 	description = "Adds an API for mix in versus mode",
-	version = "build_0001",
+	version = "build_0002",
 	url = "https://github.com/TouchMe-Inc/l4d2_mix_team"
 };
 
@@ -112,8 +112,7 @@ methodmap MixList < ArrayList
 
 	public int AbortDelay(int index)
 	{
-		MixData tMixData;
-		this.GetArray(index, tMixData);
+		MixData tMixData; this.GetArray(index, tMixData);
 
 		return tMixData.abortDelay;
 	}
@@ -196,7 +195,9 @@ public void OnLibraryAdded(const char[] sName)
   */
 public void OnRoundIsLive() 
 {
-	if (IsMix()) {
+	if (IsMix()) 
+	{
+		CPrintToChatAll("%t", "LEFT_READYUP");
 		AbortMix();
 	}
 }
@@ -397,23 +398,20 @@ void InitTranslations()
  */
 public void OnPluginStart()
 {
+	g_hMixList = new MixList();
+
 	InitTranslations();
 	InitCvars();
 	InitEvents();
 	InitCmds();
 	InitForwards();
-
-	g_hMixList = new MixList();
 }
 
 /**
  * Called when the plugin is about to be unloaded.
  */
-public void OnPluginEnd()
-{
-	if (g_hMixList != null) {
-		delete g_hMixList;
-	}
+public void OnPluginEnd() {
+	delete g_hMixList;
 }
 
 /**
@@ -865,7 +863,9 @@ public int HandlerVote(NativeVote hVote, MenuAction iAction, int iParam1, int iP
 
 		case MenuAction_VoteEnd:
 		{
-			if (iParam1 == NATIVEVOTES_VOTE_NO) {
+			if (iParam1 == NATIVEVOTES_VOTE_NO || g_iState != STATE_VOTING
+			|| (!g_bReadyUpAvailable && g_bRoundIsLive)
+			|| (g_bReadyUpAvailable && !IsInReady())) {
 				hVote.DisplayFail(NativeVotesFail_Loses);
 			}
 
@@ -951,10 +951,6 @@ void FinishMix()
  */
 void AbortMix()
 {
-	if (g_iState == STATE_VOTING) {
-		NativeVotes_Cancel();
-	}
-
 	RollbackPlayers();
 
 	char sType[MIX_TYPE_SIZE];
