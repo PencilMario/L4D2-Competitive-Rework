@@ -10,7 +10,7 @@
 	}
 	"1603"
 	{
-		"hostname"		"[N&B.Zonemod]Chikko#3"
+		"hostname"		"[N&B.Zonemod]Chikko#3|30Tick"
 	}
 	"1604"
 	{
