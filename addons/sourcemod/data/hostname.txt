@@ -30,7 +30,7 @@
 	}
 	"20721"
 	{
-		"hostname"		"[N&B.Zonemod]萌新不喵呜"
+		"hostname"		"[N&B.Zonemod]萌新不喵呜|60Tick"
 	}
 	"30006"
 	{
