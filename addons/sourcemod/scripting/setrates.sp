@@ -2,9 +2,10 @@
 #include <sourcemod>
 
 int iTickrate;
-
+ConVar fps_override;
 public OnPluginStart() {
 	iTickrate = GetCommandLineParamInt("-tickrate", 30);
+	fps_override = CreateConVar("sm_fps_override", 0, "fps最大值")
 	//SetRates();
 }
 
@@ -25,7 +26,7 @@ SetRates() {
 	SetConVarInt(FindConVar("sv_maxcmdrate"), iTickrate, true, false);
 	SetConVarInt(FindConVar("net_splitpacket_maxrate"), (iTickrate * 1000) / 2, true, false);
 	if (iTickrate > 30) {
-		SetConVarInt(FindConVar("fps_max"), 0, false, false);
+		SetConVarInt(FindConVar("fps_max"), fps_override.IntValue, false, false);
 		SetConVarInt(FindConVar("sv_gravity"), 750, true, false);
 	}
 }
