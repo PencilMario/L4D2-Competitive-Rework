@@ -2,19 +2,19 @@
 {	
 	"1601"
 	{
-		"hostname"		"[N&B.Zonemod]Chikko#1|T1"
+		"hostname"		"Chikko#1"
 	}
 	"1602"
 	{
-		"hostname"		"[N&B.Zonemod]Chikko#2|T1"
+		"hostname"		"Chikko#2"
 	}
 	"1603"
 	{
-		"hostname"		"[N&B.Zonemod]Chikko#3|30Tick|T4"
+		"hostname"		"Chikko#3|30Tick"
 	}
 	"1604"
 	{
-		"hostname"		"[N&B.Zonemod]Chikko#4"
+		"hostname"		"Chikko#4"
 	}
 	"27015"
 	{
@@ -22,43 +22,43 @@
 	}
 	"10721"
 	{
-		"hostname"		"[N&B.Zonemod]萌新喵喵屋|T1"
+		"hostname"		"萌新喵喵屋"
 	}
 	"11721"
 	{
-		"hostname"		"[N&B.Zonemod]测测顶针的马"
+		"hostname"		"测测顶针的马"
 	}
 	"20721"
 	{
-		"hostname"		"[N&B.Zonemod]萌新不喵呜|60Tick|T3"
+		"hostname"		"萌新不喵呜|60Tick"
 	}
 	"30006"
 	{
-		"hostname"		"[N&B.Zonemod]Ciallo～(∠・ω< )⌒☆|T1-"
+		"hostname"		"Ciallo～(∠・ω< )⌒☆"
 	}	
 	"30007"
 	{
-		"hostname"		"[N&B.Zonemod]巧克力批发市场|T1-"
+		"hostname"		"巧克力批发市场"
 	}
 	"30100"
 	{
-		"hostname"		"[N&B.Zonemod]旧病复发也|T1"
+		"hostname"		"旧病复发也"
 	}	
 	"30201"
 	{
-		"hostname"		"[N&B.Zonemod]想了解一切|T1"
+		"hostname"		"想了解一切"
 	}
 	"42300"
 	{
-		"hostname"		"[N&B.Zonemod]我去，喵都！|T1"
+		"hostname"		"我去，喵都！"
 	}
 	"53333"
 	{
-		"hostname"		"[N&B.Zonemod]萌新汪汪屋#1|T2"
+		"hostname"		"萌新汪汪屋#1"
 	}
 	"56666"
 	{
-		"hostname"		"[N&B.Zonemod]萌新汪汪屋#2|T2"
+		"hostname"		"萌新汪汪屋#2"
 	}
 	"58888"
 	{

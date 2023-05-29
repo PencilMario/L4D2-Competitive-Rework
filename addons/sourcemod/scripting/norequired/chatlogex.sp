@@ -717,7 +717,7 @@ public logSomeTextYo2(String:name[], String:authid[], const String:text[], teamn
 
     SQL_EscapeString(hdatabase, text, textesc, sizeof(textesc));
     SQL_EscapeString(hdatabase, name, nameesc, sizeof(nameesc));
-
+  
     Format(query, sizeof(query), "INSERT INTO chatlogs (name, steamid, text, team, srvid, type) VALUES ('%s', '%s', '%s', %i, '%s', %i)", nameesc, authid, textesc, teamnum, srvid, chattype);
 
     SendQuery(query);
