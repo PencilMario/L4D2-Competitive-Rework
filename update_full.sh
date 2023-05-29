@@ -24,7 +24,9 @@ for dir in "${directories[@]}"; do
         rm -rf "$dir/models/player/custom_player/"*
         rm -rf "$dir/sound/kodua/fortnite_emotes/"*
         # 剩下三个cfg应该不会被删除
-        rm -rf "$dir/cfg/cfgogl/"*
+        find "$dir/cfg/cfgogl/" \
+            ! -path "$dir/cfg/cfgogl/promod" \
+            -type f -delete  
         rm -rf "$dir/cfg/mixmap/"*
         rm -rf "$dir/cfg/sourcemod/"*
         rm -rf "$dir/cfg/stripper/"*
