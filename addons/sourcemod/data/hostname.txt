@@ -12,10 +12,6 @@
 	{
 		"hostname"		"Chikko#3|30Tick"
 	}
-	"1604"
-	{
-		"hostname"		"Chikko#4"
-	}
 	"27015"
 	{
 		"hostname"		"funny"
@@ -24,25 +20,17 @@
 	{
 		"hostname"		"萌新喵喵屋"
 	}
-	"11721"
-	{
-		"hostname"		"测测顶针的马"
-	}
 	"20721"
 	{
 		"hostname"		"萌新不喵呜|60Tick"
 	}
-	"30006"
-	{
-		"hostname"		"Ciallo～(∠・ω< )⌒☆"
-	}	
-	"30007"
-	{
-		"hostname"		"巧克力批发市场"
-	}
 	"26100"
 	{
 		"hostname"		"阴阳人烂屁眼"
+	}	
+	"26210"
+	{
+		"hostname"		"笑嘻喽"
 	}	
 	"30100"
 	{
