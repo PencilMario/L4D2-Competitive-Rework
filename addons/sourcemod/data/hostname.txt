@@ -44,13 +44,21 @@
 	{
 		"hostname"		"我去，喵都！"
 	}
+	"42000"
+	{
+		"hostname"		"[N&B.Zonemod]我去，狗服！#1"
+	}
+	"42001"
+	{
+		"hostname"		"[N&B.Zonemod]我去，狗服！#2"
+	}
 	"53333"
 	{
-		"hostname"		"萌新汪汪屋#1"
+		"hostname"		"[N&B.Zonemod]萌新汪汪屋#1"
 	}
 	"56666"
 	{
-		"hostname"		"萌新汪汪屋#2"
+		"hostname"		"[N&B.Zonemod]萌新汪汪屋#2"
 	}
 	"58888"
 	{
