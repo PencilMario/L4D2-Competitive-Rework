@@ -64,4 +64,16 @@
 	{
 		"hostname"		"狗窝"
 	}
+	"60100"
+	{
+		"hostname"		"[N&B.Zonemod]打不过睡大觉"
+	}
+	"60101"
+	{
+		"hostname"		"[N&B.Zonemod]啊？"
+	}
+	"60102"
+	{
+		"hostname"		"[N&B.Zonemod]家人们，谁懂啊"
+	}
 }
