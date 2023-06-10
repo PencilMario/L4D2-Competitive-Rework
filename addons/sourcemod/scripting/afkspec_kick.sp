@@ -39,7 +39,7 @@ public Action Timer_CheckTeams(Handle timer)
             int team = GetClientTeam(i);
             if (team == 1 && !IsFakeClient(i))
             {
-                CPrintToChat(i, "[{green}!{default}] 如果你在 %d 秒后不加入，你将会被踢出", KICK_DELAY);
+                CPrintToChat(i, "[{green}!{default}] 请及时进行补位，不然将会踢出");
                 CreateTimer(KICK_DELAY, Timer_KickSpectator, GetClientUserId(i), TIMER_FLAG_NO_MAPCHANGE);
             }
         }
@@ -47,10 +47,10 @@ public Action Timer_CheckTeams(Handle timer)
 
     return Plugin_Continue;
 }
-
 public Action Timer_KickSpectator(Handle timer, any userid)
 {
     int client = GetClientOfUserId(userid);
+    if (!IsClientInGame(client)) return Plugin_Stop;
     if (client != 0 && GetClientTeam(client) == 1)
     {
         KickClient(client, "你因为旁观占位被踢出.");
