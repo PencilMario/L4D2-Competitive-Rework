@@ -29,5 +29,9 @@
     {
         "chat"      "{green}jump!"
     }
+    "4"
+    {
+        "chat"      "{green}想弹恰饭的小**"
+    }
 }
 
