@@ -21,6 +21,11 @@ public Action Timer_CheckTeams(Handle timer)
         if (!IsClientInGame(i)) continue;
         
         int team = GetClientTeam(i);
+        if (IsFakeClient(i)){
+            // 死亡的生还bot应该被计算 去除存活的生还bot
+            if (!IsPlayerAlive(i) && GetClientTeam(i) == 2) {}
+            else continue;
+        }
         switch (team)
         {
             case 2:
