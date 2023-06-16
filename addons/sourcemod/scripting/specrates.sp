@@ -123,12 +123,11 @@ AdjustRates(client)
     {
         fLastAdjusted[client] = GetEngineTime();
 
-        new L4D2Team:team = L4D2Team:GetClientTeam(client);
-        if (IsPlayerAlive(client) && (team == L4D2Team_Survivor || team == L4D2Team_Infected) || (readyUpIsAvailable && IsClientCaster(client)))
+        if (IsPlayerAlive(client) || (readyUpIsAvailable && IsClientCaster(client)))
         {
             ResetRates(client);
         }
-        else if (team == L4D2Team_Spectator || !IsPlayerAlive(client))
+        else
         {
             SetSpectatorRates(client);
         }
