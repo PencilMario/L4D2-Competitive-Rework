@@ -8,7 +8,7 @@
 		}
 		"hyzonemod"
 		{
-			"name" "ZoneMod 2.8.3(混野)"
+			"name" "ZoneMod 2.8.4(混野)"
 		}
 		"zonemod"
 		{
