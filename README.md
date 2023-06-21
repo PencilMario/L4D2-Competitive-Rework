@@ -4,6 +4,9 @@
 本存储库保存了0721服务器所用到的所有插件（可能有部分源码位于[这里](https://github.com/PencilMario/L4d2_0721sv_plugins)）    
 另外，本存储库不包含`database.cfg`和`sourcebans.cfg`
 
+另外 如果碰到服务器换服崩溃的情况：https://blog.csdn.net/huazhang_001/article/details/128828999    
+多出现于启用了录制bot
+
 --------------------
 
 # **L4D2 Competitive Rework**
