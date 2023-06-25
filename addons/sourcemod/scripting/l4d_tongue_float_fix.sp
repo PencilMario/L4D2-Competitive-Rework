@@ -2,9 +2,8 @@
 #pragma newdecls required
 
 #include <sourcemod>
-#include <dhooks>
 
-#define PLUGIN_VERSION "1.1"
+#define PLUGIN_VERSION "2.0"
 
 public Plugin myinfo =
 {
@@ -15,49 +14,50 @@ public Plugin myinfo =
 	url = "https://github.com/Target5150/MoYu_Server_Stupid_Plugins"
 };
 
-#define GAMEDATA_FILE "l4d_tongue_float_fix"
-
 public void OnPluginStart()
 {
-	Handle conf = LoadGameConfigFile(GAMEDATA_FILE);
-	if (!conf)
-		SetFailState("Missing gamedata \"" ... GAMEDATA_FILE ... "\"");
-	
-	Handle hDetour = DHookCreateFromConf(conf, "UpdateAirChoke");
-	if (!hDetour)
-		SetFailState("Missing detour setup \"UpdateAirChoke\"");
-	
-	if (!DHookEnableDetour(hDetour, false, OnUpdateAirChoke))
-		SetFailState("Failed to enable detour \"UpdateAirChoke\"");
-		
-	delete conf;
+	HookEvent("tongue_grab", Event_TongueGrab);
 }
 
-public MRESReturn OnUpdateAirChoke(int pThis)
+/**
+ * ```cpp
+ * void CTongue::UpdateAirChoke(CTongue *this)
+ * {
+ *   ...
+ *
+ *   if ( gpGlobals->curtime - m_tongueVictimLastOnGroundTime <= tongue_vertical_choke_time_off_ground.GetFloat() )
+ *   {
+ *     if ( ground height within cvar value )
+ *     {
+ *       pVictim->OnStopHangingFromTongue();
+ *       return;
+ *     }
+ *   }
+ *
+ *   if ( pVictim->IsHangingFromLedge() )
+ *   {
+ *     pVictim->OnStopHangingFromTongue();
+ *     return;
+ *   }
+ *
+ *   pVictim->OnStartHangingFromTongue();
+ *   ...
+ * }
+ * ```
+ */
+
+void Event_TongueGrab(Event event, const char[] name, bool dontBroadcast)
 {
-	int owner = GetEntPropEnt(pThis, Prop_Send, "m_owner");
-	if (owner == -1)
-		return MRES_Ignored;
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	if (!client || !IsClientInGame(client))
+		return;
 	
-	int victim = GetEntPropEnt(owner, Prop_Send, "m_tongueVictim");
-	if (victim == -1)
-		return MRES_Ignored;
+	int ability = GetEntPropEnt(client, Prop_Send, "m_customAbility");
+	if (!IsValidEdict(ability))
+		return;
 	
-	if (GetEntProp(victim, Prop_Send, "m_isHangingFromTongue"))
-		return MRES_Ignored;
+	if (!HasEntProp(ability, Prop_Send, "m_tongueVictimLastOnGroundTime"))
+		return;
 	
-	float fNow = GetGameTime();
-	float fElasped = fNow - GetEntPropFloat(pThis, Prop_Send, "m_tongueHitTimestamp");
-	
-	// choke generally doesn't happen in the first one second.
-	if (fElasped > 0.0 && fElasped <= 1.0)
-	{
-		// Update this value to avoid issues afterwards.
-		if (GetEntPropEnt(victim, Prop_Send, "m_hGroundEntity") != -1)
-			SetEntPropFloat(pThis, Prop_Send, "m_tongueVictimLastOnGroundTime", fNow);
-		
-		return MRES_Supercede;
-	}
-	
-	return MRES_Ignored;
+	SetEntPropFloat(ability, Prop_Send, "m_tongueVictimLastOnGroundTime", GetGameTime());
 }
