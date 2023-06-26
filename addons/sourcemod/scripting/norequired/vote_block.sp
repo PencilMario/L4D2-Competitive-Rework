@@ -174,7 +174,7 @@ public OnPluginStart()
 	g_hSpectatorVote		= CreateConVar("vb_spectatorvote",		"b",	"0 - Allow this type of vote, x - Only clients that match one or more of these flags can call this vote",						FCVAR_PLUGIN, true, 0.0, true, 0.0);
 	g_hKick					= CreateConVar("vb_kick",				"0",	"0 - Allow this type of vote, x - Only clients that match one or more of these flags can call this vote",						FCVAR_PLUGIN, true, 0.0, true, 0.0);
 	g_hReturnToLobby		= CreateConVar("vb_returntolobby",		"z",	"0 - Allow this type of vote, x - Only clients that match one or more of these flags can call this vote",						FCVAR_PLUGIN, true, 0.0, true, 0.0);
-	g_hChangeAlltalk		= CreateConVar("vb_changealltalk",		"b",	"0 - Allow this type of vote, x - Only clients that match one or more of these flags can call this vote",						FCVAR_PLUGIN, true, 0.0, true, 0.0);
+	g_hChangeAlltalk		= CreateConVar("vb_changealltalk",		"0",	"0 - Allow this type of vote, x - Only clients that match one or more of these flags can call this vote",						FCVAR_PLUGIN, true, 0.0, true, 0.0);
 	g_hRestartGame			= CreateConVar("vb_restartchapter",		"0",	"0 - Allow this type of vote, x - Only clients that match one or more of these flags can call this vote",						FCVAR_PLUGIN, true, 0.0, true, 0.0);
 	g_hChangeMission		= CreateConVar("vb_changemission",		"0",	"0 - Allow this type of vote, x - Only clients that match one or more of these flags can call this vote",						FCVAR_PLUGIN, true, 0.0, true, 0.0);
 	g_hChangeChapter		= CreateConVar("vb_changechapter",		"0",	"0 - Allow this type of vote, x - Only clients that match one or more of these flags can call this vote",						FCVAR_PLUGIN, true, 0.0, true, 0.0);
