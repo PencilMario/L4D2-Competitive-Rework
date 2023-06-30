@@ -9,7 +9,6 @@ public void OnPluginStart(){
 }
 
 public Action CMD_RunPortCfg(int args){
-    PrintToServer("读取服务器配置：serverport_%i.cfg", g_cPort.IntValue);
     ServerCommand("exec serverport_%i.cfg", g_cPort.IntValue);
     return Plugin_Handled;
 }
@@ -17,7 +16,7 @@ public Action CMD_RunPortCfg(int args){
 public Action CMD_AddAdmin(int args){
     if (args < 1)
     {
-        PrintToServer("用法: sm_addadmin <steamid>");
+        PrintToServer("用法: sm_addadmin \"<steamid>\"");
         return Plugin_Handled;
     }
 
