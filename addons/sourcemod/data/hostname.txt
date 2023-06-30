@@ -52,6 +52,10 @@
 	{
 		"hostname"		"[N&B.Zonemod]我去，狗服！#2"
 	}
+	"48200"
+	{
+		"hostname"		"[N&B.Zonemod]哇偶"
+	}
 	"53333"
 	{
 		"hostname"		"[N&B.Zonemod]萌新汪汪屋#1"
