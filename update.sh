@@ -29,6 +29,7 @@ for dir in "${directories[@]}"; do
         #rm -rf "$dir/cfg/mixmap/"*
         #rm -rf "$dir/cfg/sourcemod/"*
         #rm -rf "$dir/cfg/stripper/"*
+        rm -rf "$dir/cfg/spcontrol_server/"*
         
         \cp -r /home/steam/L4D2-Competitive-Rework/addons/sourcemod/configs/* "$dir/addons/sourcemod/configs/";
         \cp -r /home/steam/L4D2-Competitive-Rework/addons/sourcemod/data/* "$dir/addons/sourcemod/data/";

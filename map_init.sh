@@ -13,8 +13,8 @@ password="0578"
 
 sudo apt-get install davfs2 -y
 
-sudo apt-get update
-sudo apt install p7zip-full p7zip-rar
+sudo apt-get update -y
+sudo apt install p7zip-full p7zip-rar -y
 
 mkdir /mnt/webdav
 # Mount the WebDAV share
