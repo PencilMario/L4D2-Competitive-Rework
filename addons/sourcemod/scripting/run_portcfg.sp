@@ -9,7 +9,10 @@ public void OnPluginStart(){
 }
 
 public Action CMD_RunPortCfg(int args){
+    PrintToServer("exec serverport_%i.cfg", g_cPort.IntValue);
     ServerCommand("exec serverport_%i.cfg", g_cPort.IntValue);
+    PrintToServer("exec spcontrol_server/serverport_%i.cfg", g_cPort.IntValue);
+    ServerCommand("exec spcontrol_server/serverport_%i.cfg", g_cPort.IntValue);
     return Plugin_Handled;
 }
 
