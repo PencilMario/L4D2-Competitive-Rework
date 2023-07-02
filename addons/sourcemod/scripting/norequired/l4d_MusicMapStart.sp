@@ -409,6 +409,7 @@ void ResetTimer()
 
 public Action Timer_PlayMusic(Handle timer, int UserId)
 {
+	if (!IsInReady()) return Plugin_Stop;
 	int client = GetClientOfUserId(UserId);
 	g_hTimerMusic[client] = INVALID_HANDLE;
 	
