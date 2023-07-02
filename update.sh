@@ -6,7 +6,7 @@ bash /home/steam/L4D2-Competitive-Rework/map_init.sh
 
 echo "Get Plugin updates";
 cd /home/steam/L4D2-Competitive-Rework/;
-git reset --hard
+git reset --hard;
 git pull --rebase;
 git status;
 
