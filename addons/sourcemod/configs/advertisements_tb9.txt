@@ -1,0 +1,114 @@
+// Advertisements 2.1
+// by Tsunami
+//
+// Types
+// -----
+// center: Center message
+// chat: Chat message
+// hint: Hint message
+// menu: Menu message
+// top: Top message
+//
+// Flags (optional)
+// -----
+// Accepts flags of admins that will not see the advertisement.
+// When omitted everyone will see the advertisement.
+// When left empty only admins will see the advertisement.
+
+"Advertisements"
+{
+    "1"
+    {
+        "chat"		"{green}欢迎光临冷气开放的服务器,一起玩我们就是好盆友。:D"
+    }
+    "2"
+    {
+        "chat"		"{green}小熊的求生之路QQ群号558382058,欢迎各位萌新大佬加入。"
+    }
+    "3"
+    {
+        "chat"      "{green}本群每天都会组织各种红包赛,福利满满哦~"
+    }
+    "4"
+    {
+        "chat"      "{green}"
+    }
+    "5"
+    {
+        "chat"      "{green}本服插件提供感谢狗狗教主，Sir.P。"
+    }
+    "6"
+    {
+        "chat"      "{green}旁观占位不上？快用!kickspecs，恩怨我替你打"
+    }
+    "7"
+    {
+        "chat"      "{green}"
+    }
+    "8"
+    {
+        "chat"      "{green}内战禁止压力队友 出现骂人,人身攻击的情况可及时通知汪汪教主"
+    }
+    "9"
+    {
+        "chat"      "{green}准备阶段你看到的怪东西开始后就没了"
+    }
+    "10"
+    {
+        "chat"      "{green}"
+    }
+    "11"
+    {
+        "chat"      "!rmatch/!match{green}能换配置，看谁不爽直接切1v1恩怨他，记着叫我来乐"
+    }
+    "12"
+    {
+        "chat"      "{green}有人混野炸鱼？快来群里喊人"
+    }
+    "13"
+    {
+        "chat"      "{green}有人抢萌新tank 我不说是谁"
+    }
+    "14"
+    {
+        "chat"      "{green}"
+    }
+    "15"
+    {
+        "chat"      "{green}本服偶尔会卡匹配，如果长时间进不来可以试试{default}!votemenu{green}关闭匹配"
+    }
+    "15"
+    {
+        "chat"      "{green}服务器每天凌晨3点半重启一次更新插件，不过真有人在本服玩到3点半吗..？"
+    }
+    "16"
+    {
+        "chat"      "{green}暖服半小时可以凭status找我要服务器vip玩 :)"
+    }
+    "17"
+    {
+        "chat"      "{green}能不能打完再退;_; 暖服不容易"
+    }
+    "18"
+    {
+        "chat"      "{green}本服有热更新，所以你偶尔也许能看到一些可能加在下个版本的东西，比如僵尸消失"
+    }
+    "19"
+    {
+        "chat"      "{green}"
+    }
+    "20"
+    {
+        "chat"      "{green}旁观的{default}[LAC]Recorder{green}是服务器录制demo的bot，本身不占匹配位置，踢了就不能录demo了"
+    }
+    "21"
+    {
+        "chat"      "{green}如果服务器掉帧卡顿，可以使用{default}!votemenu{green}投票修改demo录制帧率，可以有效缓解"
+    }
+    "22"
+    {
+        "chat"      "{green}玩的开心记得加一加服务器组 :D"
+    }
+}   
+         
+                
