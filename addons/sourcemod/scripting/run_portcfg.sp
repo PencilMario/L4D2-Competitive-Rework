@@ -6,6 +6,7 @@ public void OnPluginStart(){
     g_cPort = FindConVar("hostport");
     RegServerCmd("sm_execportcfg", CMD_RunPortCfg);
     RegServerCmd("sm_addadmin", CMD_AddAdmin);
+    CMD_RunPortCfg(0)
 }
 
 public Action CMD_RunPortCfg(int args){
