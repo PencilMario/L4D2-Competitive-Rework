@@ -8,6 +8,7 @@
 
 float fPreviousOrigin[MAXPLAYERS + 1][3];
 int g_iCurrentSuspect;
+int g_iClientSuspectTime[MAXPLAYERS + 1];
 #define MAX_SINGLE_FRAME_UNITS 400.0
 #define DEBUG 0
 
@@ -152,7 +153,14 @@ void BanPlayer()
     #if DEBUG
         PrintToChatAll("封禁%i", g_iCurrentSuspect);
     #endif
-    if (IsClientInGame(g_iCurrentSuspect))
-    SBPP_BanPlayer(0, g_iCurrentSuspect, 0, "[jk tele.]检测到传送特感");
+    if (IsClientInGame(g_iCurrentSuspect)){
+        if (g_iClientSuspectTime[g_iCurrentSuspect] >= 1)
+            SBPP_BanPlayer(0, g_iCurrentSuspect, 0, "[jk tele.]检测到传送特感");
+        else {
+            g_iClientSuspectTime[g_iCurrentSuspect]++;
+            PrintToChatAll("%N 因为触发了传送特感bug被处死", g_iCurrentSuspect);
+            PrintToChatAll("一般来说，这是极为偶然性的bug，但也有可能为外挂的可能性");
+        }
+    }
     g_iCurrentSuspect = 0;
 }
