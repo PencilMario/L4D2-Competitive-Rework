@@ -32,7 +32,11 @@ public void OnPluginStart() {
     HookEvent("bot_player_replace", Event_PlayerReplacedByBot);
     HookEvent("player_bot_replace", Event_BotReplacedByPlayer);
 }
-
+public void OnMapStart(){
+    for (int i = 1; i <= MaxClients; i++){
+        g_iClientSuspectTime[i] = 0;
+    }
+}
 public void Event_JockeyRide(Event hEvent, char[] name, bool dontBroadcast) {
 
     int client = GetClientOfUserId(hEvent.GetInt("victim"));
