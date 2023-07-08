@@ -2,7 +2,6 @@
 #include <sdkhooks>
 #include <sdktools>
 #include <sourcebanspp>
-#define LOGGER_NAME "jockey_teleport"
 #include <logger>
 // We will not be resetting this value anywhere for the simple reason that it is not relied upon outside of PreThink
 // -> PreThink itself also verifies that the player is currently jockeyed before teleporting them.
@@ -24,7 +23,7 @@ public Plugin myinfo =
 };
 
 public void OnPluginStart() {
-    log = new Logger(LoggerType_NewLogFile);
+    log = new Logger("jockey_teleport", LoggerType_NewLogFile);
     // The one to start it all
     // - Heavily relying on this one to start monitoring the player.
     // - If the victim is teleported prior to this event being fired or after the jockey is no longer considered as `m_jockeyAttacker`, the issue will still occur.
