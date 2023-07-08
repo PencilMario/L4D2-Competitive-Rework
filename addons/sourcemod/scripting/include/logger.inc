@@ -1,15 +1,33 @@
 /*
- * @Author: 夜羽真白
+ * @Author: 夜羽真白/Sir.P
  * @Date: 2023-05-23 00:03 周二
  * @Type: Left 4 Dead 2 Plugin
  * @Description: 日志记录对象
- * @URL: https://github.com/GlowingTree880/L4D2_LittlePlugins
+ * @URL: https://github.com/GlowingTree880/L4D2_LittlePlugins & https://github.com/PencilMario/L4D2-Not0721Here-CoopSvPlugins
  */
 
-#include <colors.inc>
+/**
+ * 使用方法与原版有一些区别：
+ * 在引用头文件前，需要define log的名称（决定了保存的log文件）（只限于LoggerType_NewLogFile）
+ * 在new Logger时，可以不传变量，也可以传入LoggerType
+ * 可在 https://github.com/PencilMario/L4D2-Not0721Here-CoopSvPlugins/blob/main/addons/sourcemod/scripting/logger_test.sp 查看示例
+ */
+
+#if defined _logger_included
+ #endinput
+#endif
+#define _logger_included
+
+#if !defined LOGGER_NAME
+ #define LOGGER_NAME "Logger"
+#endif
+
+
 
 enum LoggerType{
+    // 保存在log/L********.log，默认
     LoggerType_SourcemodLog = 0,
+    // 保存在log/[LOGGER_NAME].log
     LoggerType_NewLogFile,
     LoggerType_Size
 };
@@ -34,119 +52,98 @@ char LogTypeStr[LogType_Size][] = {
 methodmap Logger __nullable__
 {
 
-    public Logger(bool enable, LoggerType LogType = LoggerType_SourcemodLog, char[] logname = "")
+    public Logger(LoggerType LogObjectType = LoggerType_SourcemodLog)
     {
-        return view_as<Logger>(enable, LogType, logname);
+        return view_as<Logger>(LogObjectType);
     }
 
-    public void Init()
+    public void lograw(const char[] message, any ...)
     {
-        if (!this.enable) return;
-        if (this.LogType = LoggerType_NewLogFile) CreateNewLogFile();
-    }
-
-    void CreateNewLogFile(){
-        if (StrEqual(this.logname, "")) SetFailState("[Logger] 你必须要设置一个合法的log文件名");
-        BuildPath(Path_SM, "logs/%s.log", this.logname);
-        this.logFile = OpenFile("addons/sourcemod/data/buffer.txt", "at");
-        if (this.logFile == INVALID_HANDLE) SetFailState("[Logger] 无法创建log文件：%s");
-    }
-
-    property char[] logname;
-    property File logFile;
-    property bool LogType
-    {
-        public get() { return view_as<LoggerType>(this.LogType); }
-    }
-    property bool enable
-    {
-        public get() { return view_as<bool>(this.enable); }
-    }
-
-    // debug 级别输出，输出到所有客户端控制台
-    public void debugAll(const char[] message, any ...)
-    {
-        if (!this.enable) { return; }
         char buffer[512];
         VFormat(buffer, sizeof(buffer), message, 3);
-        PrintToConsoleAll(buffer);
+        if (this.LogObjectType == LoggerType_NewLogFile) this.WritetoLogFileRaw(message)
+        else LogMessage(buffer);
     }
-
-    // debug 级别输出，输出到指定用户控制台
-    public void debug(int client, const char[] message, any ...)
+    
+    public void debug(const char[] message, any ...)
     {
-        if (!this.enable) { return; }
-        if (client < 1 || client >= MaxClients || !IsClientInGame(client) || IsFakeClient(client)) { return; }
         char buffer[512];
-        VFormat(buffer, sizeof(buffer), message, 4);
-        PrintToConsole(client, buffer);
+        VFormat(buffer, sizeof(buffer), message, 3);
+        if (this.LogObjectType == LoggerType_NewLogFile) this.WritetoLogFile(LogType_Debug, message)
+        else LogMessage(buffer);
     }
 
-    // info 级别输出，输出到 LogMessage 文件中
     public void info(const char[] message, any ...)
     {
-        if (!this.enable) { return; }
         char buffer[512];
         VFormat(buffer, sizeof(buffer), message, 3);
-        LogMessage(buffer);
+        if (this.LogObjectType == LoggerType_NewLogFile) this.WritetoLogFile(LogType_Info, message)
+        else LogMessage(buffer);
     }
 
-    // info 级别输出，输出到指定用户控制台与 LogMessage 文件中
-    public void infoToClient(int client, const char[] message, any ...)
+    public void warning(const char[] message, any ...)
     {
-        if (!this.enable) { return; }
-        if (client < 1 || client >= MaxClients || !IsClientInGame(client) || IsFakeClient(client))
-        {
-            LogMessage("[Logger]: client %d is invalid", client);
-            return;
-        }
-        char buffer[512];
-        VFormat(buffer, sizeof(buffer), message, 4);
-        LogMessage(buffer);
-        PrintToConsole(client, buffer);
-    }
-
-    // message 级别输出，输出到服务器与所有用户控制台
-    public void messageAll(const char[] message, any ...)
-    {
-        if (!this.enable) { return; }
         char buffer[512];
         VFormat(buffer, sizeof(buffer), message, 3);
         PrintToServer(buffer);
-        CPrintToChatAll(buffer);
-    }
+        if (this.LogObjectType == LoggerType_NewLogFile) this.WritetoLogFile(LogType_Warning, message)
+        else LogError(buffer);
+    }  
 
-    // message 级别输出，输出到服务器与指定用户控制台
-    public void message(int client, const char[] message, any ...)
-    {
-        if (!this.enable) { return; }
-        if (client < 1 || client >= MaxClients || !IsClientInGame(client) || IsFakeClient(client))
-        {
-            PrintToServer("[Logger]: client: %d is invalid", client);
-            return;
-        }
-        char buffer[512];
-        VFormat(buffer, sizeof(buffer), message, 4);
-        PrintToServer(buffer);
-        CPrintToChat(client, buffer);
-    }
-
-    // server 级别输出，输出到服务器控制台
-    public void server(const char[] message, any ...)
-    {
-        if (!this.enable) { return; }
-        char buffer[512];
-        VFormat(buffer, sizeof(buffer), message, 3);
-        PrintToServer(buffer);
-    }
-
-    // error 级别输出，输出到服务器与 error 文件
     public void error(const char[] message, any ...)
     {
         char buffer[512];
         VFormat(buffer, sizeof(buffer), message, 3);
         PrintToServer(buffer);
-        LogError(buffer);
+        if (this.LogObjectType == LoggerType_NewLogFile) this.WritetoLogFile(LogType_Error, message)
+        else LogError(buffer);
+    }    
+
+    public void critical(const char[] message, any ...)
+    {
+        char buffer[512];
+        VFormat(buffer, sizeof(buffer), message, 3);
+        PrintToServer(buffer);
+        if (this.LogObjectType == LoggerType_NewLogFile) this.WritetoLogFile(LogType_Critical, message)
+        else LogError(buffer);
+    }
+    property LoggerType LogObjectType
+    {
+        public get() { return view_as<LoggerType>(this); }
+    }
+    
+    public void WritetoLogFile(LogType logtype, const char[] message, any ...)
+    {
+        char logpath[160];
+        //char buffer[512];
+        BuildPath(Path_SM, logpath, sizeof(logpath), "logs/%s.log", LOGGER_NAME);
+        Handle file = OpenFile(logpath, "at");
+
+        if (file == null) {
+            PrintToServer("[logger] 无法打开文件：%s", logpath);
+            LogError("[logger] 无法打开文件：%s", logpath);
+            return;
+        }
+
+        char time[64];
+        FormatTime(time, sizeof(time), "%Y-%m-%d %H:%M:%S", GetTime());
+        WriteFileLine(file, "[%s] [%s]: %s", time, LogTypeStr[logtype], message);
+        CloseHandle(file);
     }
 
+    public void WritetoLogFileRaw(const char[] message, any ...)
+    {
+        char logpath[160];
+        BuildPath(Path_SM, logpath, sizeof(logpath), "logs/%s.log", LOGGER_NAME);
+        Handle file = OpenFile(logpath, "at");
+
+        if (file == null) {
+            PrintToServer("[logger] 无法打开文件：%s", logpath);
+            LogError("[logger] 无法打开文件：%s", logpath);
+            return;
+        }
+
+        WriteFileLine(file, "%s", message);
+        CloseHandle(file);
+    }
 }
