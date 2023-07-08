@@ -2,10 +2,12 @@
 #include <sdkhooks>
 #include <sdktools>
 #include <sourcebanspp>
+#define LOGGER_NAME "jockey_teleport"
+#include <logger>
 // We will not be resetting this value anywhere for the simple reason that it is not relied upon outside of PreThink
 // -> PreThink itself also verifies that the player is currently jockeyed before teleporting them.
 // In the event that for some reason the `m_jockeyAttacker` netprop still returns true on map transitions/etc, Hooks unhook themselves by default on transitions.
-
+Logger log
 float fPreviousOrigin[MAXPLAYERS + 1][3];
 int g_iCurrentSuspect;
 int g_iClientSuspectTime[MAXPLAYERS + 1];
@@ -22,7 +24,7 @@ public Plugin myinfo =
 };
 
 public void OnPluginStart() {
-
+    log = new Logger(LoggerType_NewLogFile);
     // The one to start it all
     // - Heavily relying on this one to start monitoring the player.
     // - If the victim is teleported prior to this event being fired or after the jockey is no longer considered as `m_jockeyAttacker`, the issue will still occur.
@@ -103,7 +105,7 @@ void OnPreThink(int client) {
 
     // Teleporting
     if (GetVectorDistance(safeVector, preVector) > MAX_SINGLE_FRAME_UNITS) {
-
+        log.info("检测到传送 %N - to %f %f %f", client, preVector[0], preVector[1], preVector[2])
         #if DEBUG
             PrintToChatAll("检测到传送特感");
             PrintToChatAll("Prevented %N from being teleported to %f %f %f", client, preVector[0], preVector[1], preVector[2]);
@@ -158,8 +160,10 @@ void BanPlayer()
         PrintToChatAll("封禁%i", g_iCurrentSuspect);
     #endif
     if (IsClientInGame(g_iCurrentSuspect)){
-        if (g_iClientSuspectTime[g_iCurrentSuspect] >= 1)
+        if (g_iClientSuspectTime[g_iCurrentSuspect] >= 1){
             SBPP_BanPlayer(0, g_iCurrentSuspect, 0, "[jk tele.]检测到传送特感");
+            log.info("封禁 %N", g_iCurrentSuspect);
+        }
         else {
             g_iClientSuspectTime[g_iCurrentSuspect]++;
             PrintToChatAll("%N 因为触发了传送特感bug被处死", g_iCurrentSuspect);
