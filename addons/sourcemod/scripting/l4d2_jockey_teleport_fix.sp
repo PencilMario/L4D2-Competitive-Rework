@@ -133,7 +133,7 @@ void OnPreThink(int client) {
 public Action Timer_WaitClientUnPinned(Handle timer, int client)
 {
     // ?
-    if (!IsClientInGame(client)) {
+    if (!IsValidEntity(client)) {
         SDKUnhook(client, SDKHook_PreThink, OnPreThink);
         return Plugin_Stop;
     }
