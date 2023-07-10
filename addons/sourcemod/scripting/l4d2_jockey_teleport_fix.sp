@@ -32,6 +32,7 @@ public void OnPluginStart() {
     // Gotta keep those players/bots that join mid-ride in mind.
     HookEvent("bot_player_replace", Event_PlayerReplacedByBot);
     HookEvent("player_bot_replace", Event_BotReplacedByPlayer);
+    log.logfirst("一条测试log\n猴子传送还是有一定的误封率，如果发生这种情况，还请及时找我解封");
 }
 public void OnMapStart(){
     for (int i = 1; i <= MaxClients; i++){
