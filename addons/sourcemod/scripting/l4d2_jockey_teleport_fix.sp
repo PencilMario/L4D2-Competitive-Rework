@@ -132,6 +132,11 @@ void OnPreThink(int client) {
 
 public Action Timer_WaitClientUnPinned(Handle timer, int client)
 {
+    // ?
+    if (!IsClientInGame(client)) {
+        SDKUnhook(client, SDKHook_PreThink, OnPreThink);
+        return Plugin_Stop;
+    }
     if (IsJockeyVictim(client) || IsChargerVictim(client)) return Plugin_Continue;
     SDKUnhook(client, SDKHook_PreThink, OnPreThink);
     #if DEBUG
