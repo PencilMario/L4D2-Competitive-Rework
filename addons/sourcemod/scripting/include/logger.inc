@@ -74,21 +74,22 @@ methodmap Logger __nullable__
     public Logger(const char[] name, LoggerType logtype = LoggerType_SourcemodLog)
     {   
         Logger r;
-        bool created = false;
+        int created = -1;
         for (int i = 0; i < MAX_LOGGER; i++)
         {
             if (LoggerIndex[i] != Invaild_Logger){
                 r = view_as<Logger>(i);
                 LoggerIndex[i] = view_as<LogObject>(i);
-                created = true;
+                created = i;
                 break;
             }
         }
-        if (!created) SetFailState("[Logger] 该插件已经无法创建更多的Logger");
+        if (created == -1) SetFailState("[Logger] 该插件已经无法创建更多的Logger");
         r.LogObjectType = logtype;
         r.SetLogName(name);
         r.IgnoreLevel = LogType_Info;
         r.SetLogPrefix("");
+        LogMessage("[Logger] 创建了一个新logger：index: %i name: %s", created, name);
         return r;
     }
     /**
