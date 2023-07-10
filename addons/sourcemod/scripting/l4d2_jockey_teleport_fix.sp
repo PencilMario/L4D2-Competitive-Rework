@@ -95,7 +95,7 @@ void OnPreThink(int client) {
         SDKUnhook(client, SDKHook_PreThink, OnPreThink);
         return;
     }*/
-    CreateTimer(0.1, Timer_WaitClientUnPinned, client, TIMER_REPEAT);
+    CreateTimer(0.1, Timer_WaitClientUnPinned, client);
     float safeVector[3];
     safeVector = fPreviousOrigin[client];
 
