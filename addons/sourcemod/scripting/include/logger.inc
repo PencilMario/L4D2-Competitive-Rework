@@ -29,7 +29,7 @@
 enum LoggerType{
     // 保存在log/L********.log，默认
     LoggerType_SourcemodLog = 0,
-    // 保存在log/[LOGGER_NAME].log
+    // 保存在log/[LogObjectData[this.index].LogName].log
     LoggerType_NewLogFile,
 };
 
@@ -56,6 +56,7 @@ enum struct LogObjectData{
     LoggerType LogObjectType
     LogType Ignore_Level
     char LogName[MAX_LOGGERNAME_LENGTH]
+    char PreFix[32]
 }
 
 LogObject LoggerIndex[MAX_LOGGER];
@@ -73,34 +74,53 @@ methodmap Logger __nullable__
     public Logger(const char[] name, LoggerType logtype = LoggerType_SourcemodLog)
     {   
         Logger r;
+        bool created = false;
         for (int i = 0; i < MAX_LOGGER; i++)
         {
             if (LoggerIndex[i] != Invaild_Logger){
                 r = view_as<Logger>(i);
                 LoggerIndex[i] = view_as<LogObject>(i);
+                created = true;
                 break;
             }
         }
+        if (!created) SetFailState("[Logger] 该插件已经无法创建更多的Logger");
         r.LogObjectType = logtype;
         r.SetLogName(name);
         r.IgnoreLevel = LogType_Info;
+        r.SetLogPrefix("");
         return r;
     }
     /**
-     * 向log目标文件写入一行信息，在LoggerType_NewLogFile中，不会被格式化
+     * 向log目标文件写入一行信息
      * 
+     * @note LoggerType_NewLogFile类型不会被格式化
      * @param message 写入的信息
      */
     public void lograw(const char[] message, any ...)
     {
-        char buffer[512];
-        VFormat(buffer, sizeof(buffer), message, 3);
         if (this.LogObjectType == LoggerType_NewLogFile) this.WritetoLogFileRaw(message)
-        else LogMessage(buffer);
+        else LogMessage(message);
+    }
+
+    /**
+     * 如果log文件不存在，创建log并写入message
+     * 
+     * @note 只对LoggerType_NewLogFile有效
+     * @param message 写入的信息
+     */
+    public void logfirst(const char[] message, any ...)
+    {
+        char logpath[PLATFORM_MAX_PATH];
+        BuildPath(Path_SM, logpath, sizeof(logpath), "logs/%s.log", LoggerData[this.index].LogName);
+        if( FileExists(logpath) == true ) return;
+        if (this.LogObjectType == LoggerType_NewLogFile) this.lograw(message);
+        else this.warning("[Logger] LoggerType_SourcemodLog类型的Logger对象试图调用logfirst()");
     }
     /**
-     * 向log目标文件写入一条debug记录，在LoggerType_SourcemodLog中将不会包括log等级记录
-     * 
+     * 向log目标文件写入一条debug记录
+     *   
+     * @note LoggerType_SourcemodLog将不会包括log等级记录
      * @param message 写入的信息
      */
     public void debug(const char[] message, any ...)
@@ -112,8 +132,9 @@ methodmap Logger __nullable__
         else LogMessage(buffer);
     }
     /**
-     * 向log目标文件写入一条info记录，在LoggerType_SourcemodLog中将不会包括log等级记录
+     * 向log目标文件写入一条info记录
      * 
+     * @note LoggerType_SourcemodLog将不会包括log等级记录
      * @param message 写入的信息
      */
     public void info(const char[] message, any ...)
@@ -125,8 +146,9 @@ methodmap Logger __nullable__
         else LogMessage(buffer);
     }
     /**
-     * 向log目标文件写入一条warning记录并打印到服务器控制台，在LoggerType_SourcemodLog中将不会包括log等级记录
+     * 向log目标文件写入一条warning记录并打印到服务器控制台
      * 
+     * @note LoggerType_SourcemodLog将不会包括log等级记录
      * @param message 写入的信息
      */
     public void warning(const char[] message, any ...)
@@ -139,8 +161,9 @@ methodmap Logger __nullable__
         else LogError(buffer);
     }  
     /**
-     * 向log目标文件写入一条error记录并打印到服务器控制台，在LoggerType_SourcemodLog中将不会包括log等级记录
+     * 向log目标文件写入一条error记录并打印到服务器控制台
      * 
+     * @note LoggerType_SourcemodLog将不会包括log等级记录
      * @param message 写入的信息
      */
     public void error(const char[] message, any ...)
@@ -153,8 +176,9 @@ methodmap Logger __nullable__
         else LogError(buffer);
     }    
     /**
-     * 向log目标文件写入一条critical记录并打印到服务器控制台，在LoggerType_SourcemodLog中将不会包括log等级记录
+     * 向log目标文件写入一条critical记录并打印到服务器控制台
      * 
+     * @note LoggerType_SourcemodLog将不会包括log等级记录
      * @param message 写入的信息
      */
     public void critical(const char[] message, any ...)
@@ -168,13 +192,23 @@ methodmap Logger __nullable__
     }
 
     /**
-     * 设置当前logger的目标文件，只在LoggerType_NewLogFile有作用
+     * 设置当前logger的目标文件
      * 
+     * @note 只对LoggerType_NewLogFile有作用
      * @param name 文件名（不包括扩展名
      */
 
     public void SetLogName(const char[] name){
         Format(LoggerData[this.index].LogName, MAX_LOGGERNAME_LENGTH, "%s", name) 
+    }
+
+    /**
+     * 设置每次记录时的前缀
+     * 
+     * @param prefix 前缀
+     */
+    public void SetLogPrefix(const char[] prefix){
+        Format(LoggerData[this.index].PreFix, MAX_LOGGERNAME_LENGTH, "%s", prefix) 
     }
 
     // logger对象的数据索引
@@ -196,6 +230,8 @@ methodmap Logger __nullable__
         public set(LoggerType value) { LoggerData[this.index].LogObjectType = value;}
     }
     
+    
+
     public void WritetoLogFile(LogType logtype, const char[] message, any ...)
     {
         char logpath[PLATFORM_MAX_PATH];
@@ -211,7 +247,7 @@ methodmap Logger __nullable__
 
         char time[64];
         FormatTime(time, sizeof(time), "%Y-%m-%d %H:%M:%S", GetTime());
-        WriteFileLine(file, "[%s] [%s]: %s", time, LogTypeStr[logtype], message);
+        WriteFileLine(file, "[%s] [%s]: %s%s", time, LogTypeStr[logtype], LoggerData[this.index].PreFix, message);
         CloseHandle(file);
     }
 
