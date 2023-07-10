@@ -3,7 +3,7 @@
 	"1"
 	{
 		"type"	"S"
-		"text"	"{LIGHTGREEN}欢迎来到小珠宝滴Zonemod2.8-最大股东-梅子 
+		"text"	"{LIGHTGREEN}欢迎来到小珠寶滴Zonemod2.8-最大股东-梅子 
 		想成为OP? 快来加入吧 新Q群：493349527 每天组织内战车队，提升技术"
 
 	}
@@ -16,18 +16,18 @@
 	"3"
 	{
 		"type"	"S"
-		"text"	"{LIGHTGREEN}管理员进服调试东西观战，缺N人没M不要踢除，加入Steam组防止走失！"
+		"text"	"{LIGHTGREEN}管理员进服调试东西观战，无脑T管理永久联BAN(包括KS)，搜索[Chikko Zonemod]加入Steam组防止走失！"
 
 	}
 	"4"
 	{
 		"type"	"S"
-		"text"	"{LIGHTGREEN}本服OP：SirP,梅子,珠寶,更多权限加入服务器Steam组了解更多"
+		"text"	"{LIGHTGREEN}本服OP：SirP,梅子,珠寶,更多权限搜索[Chikko Zonemod]加入Steam组！"
 	}
 	"5"
 	{
 		"type"	"S"
-		"text"	"{LIGHTGREEN}希望能看到是高手认真得享受游戏，而不是一群爷新在那互骂，谁都是新手过来的，但玩游戏不带脑子不尊重队友这样的没人会喜欢"
+		"text"	"{LIGHTGREEN}希望能看到是高手认真得享受游戏，而不是一群爷新在那互骂，更多权限搜索[Chikko Zonemod]加入Steam组！"
 	}
 	"6"
 	{
@@ -43,13 +43,13 @@
 	"8"
 	{
 		"type"	"S"
-		"text"	"{LIGHTGREEN}对新人好一点，爷新除外，约赛举办活动或资金相关问题请联系珠宝-服务器接受长期赞助"
+		"text"	"{LIGHTGREEN}对新人好一点，爷新除外，约赛举办活动或资金相关问题请联系珠寶-服务器接受长期赞助"
 
 	}
                 "9"
 	{
 		"type"	"S"
-		"text"	"{LIGHTGREEN}OP服主内定，更多权限加入服务器Steam组和主页了解更多，服务器接受长期赞助，有意私聊服主小珠寶"
+		"text"	"{LIGHTGREEN}OP服主内定，更多权限更多权限搜索[Chikko Zonemod]加入Steam组！，服务器接受长期赞助，有意私聊服主小珠寶"
 
 	}
                 "10"
@@ -61,13 +61,13 @@
 	            "11"
 	{
 		"type"	"S"
-		"text"	"{LIGHTGREEN}禁100lerp，请更改至66lerp以下插件才能放行,此混野服务器接受长期赞助，有意私聊服主小珠宝"
+		"text"	"{LIGHTGREEN}禁100lerp，请更改至66lerp以下插件才能放行,此混野服务器接受长期赞助，有意私聊服主小珠寶"
 
 	}
 		            "12"
 	{
 		"type"	"S"
-		"text"	"{LIGHTGREEN}珠宝：老子要大佬教我玩克!qaq-不想玩tank可以让克给小珠宝教教经验，好感度+1+1+1..."
+		"text"	"{LIGHTGREEN}珠寶：老子要大佬教我玩克!qaq-不想玩tank可以让克给小珠寶教教经验，好感度+1+1+1..."
 	}
 			            "14"
 	{
@@ -77,6 +77,6 @@
 				            "15"
 	{
 		"type"	"S"
-		"text"	"{LIGHTGREEN}约赛举办活动资金问题请咨询梅子，服务器接受长期赞助，有意私聊服主小珠宝"
+		"text"	"{LIGHTGREEN}约赛举办活动资金有意私聊服主小珠寶，服务器接受长期赞助"
 	}
 }
