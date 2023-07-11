@@ -1,0 +1,41 @@
+// Advertisements 2.1
+// by Tsunami
+//
+// Types
+// -----
+// center: Center message
+// chat: Chat message
+// hint: Hint message
+// menu: Menu message
+// top: Top message
+//
+// Flags (optional)
+// -----
+// Accepts flags of admins that will not see the advertisement.
+// When omitted everyone will see the advertisement.
+// When left empty only admins will see the advertisement.
+
+"Advertisements"
+{
+    "1"
+    {
+        "chat"      "{green}群内不定时举办顶尖高手红包赛，萌新红包赛"
+    }
+    "2"
+    {
+        "chat"      "{green}欢迎老板赞助举办，随时联系管理开赛"
+    }
+    "3"
+    {
+        "chat"      "{green}严禁一切作弊，摆烂，py，发现永久踢群+取消报名资格"
+    }
+    "4"
+    {
+        "chat"      "{green}压力队友/喷人，需适当，请给萌新（群主）一个绿色成长环境，极其严重者踢群+取消参赛资格"
+    }
+    "5"
+    {
+        "chat"      "{green}服务器由珠寶提供，定制联系珠寶"
+    }
+}
+
