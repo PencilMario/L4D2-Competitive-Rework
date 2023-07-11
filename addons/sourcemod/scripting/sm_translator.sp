@@ -271,9 +271,25 @@ Handle CreateRequest(char[] input, char[] target, int client, int other = 0, boo
     Handle request = SteamWorks_CreateHTTPRequest(k_EHTTPMethodPOST, baiduapi);
     SteamWorks_SetHTTPRequestHeaderValue(request, "Content-Type", "application/json");
     SteamWorks_SetHTTPRequestHeaderValue(request, "Accept", "application/json");
-    if (StrEqual(target, "chi")) Format(target, 5, "zh");
-    if (StrEqual(target, "ch")) Format(target, 5, "zh");
-    if (StrEqual(target, "zho")) Format(target, 5, "cht");
+
+    if (StrEqual(target, "ar")) Format(target, 5, "ara");
+    else if (StrEqual(target, "bg")) Format(target, 5, "bul");
+    else if (StrEqual(target, "cze")) Format(target, 5, "cs");
+    else if (StrEqual(target, "da")) Format(target, 5, "dan");
+    else if (StrEqual(target, "fi")) Format(target, 5, "fin");
+    else if (StrEqual(target, "fr")) Format(target, 5, "fra");
+    else if (StrEqual(target, "ko")) Format(target, 5, "kor");
+    else if (StrEqual(target, "pl")) Format(target, 5, "pl");
+    else if (StrEqual(target, "pt_p")) Format(target, 5, "pt");
+    else if (StrEqual(target, "ro")) Format(target, 5, "rom");
+    else if (StrEqual(target, "chi")) Format(target, 5, "zh");
+    else if (StrEqual(target, "sk")) Format(target, 5, "slo");
+    else if (StrEqual(target, "es")) Format(target, 5, "spa");
+    else if (StrEqual(target, "sv")) Format(target, 5, "swe");
+    else if (StrEqual(target, "zho")) Format(target, 5, "cht");
+    else if (StrEqual(target, "ua")) Format(target, 5, "ukr");
+    else if (StrEqual(target, "vi")) Format(target, 5, "vie");
+
     JSONObject bodyjson = new JSONObject();
     bodyjson.SetString("from", "auto");
     bodyjson.SetString("to", target);
