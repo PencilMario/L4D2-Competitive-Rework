@@ -19,9 +19,11 @@
 #include <ripext>
 #include <SteamWorks>
 #include <colors>
-
+#include <logger>
 
 #define DATA "1.0"
+
+Logger log;
 
 public Plugin myinfo =
 {
@@ -42,6 +44,7 @@ char baiduapi[256] = "https://aip.baidubce.com/rpc/2.0/mt/texttrans/v1?access_to
 
 public void OnPluginStart()
 {
+    log = new Logger("sm_translator", LoggerType_NewLogFile);
     LoadTranslations("sm_translator.phrases.txt");
     
     CreateConVar("sm_translator_version", DATA, "SM Translator Version", FCVAR_SPONLY|FCVAR_NOTIFY);
@@ -136,6 +139,8 @@ public Action Command_SayTeam(int client, const char[] command, int args)
     
     GetCmdArg(1, commands, sizeof(commands));
     ReplaceString(commands, sizeof(commands), "!", "sm_", false);
+    ReplaceString(commands, sizeof(commands), "/", "sm_", false);
+
     
     if (CommandExists(commands))return Plugin_Continue;
     
@@ -191,6 +196,7 @@ public Action Command_Say(int client, const char[] command, int args)
     
     GetCmdArg(1, commands, sizeof(commands));
     ReplaceString(commands, sizeof(commands), "!", "sm_", false);
+    ReplaceString(commands, sizeof(commands), "/", "sm_", false);
     
     if (CommandExists(commands))return Plugin_Continue;
     
@@ -251,13 +257,13 @@ public int Callback_TokenGeted(Handle request, bool bFailure, bool bRequestSucce
     delete request;
     char[] t = new char[iBufferSize]; 
     JSONObject json;
-    PrintToConsoleAll("Translator: result - %s", result)
+    log.info("Translator: 获取token api 返回 - %s", result);
     json = JSONObject.FromString(result);
     json.GetString("access_token", t, iBufferSize);
-    PrintToConsoleAll("Translator: access_token - %s", t);
+    log.info("Translator: access_token - %s", t);
     Format(baiduapi, sizeof(baiduapi), "%s%s", baiduapi, t);
     delete json;
-    PrintToConsoleAll("Translator: API Authed: %s", baiduapi);
+    log.info("Translator: API Authed: %s", baiduapi);
     return 0;
 }
 Handle CreateRequest(char[] input, char[] target, int client, int other = 0, bool teammate_only = false)
@@ -268,14 +274,12 @@ Handle CreateRequest(char[] input, char[] target, int client, int other = 0, boo
     if (StrEqual(target, "chi")) Format(target, 5, "zh");
     if (StrEqual(target, "ch")) Format(target, 5, "zh");
     if (StrEqual(target, "zho")) Format(target, 5, "cht");
-    PrintToConsoleAll("Translator: Target Language: %s", target);
     JSONObject bodyjson = new JSONObject();
     bodyjson.SetString("from", "auto");
     bodyjson.SetString("to", target);
     bodyjson.SetString("q", input);
     char body[16536];
     bodyjson.ToString(body, 16536);
-    PrintToConsoleAll("Translator: Request Body: %s", body);
     SteamWorks_SetHTTPRequestRawPostBody(request, "application/json", body, 256);
     SteamWorks_SetHTTPRequestContextValue(request, GetClientUserId(client), other>0?GetClientUserId(other):0);
     if (!teammate_only){
@@ -304,10 +308,10 @@ public void Callback_OnHTTPResponse(Handle request, bool bFailure, bool bRequest
     char[] t = new char[iBufferSize]; 
     JSONObject json;
     json = JSONObject.FromString(result);
-    PrintToConsoleAll("Translator: API response: %s", result);
     if (json.HasKey("error_msg")){
         json.GetString("error_msg", t, iBufferSize);
         Format(result, iBufferSize, "Error: %s", t);
+        log.error("翻译异常：%s", t);
         delete json;
     }
     else if (json.HasKey("result"))
@@ -317,7 +321,6 @@ public void Callback_OnHTTPResponse(Handle request, bool bFailure, bool bRequest
         JSONObject t_json2 = view_as<JSONObject>(t_jsona.Get(0));
         t_json2.GetString("dst", t, iBufferSize);
         Format(result, iBufferSize, "%s", t);
-        PrintToConsoleAll("Translator: dst: %s", result);
         delete t_json;
         delete t_jsona;
         delete t_json2;
@@ -358,10 +361,10 @@ public void Callback_OnHTTPResponse_Teammate(Handle request, bool bFailure, bool
     char[] t = new char[iBufferSize]; 
     JSONObject json;
     json = JSONObject.FromString(result);
-    PrintToConsoleAll("Translator: API response: %s", result);
     if (json.HasKey("error_msg")){
         json.GetString("error_msg", t, iBufferSize);
         Format(result, iBufferSize, "Error: %s", t);
+        log.error("翻译异常：%s", t);
         delete json;
     }
     else if (json.HasKey("result"))
