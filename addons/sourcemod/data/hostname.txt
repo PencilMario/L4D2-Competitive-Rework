@@ -6,7 +6,7 @@
 	}
 	"1602"
 	{
-		"hostname"		"Chikko#2"
+		"hostname"		"小柒gg专属比赛服"
 	}
 	"1603"
 	{
