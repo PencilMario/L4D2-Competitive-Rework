@@ -3,3 +3,6 @@ rules:
   - base: master
     upstream: SirPlease:master    # change `wei` to the owner of upstream repo
     mergeMethod: merge
+  - base: x7
+    upstream: SirPlease:master    # change `wei` to the owner of upstream repo
+    mergeMethod: merge
