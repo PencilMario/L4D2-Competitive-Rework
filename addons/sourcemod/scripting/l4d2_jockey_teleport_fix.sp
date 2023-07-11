@@ -105,7 +105,9 @@ void OnPreThink(int client) {
 
     // Teleporting
     if (GetVectorDistance(safeVector, preVector) > MAX_SINGLE_FRAME_UNITS) {
-        log.info("检测到传送 %N - to %f %f %f", client, preVector[0], preVector[1], preVector[2])
+        char curmap[64];
+        GetCurrentMap(curmap, 64);
+        log.info("检测到传送 %N - to %f %f %f - 地图%s", client, preVector[0], preVector[1], preVector[2], curmap);
         #if DEBUG
             PrintToChatAll("检测到传送特感");
             PrintToChatAll("Prevented %N from being teleported to %f %f %f", client, preVector[0], preVector[1], preVector[2]);
