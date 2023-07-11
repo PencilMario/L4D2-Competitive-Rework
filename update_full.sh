@@ -18,6 +18,7 @@ for dir in "${directories[@]}"; do
             ! -path "$dir/addons/sourcemod/data/music_mapstart.txt" \
             -type f -delete        
         find $dir/addons/sourcemod/logs* -type f -mtime +14 -delete
+        find $dir/logs* -type f -mtime +14 -delete
         rm -rf "$dir/addons/metamod/"*
         rm -rf "$dir/addons/l4dtoolz/"*
         rm -rf "$dir/addons/stripper/"*
