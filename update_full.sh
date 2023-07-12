@@ -1,7 +1,10 @@
 #!/bin/bash
 
+# github存储库名称
+gitrep=L4D2-Competitive-Rework
+
 echo "Get Plugin updates";
-cd /home/steam/L4D2-Competitive-Rework/;
+cd /home/steam/$gitrep/;
 git reset --hard;
 git pull --rebase;
 git status;
@@ -38,7 +41,7 @@ for dir in "${directories[@]}"; do
         rm -f "$dir/l4dtoolz.vdf"
         rm -f "$dir/metamod.vdf"
 
-        \cp -rp /home/steam/L4D2-Competitive-Rework/* "$dir/";
+        \cp -rp /home/steam/$gitrep/* "$dir/";
         chmod 777 "$dir/"
 
         echo "Updated | $dir"
