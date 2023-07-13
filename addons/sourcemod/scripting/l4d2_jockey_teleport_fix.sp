@@ -107,10 +107,12 @@ void OnPreThink(int client) {
     if (GetVectorDistance(safeVector, preVector) > MAX_SINGLE_FRAME_UNITS) {
         char curmap[64];
         GetCurrentMap(curmap, 64);
-        log.info("检测到被传送： %N - 从 %f %f %f 至 %f %f %f - 地图%s - 传送者: %N", client, 
+        char stmid[64];
+        GetClientAuthId(g_iCurrentSuspect, AuthId_Steam2, stmid, sizeof(stmid));
+        log.info("检测到被传送： %N - 从 %f %f %f 至 %f %f %f - 地图%s - 传送者: %N[%s]", client, 
         safeVector[0], safeVector[1], safeVector[2],
         preVector[0], preVector[1], preVector[2], 
-        curmap, g_iCurrentSuspect);
+        curmap, g_iCurrentSuspect, stmid);
         #if DEBUG
             PrintToChatAll("检测到传送特感");
             PrintToChatAll("Prevented %N from being teleported to %f %f %f", client, preVector[0], preVector[1], preVector[2]);
