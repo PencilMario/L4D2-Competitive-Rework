@@ -45,6 +45,7 @@ char baiduapi[256] = "https://aip.baidubce.com/rpc/2.0/mt/texttrans/v1?access_to
 public void OnPluginStart()
 {
     log = new Logger("sm_translator", LoggerType_NewLogFile);
+    log.IgnoreLevel = LogType_Debug;
     LoadTranslations("sm_translator.phrases.txt");
     
     CreateConVar("sm_translator_version", DATA, "SM Translator Version", FCVAR_SPONLY|FCVAR_NOTIFY);
@@ -294,6 +295,7 @@ Handle CreateRequest(char[] input, char[] target, int client, int other = 0, boo
     bodyjson.SetString("from", "auto");
     bodyjson.SetString("to", target);
     bodyjson.SetString("q", input);
+    log.debug("目标: %s, 文本: \"%s\"", target, input);
     char body[16536];
     bodyjson.ToString(body, 16536);
     SteamWorks_SetHTTPRequestRawPostBody(request, "application/json", body, 256);
@@ -327,7 +329,7 @@ public void Callback_OnHTTPResponse(Handle request, bool bFailure, bool bRequest
     if (json.HasKey("error_msg")){
         json.GetString("error_msg", t, iBufferSize);
         Format(result, iBufferSize, "Error: %s", t);
-        log.error("翻译异常：%s", t);
+        log.error("翻译异常：%s | ", t);
         delete json;
     }
     else if (json.HasKey("result"))
