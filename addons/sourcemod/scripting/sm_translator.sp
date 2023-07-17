@@ -145,7 +145,7 @@ public Action Command_SayTeam(int client, const char[] command, int args)
     
     if (CommandExists(commands))return Plugin_Continue;
     
-    char temp[3];
+    char temp[6];
     
     // Foreign
     if(GetServerLanguage() != GetClientLanguage(client))
@@ -159,7 +159,7 @@ public Action Command_SayTeam(int client, const char[] command, int args)
         {
             if(IsClientInGame(i) && !IsFakeClient(i) && i != client && GetClientLanguage(client) != GetClientLanguage(i))
             {
-                GetLanguageInfo(GetClientLanguage(i), temp, 3); // get Foreign language
+                GetLanguageInfo(GetClientLanguage(i), temp, 6); // get Foreign language
                 Handle request2 = CreateRequest(buffer, temp, i, client, true); // Translate not Foreign msg to Foreign player
                 SteamWorks_SendHTTPRequest(request2);
             }
@@ -173,7 +173,7 @@ public Action Command_SayTeam(int client, const char[] command, int args)
             {
                 if (!g_translator[i])continue;
                 
-                GetLanguageInfo(GetClientLanguage(i), temp, 3); // get Foreign language
+                GetLanguageInfo(GetClientLanguage(i), temp, 6); // get Foreign language
                 Handle request = CreateRequest(buffer, temp, i, client, true); // Translate not Foreign msg to Foreign player
                 SteamWorks_SendHTTPRequest(request);
             }
@@ -201,7 +201,7 @@ public Action Command_Say(int client, const char[] command, int args)
     
     if (CommandExists(commands))return Plugin_Continue;
     
-    char temp[3];
+    char temp[6];
     
     // Foreign
     if(GetServerLanguage() != GetClientLanguage(client))
@@ -215,7 +215,7 @@ public Action Command_Say(int client, const char[] command, int args)
         {
             if(IsClientInGame(i) && !IsFakeClient(i) && i != client && GetClientLanguage(client) != GetClientLanguage(i))
             {
-                GetLanguageInfo(GetClientLanguage(i), temp, 3); // get Foreign language
+                GetLanguageInfo(GetClientLanguage(i), temp, 6); // get Foreign language
                 Handle request2 = CreateRequest(buffer, temp, i, client); // Translate not Foreign msg to Foreign player
                 SteamWorks_SendHTTPRequest(request2);
             }
@@ -229,7 +229,7 @@ public Action Command_Say(int client, const char[] command, int args)
             {
                 if (!g_translator[i])continue;
                 
-                GetLanguageInfo(GetClientLanguage(i), temp, 3); // get Foreign language
+                GetLanguageInfo(GetClientLanguage(i), temp, 6); // get Foreign language
                 Handle request = CreateRequest(buffer, temp, i, client); // Translate not Foreign msg to Foreign player
                 SteamWorks_SendHTTPRequest(request);
             }
