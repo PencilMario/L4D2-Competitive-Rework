@@ -42,6 +42,7 @@ int g_iTicksLeft[MAXPLAYERS+1];
 int g_iMaxTicks;
 
 #define MAX_DETECTIONS 30
+int g_iDetectCount[MAXPLAYERS + 1];
 int g_iDetections[MAXPLAYERS+1];
 float g_fDetectedTime[MAXPLAYERS+1];
 float g_fPrevLatency[MAXPLAYERS+1];
@@ -67,6 +68,7 @@ public void OnClientConnected(int client)
     g_iDetections[client] = 0;
     g_fDetectedTime[client] = 0.0;
     g_fPrevLatency[client] = 0.0;
+    g_iDetectCount[client] = 0;
 }
 
 public Action Timer_AddTicks(Handle timer)
@@ -94,10 +96,10 @@ public Action Timer_AddTicks(Handle timer)
                     }*/
                     if (g_fDetectedTime[i] == 0.0)
                     {
-                        log.info("%N 疑似使用速度作弊", i);
+                        log.info("%N 涉嫌使用速度作弊", i);
                     }
-                    CPrintToChatAll("[{green}!{default}] {olive}%N{default} 疑似使用速度作弊", i);
-                    CPrintToChatAll("目前暂时不会封禁该类型作弊, 如确实有开挂行为, 请联系群内管理");
+                    CPrintToChatAll("[{green}!{default}] {olive}%N{default} 涉嫌使用速度作弊", i);
+                    if (++g_iDetectCount[i] > 2) SBPP_BanPlayer(0 ,i, 0, "[SMAC-SpeedHack] 检测到速度作弊");
                     g_fDetectedTime[i] = GetGameTime() + 30.0;
                 }
             }
