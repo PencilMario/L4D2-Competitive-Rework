@@ -40,7 +40,6 @@ do
         # 压缩目录中的所有 .dem 文件为 zip 文件
         find "$dir" -type f -name "*.dem" -mmin +30 -exec 7z a {}.7z {} \;
 
-        find "$dir" -type f -name "*.dem.7z" -exec echo 已压缩{}
         find "$dir" -type f -name "*.dem.7z" -exec mv {} "$destination" \;
 
         find "$dir" -type f -name "*.dem" -mmin +30 -exec rm -f {} \;
