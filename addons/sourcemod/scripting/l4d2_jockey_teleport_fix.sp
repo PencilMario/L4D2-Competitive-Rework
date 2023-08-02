@@ -3,7 +3,6 @@
 #include <sdktools>
 #include <sourcebanspp>
 #include <logger>
-#include <readyup>
 // We will not be resetting this value anywhere for the simple reason that it is not relied upon outside of PreThink
 // -> PreThink itself also verifies that the player is currently jockeyed before teleporting them.
 // In the event that for some reason the `m_jockeyAttacker` netprop still returns true on map transitions/etc, Hooks unhook themselves by default on transitions.
@@ -123,17 +122,22 @@ public void CheckClient(int client){
     float preVector[3];
     GetClientAbsOrigin(client, preVector);
 
+    float susVector[3];
+    GetClientAbsOrigin(g_iCurrentSuspect, susVector);
+    #if DEBUG
+        PrintToChatAll("%N - %f %f %f", client, safeVector[0], safeVector[1], safeVector[2]);
+        PrintToChatAll("%N(sus) - %f %f %f", g_iCurrentSuspect, susVector[0], susVector[1], susVector[2]);
+    #endif
     // Teleporting
     if (GetVectorDistance(safeVector, preVector) > MAX_SINGLE_FRAME_UNITS) {
         char curmap[64];
         GetCurrentMap(curmap, 64);
         char stmid[64];
         GetClientAuthId(g_iCurrentSuspect, AuthId_Steam2, stmid, sizeof(stmid));
-        log.info("检测到被传送： %N - 从 %f %f %f 至 %f %f %f - 地图%s - 传送者: %N[%s], 准备阶段: %s", client, 
+        log.info("检测到被传送： %N - 从 %f %f %f 至 %f %f %f - 地图%s - 传送者: %N[%s]", client, 
         safeVector[0], safeVector[1], safeVector[2],
         preVector[0], preVector[1], preVector[2], 
-        curmap, g_iCurrentSuspect, stmid,
-        IsInReady() ? "Yes" : "No");
+        curmap, g_iCurrentSuspect, stmid);
         #if DEBUG
             PrintToChatAll("检测到传送特感");
             PrintToChatAll("Prevented %N from being teleported to %f %f %f", client, preVector[0], preVector[1], preVector[2]);
@@ -172,10 +176,10 @@ bool IsChargerVictim(int client){
 }
 void BanPlayer()
 {
-    #if DEBUG
-        PrintToChatAll("封禁%i/debug", g_iCurrentSuspect);
-        return;
-    #endif
+#if DEBUG
+    PrintToChatAll("封禁%i/debug", g_iCurrentSuspect);
+    return;
+#endif
     if (IsClientInGame(g_iCurrentSuspect)){
         if (g_iClientSuspectTime[g_iCurrentSuspect] >= 1){
             SBPP_BanPlayer(0, g_iCurrentSuspect, 0, "[jk tele.]检测到传送特感");
