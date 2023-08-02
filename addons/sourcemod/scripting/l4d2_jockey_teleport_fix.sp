@@ -3,6 +3,7 @@
 #include <sdktools>
 #include <sourcebanspp>
 #include <logger>
+#include <readyup>
 // We will not be resetting this value anywhere for the simple reason that it is not relied upon outside of PreThink
 // -> PreThink itself also verifies that the player is currently jockeyed before teleporting them.
 // In the event that for some reason the `m_jockeyAttacker` netprop still returns true on map transitions/etc, Hooks unhook themselves by default on transitions.
@@ -97,6 +98,25 @@ void OnPreThink(int client) {
         return;
     }*/
     CreateTimer(0.1, Timer_WaitClientUnPinned, client);
+}
+
+public Action Timer_WaitClientUnPinned(Handle timer, int client)
+{
+    // ?
+    if (!IsValidEntity(client)) {
+        SDKUnhook(client, SDKHook_PreThink, OnPreThink);
+        return Plugin_Stop;
+    }
+    if (IsJockeyVictim(client) || IsChargerVictim(client)) {CheckClient(client); return Plugin_Continue;}
+    SDKUnhook(client, SDKHook_PreThink, OnPreThink);
+    #if DEBUG
+        PrintToChatAll("移除SDKHook OnPreThink()");
+    #endif
+
+    return Plugin_Stop;
+}
+
+public void CheckClient(int client){
     float safeVector[3];
     safeVector = fPreviousOrigin[client];
 
@@ -109,10 +129,11 @@ void OnPreThink(int client) {
         GetCurrentMap(curmap, 64);
         char stmid[64];
         GetClientAuthId(g_iCurrentSuspect, AuthId_Steam2, stmid, sizeof(stmid));
-        log.info("检测到被传送： %N - 从 %f %f %f 至 %f %f %f - 地图%s - 传送者: %N[%s]", client, 
+        log.info("检测到被传送： %N - 从 %f %f %f 至 %f %f %f - 地图%s - 传送者: %N[%s], 准备阶段: %s", client, 
         safeVector[0], safeVector[1], safeVector[2],
         preVector[0], preVector[1], preVector[2], 
-        curmap, g_iCurrentSuspect, stmid);
+        curmap, g_iCurrentSuspect, stmid,
+        IsInReady() ? "Yes" : "No");
         #if DEBUG
             PrintToChatAll("检测到传送特感");
             PrintToChatAll("Prevented %N from being teleported to %f %f %f", client, preVector[0], preVector[1], preVector[2]);
@@ -136,40 +157,24 @@ void OnPreThink(int client) {
 
     // Normal behaviour
     fPreviousOrigin[client] = preVector;
-}
 
-public Action Timer_WaitClientUnPinned(Handle timer, int client)
-{
-    // ?
-    if (!IsValidEntity(client)) {
-        SDKUnhook(client, SDKHook_PreThink, OnPreThink);
-        return Plugin_Stop;
-    }
-    if (IsJockeyVictim(client) || IsChargerVictim(client)) return Plugin_Continue;
-    SDKUnhook(client, SDKHook_PreThink, OnPreThink);
-    #if DEBUG
-        PrintToChatAll("移除SDKHook OnPreThink()");
-    #endif
-
-    return Plugin_Stop;
-}
-
-bool IsJockeyVictim(int client) {
-    return GetEntProp(client, Prop_Send, "m_jockeyAttacker") > 0;
-}
-bool IsChargerVictim(int client){
-    return GetEntPropEnt(client, Prop_Send, "m_carryAttacker") > 0 || GetEntPropEnt(client, Prop_Send, "m_pummelAttacker") > 0 ;
 }
 
 public Action Timer_BanSuspect(Handle timer, int client){
     BanPlayer()
     return Plugin_Stop;
 }
-
+bool IsJockeyVictim(int client) {
+    return GetEntProp(client, Prop_Send, "m_jockeyAttacker") > 0;
+}
+bool IsChargerVictim(int client){
+    return GetEntPropEnt(client, Prop_Send, "m_carryAttacker") > 0 || GetEntPropEnt(client, Prop_Send, "m_pummelAttacker") > 0 ;
+}
 void BanPlayer()
 {
     #if DEBUG
-        PrintToChatAll("封禁%i", g_iCurrentSuspect);
+        PrintToChatAll("封禁%i/debug", g_iCurrentSuspect);
+        return;
     #endif
     if (IsClientInGame(g_iCurrentSuspect)){
         if (g_iClientSuspectTime[g_iCurrentSuspect] >= 1){
