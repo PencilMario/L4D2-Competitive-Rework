@@ -34,18 +34,19 @@ public void OnPluginStart(){
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
 	g_hForward_OnGetExp = CreateGlobalForward("L4D2_OnGetExp", ET_Ignore, Param_Cell, Param_Cell);
-	CreateNative("L4D2_GetClientExpInfo", _Native_GetClientExp);
+	CreateNative("L4D2_GetClientExp", _Native_GetClientExp);
 	return APLRes_Success;
 }
-public int _Native_GetClientExp(int iClient){
-    return PlayerInfoData[iClient].rankpoint;
+public int _Native_GetClientExp(Handle plugin, int numParams){
+    int client = GetNativeCell(1);
+    return PlayerInfoData[client].rankpoint;
 }
 public void OnClientAuthorized(int client, const char[] auth){
     GetTimeOut[client] = 5;
-    CreateTimer();
+    CreateTimer(0.5, Timer_GetClientExp, _, TIMER_REPEAT);
 }
 
-public void Timer_GetClientExp(Handle timer, int iClient){
+public Action Timer_GetClientExp(Handle timer, int iClient){
     if (GetTimeOut[iClient]-- < 0) {
         log.debug("获取 %N 的信息时重试超时", iClient);
         return Plugin_Stop;
@@ -57,6 +58,7 @@ public void Timer_GetClientExp(Handle timer, int iClient){
     Call_PushCell(res);
     Call_Finish();
     // global forward
+    log.debug("%N 的经验评分为 %i", iClient, res);
     return Plugin_Stop;
 }
 
@@ -95,7 +97,7 @@ public int GetClientRP(int iClient){
     return PlayerInfoData[iClient].rankpoint;
 }
 
-int Calculate_RP(Player tPlayer)
+int Calculate_RP(PlayerInfo tPlayer)
 {
     int killtotal = tPlayer.shotgunkills + tPlayer.smgkills;
     float shotgunperc = float(tPlayer.shotgunkills) / float(killtotal);   
