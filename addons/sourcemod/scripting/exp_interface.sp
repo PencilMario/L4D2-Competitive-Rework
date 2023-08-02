@@ -3,11 +3,9 @@
 
 #include <sourcemod>
 #include <colors>
-#include <mix_team>
 #include <SteamWorks>
 #include <logger>
 
-#define SW_GetStatFail -2;
 #define PTYPE_SMG 0
 #define PTYPE_SHOTGUN 1
 
@@ -29,33 +27,48 @@ int GetTimeOut[MAXPLAYERS] = {5};
 Logger log;
 Handle g_hForward_OnGetExp;
 public void OnPluginStart(){
-    log = new Logger("exp_interface");
+    log = new Logger("exp_interface", LoggerType_NewLogFile);
+    log.IgnoreLevel = LogType_Debug;
 }
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-	g_hForward_OnGetExp = CreateGlobalForward("L4D2_OnGetExp", ET_Ignore, Param_String, Param_Cell, Param_Cell);
-	CreateNative("L4D2_GetClientExp", _Native_GetTotalPlaytime);
+	g_hForward_OnGetExp = CreateGlobalForward("L4D2_OnGetExp", ET_Ignore, Param_Cell, Param_Cell);
+	CreateNative("L4D2_GetClientExpInfo", _Native_GetClientExp);
 	return APLRes_Success;
 }
-
+public int _Native_GetClientExp(int iClient){
+    return PlayerInfoData[iClient].rankpoint;
+}
 public void OnClientAuthorized(int client, const char[] auth){
-    CreateTimer()
+    GetTimeOut[client] = 5;
+    CreateTimer();
 }
 
 public void Timer_GetClientExp(Handle timer, int iClient){
+    if (GetTimeOut[iClient]-- < 0) {
+        log.debug("获取 %N 的信息时重试超时", iClient);
+        return Plugin_Stop;
+    }
     int res = GetClientRP(iClient);
-    if (res == SW_GetStatFail) return Plugin_Continue;
-
+    if (res == -2) return Plugin_Continue;
+    Call_StartForward(g_hForward_OnGetExp);
+    Call_PushCell(iClient);
+    Call_PushCell(res);
+    Call_Finish();
     // global forward
     return Plugin_Stop;
 }
 
 public int GetClientRP(int iClient){
-    PlayerInfoData[iClient].rankpoint = SW_GetStatFail;
+    PlayerInfoData[iClient].rankpoint = -2;
     SteamWorks_RequestStats(iClient, 550);
     bool status = SteamWorks_GetStatCell(iClient, "Stat.TotalPlayTime.Total", PlayerInfoData[iClient].gametime);
-    if (!status) return SW_GetStatFail;
+    if (!status) {
+        log.debug("获取 %N 的数据信息时失败了", iClient);
+        return -2;
+    }
+
     PlayerInfoData[iClient].gametime = PlayerInfoData[iClient].gametime/3600;
     SteamWorks_GetStatCell(iClient, "Stat.SpecAttack.Tank", PlayerInfoData[iClient].tankrocks);
     SteamWorks_GetStatCell(iClient, "Stat.GamesLost.Versus", PlayerInfoData[iClient].versuslose);
