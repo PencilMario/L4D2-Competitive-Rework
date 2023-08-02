@@ -29,6 +29,7 @@ Handle g_hForward_OnGetExp;
 public void OnPluginStart(){
     log = new Logger("exp_interface", LoggerType_NewLogFile);
     log.IgnoreLevel = LogType_Debug;
+    log.logfirst("exp interface log记录");
 }
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
@@ -43,10 +44,11 @@ public int _Native_GetClientExp(Handle plugin, int numParams){
 }
 public void OnClientAuthorized(int client, const char[] auth){
     GetTimeOut[client] = 5;
-    CreateTimer(0.5, Timer_GetClientExp, _, TIMER_REPEAT);
+    CreateTimer(0.5, Timer_GetClientExp, client, TIMER_REPEAT);
 }
 
 public Action Timer_GetClientExp(Handle timer, int iClient){
+    if (IsFakeClient(iClient)) return Plugin_Stop;
     if (GetTimeOut[iClient]-- < 0) {
         log.debug("获取 %N 的信息时重试超时", iClient);
         return Plugin_Stop;
@@ -67,7 +69,7 @@ public int GetClientRP(int iClient){
     SteamWorks_RequestStats(iClient, 550);
     bool status = SteamWorks_GetStatCell(iClient, "Stat.TotalPlayTime.Total", PlayerInfoData[iClient].gametime);
     if (!status) {
-        log.debug("获取 %N 的数据信息时失败了", iClient);
+        log.debug("获取 %N 的数据信息时失败了, 但这也许是正常的...", iClient);
         return -2;
     }
 
