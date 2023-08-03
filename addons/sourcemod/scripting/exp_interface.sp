@@ -82,12 +82,15 @@ public int GetClientRP(int iClient){
     }
 
     PlayerInfoData[iClient].gametime = PlayerInfoData[iClient].gametime/3600;
-    status = SteamWorks_GetStatCell(iClient, "Stat.SpecAttack.Tank", PlayerInfoData[iClient].tankrocks);
+    status = SteamWorks_GetStatCell(iClient, "Stat.SpecAttack.Tank", PlayerInfoData[iClient].tankrocks) && 
+    SteamWorks_GetStatCell(iClient, "Stat.GamesLost.Versus", PlayerInfoData[iClient].versuslose) &&
+    SteamWorks_GetStatCell(iClient, "Stat.GamesWon.Versus", PlayerInfoData[iClient].versuswin);
     if (!status) {
         log.debug("获取 %N 的数据信息时失败了", iClient);
+        return -2;
     }
-    SteamWorks_GetStatCell(iClient, "Stat.GamesLost.Versus", PlayerInfoData[iClient].versuslose);
-    SteamWorks_GetStatCell(iClient, "Stat.GamesWon.Versus", PlayerInfoData[iClient].versuswin);
+    
+    
     PlayerInfoData[iClient].versustotal = PlayerInfoData[iClient].versuslose + PlayerInfoData[iClient].versuswin;
     PlayerInfoData[iClient].smgkills = 0;
     PlayerInfoData[iClient].shotgunkills = 0;
