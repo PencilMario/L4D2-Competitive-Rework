@@ -90,6 +90,7 @@ public int GetClientRP(int iClient){
     SteamWorks_GetStatCell(iClient, "Stat.GamesWon.Versus", PlayerInfoData[iClient].versuswin);
     PlayerInfoData[iClient].versustotal = PlayerInfoData[iClient].versuslose + PlayerInfoData[iClient].versuswin;
     PlayerInfoData[iClient].smgkills = 0;
+    PlayerInfoData[iClient].shotgunkills = 0;
     int t_kills;
     SteamWorks_GetStatCell(iClient, "Stat.smg_silenced.Kills.Total", t_kills);
     PlayerInfoData[iClient].smgkills += t_kills;
