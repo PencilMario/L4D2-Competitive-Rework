@@ -54,8 +54,19 @@ public void OnClientAuthorized(int client, const char[] auth){
     GetTimeOut[client] = 5;
     CreateTimer(0.5, Timer_GetClientExp, client, TIMER_REPEAT);
 }
-
+public void ClearClientExpData(int client){
+    PlayerInfoData[client].gametime = 0;
+    PlayerInfoData[client].rankpoint = 0;
+    PlayerInfoData[client].shotgunkills = 0;
+    PlayerInfoData[client].smgkills = 0;
+    PlayerInfoData[client].tankrocks = 0;
+    PlayerInfoData[client].versuslose = 0;
+    PlayerInfoData[client].versuswin = 0;
+    PlayerInfoData[client].versustotal = 0;
+    PlayerInfoData[client].winrounds = 0.0;
+}
 public Action Timer_GetClientExp(Handle timer, int iClient){
+    ClearClientExpData(iClient);
     if (IsFakeClient(iClient)) return Plugin_Stop;
     if (GetTimeOut[iClient]-- < 0) {
         log.debug("获取 %N 的信息时重试超时", iClient);
