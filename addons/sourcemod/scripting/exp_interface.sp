@@ -66,8 +66,8 @@ public void ClearClientExpData(int client){
     PlayerInfoData[client].winrounds = 0.0;
 }
 public Action Timer_GetClientExp(Handle timer, int iClient){
-    ClearClientExpData(iClient);
     if (IsFakeClient(iClient)) return Plugin_Stop;
+    ClearClientExpData(iClient);
     if (GetTimeOut[iClient]-- < 0) {
         log.debug("获取 %N 的信息时重试超时", iClient);
         return Plugin_Stop;
