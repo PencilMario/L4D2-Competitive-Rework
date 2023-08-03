@@ -73,7 +73,10 @@ public Action Timer_GetClientExp(Handle timer, int iClient){
         return Plugin_Stop;
     }
     int res = GetClientRP(iClient);
-    if (res == -2) 
+    if (res == -2) {
+        CreateTimer(0.5, Timer_GetClientExp, iClient);
+        return Plugin_Stop;
+    }
     Call_StartForward(g_hForward_OnGetExp);
     Call_PushCell(iClient);
     Call_PushCell(res);
