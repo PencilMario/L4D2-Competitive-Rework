@@ -16,11 +16,11 @@ forward void L4D2_OnGetExp(int client, int exp);
 
 /**
  * @brief 获取客户端的经验评分
- * @note 获取成就信息需要时间，请不要调用太快
+ * @note 成就信息将在OnClientPutServer后获取，请至少等待2.5s
  *
  * @param client		要获取的客户端
  *
- * @return				玩家的经验评分, -2 为查询失败, 0为未查询过（bot/客户端未authorization.
+ * @return				玩家的经验评分, -2 为查询失败, 0为未查询过（bot）.
  */
 native int L4D2_GetClientExp(int client);
 

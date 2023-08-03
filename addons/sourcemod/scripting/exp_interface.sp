@@ -50,7 +50,7 @@ public int _Native_GetClientExp(Handle plugin, int numParams){
 
     return PlayerInfoData[client].rankpoint;
 }
-public void OnClientAuthorized(int client, const char[] auth){
+public void OnClientPutInServer(int client){
     GetTimeOut[client] = 5;
     CreateTimer(0.5, Timer_GetClientExp, client);
 }
@@ -73,10 +73,7 @@ public Action Timer_GetClientExp(Handle timer, int iClient){
         return Plugin_Stop;
     }
     int res = GetClientRP(iClient);
-    if (res == -2) {
-        CreateTimer(0.5, Timer_GetClientExp, iClient);
-        return Plugin_Stop;
-    }
+    if (res == -2) 
     Call_StartForward(g_hForward_OnGetExp);
     Call_PushCell(iClient);
     Call_PushCell(res);
