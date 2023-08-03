@@ -40,6 +40,14 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 }
 public int _Native_GetClientExp(Handle plugin, int numParams){
     int client = GetNativeCell(1);
+    if (log.IgnoreLevel == LogType_Debug){
+        char name[64];
+        GetPluginFilename(plugin, name, sizeof(name));
+        log.debug("\"%s\" 调用了 _Native_GetClientExp(%i), return %i", 
+            name, client, PlayerInfoData[client].rankpoint
+        );
+    }
+
     return PlayerInfoData[client].rankpoint;
 }
 public void OnClientAuthorized(int client, const char[] auth){
