@@ -52,7 +52,7 @@ public int _Native_GetClientExp(Handle plugin, int numParams){
 }
 public void OnClientAuthorized(int client, const char[] auth){
     GetTimeOut[client] = 5;
-    CreateTimer(0.5, Timer_GetClientExp, client, TIMER_REPEAT);
+    CreateTimer(0.5, Timer_GetClientExp, client);
 }
 public void ClearClientExpData(int client){
     PlayerInfoData[client].gametime = 0;
@@ -69,11 +69,14 @@ public Action Timer_GetClientExp(Handle timer, int iClient){
     if (IsFakeClient(iClient)) return Plugin_Stop;
     ClearClientExpData(iClient);
     if (GetTimeOut[iClient]-- < 0) {
-        log.debug("获取 %N 的信息时重试超时", iClient);
+        log.warning("获取 %N 的信息时重试超时", iClient);
         return Plugin_Stop;
     }
     int res = GetClientRP(iClient);
-    if (res == -2) return Plugin_Continue;
+    if (res == -2) {
+        CreateTimer(0.5, Timer_GetClientExp, iClient);
+        return Plugin_Stop;
+    }
     Call_StartForward(g_hForward_OnGetExp);
     Call_PushCell(iClient);
     Call_PushCell(res);
@@ -97,7 +100,7 @@ public int GetClientRP(int iClient){
     SteamWorks_GetStatCell(iClient, "Stat.GamesLost.Versus", PlayerInfoData[iClient].versuslose) &&
     SteamWorks_GetStatCell(iClient, "Stat.GamesWon.Versus", PlayerInfoData[iClient].versuswin);
     if (!status) {
-        log.debug("获取 %N 的数据信息时失败了", iClient);
+        log.warning("获取 %N 的数据信息时失败了", iClient);
         return -2;
     }
     
