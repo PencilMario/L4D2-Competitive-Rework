@@ -67,6 +67,10 @@ public void ClearClientExpData(int client){
     PlayerInfoData[client].winrounds = 0.0;
 }
 public Action Timer_GetClientExp(Handle timer, int iClient){
+    if (!IsClientInGame(iClient)){
+        CreateTimer(0.5, Timer_GetClientExp, iClient);
+        return Plugin_Stop;
+    }
     if (IsFakeClient(iClient)) return Plugin_Stop;
     ClearClientExpData(iClient);
     if (GetTimeOut[iClient]-- < 0) {
