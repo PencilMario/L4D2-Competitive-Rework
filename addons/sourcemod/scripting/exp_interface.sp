@@ -74,6 +74,7 @@ public Action Timer_GetClientExp(Handle timer, int iClient){
         return Plugin_Stop;
     }
     if (!IsClientInGame(iClient)){
+        log.debug("%i(%N) 不在游戏内, 重试%i", iClient, iClient, GetTimeOut[iClient]);
         CreateTimer(0.5, Timer_GetClientExp, iClient);
         return Plugin_Stop;
     }
