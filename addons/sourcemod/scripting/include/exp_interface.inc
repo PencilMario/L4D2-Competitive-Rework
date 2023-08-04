@@ -39,5 +39,6 @@ public SharedPlugin __pl_exp_interface =
 public void __pl_exp_interface_SetNTVOptional()
 {
 	MarkNativeAsOptional("L4D2_GetClientExp");
+	MarkNativeAsOptional("L4D2_OnGetExp");
 }
 #endif

@@ -34,9 +34,10 @@ public void OnPluginStart(){
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-	g_hForward_OnGetExp = CreateGlobalForward("L4D2_OnGetExp", ET_Ignore, Param_Cell, Param_Cell);
-	CreateNative("L4D2_GetClientExp", _Native_GetClientExp);
-	return APLRes_Success;
+    g_hForward_OnGetExp = CreateGlobalForward("L4D2_OnGetExp", ET_Ignore, Param_Cell, Param_Cell);
+    CreateNative("L4D2_GetClientExp", _Native_GetClientExp);
+    RegPluginLibrary("exp_interface");
+    return APLRes_Success;
 }
 public int _Native_GetClientExp(Handle plugin, int numParams){
     int client = GetNativeCell(1);
