@@ -52,7 +52,7 @@ public int _Native_GetClientExp(Handle plugin, int numParams){
     return PlayerInfoData[client].rankpoint;
 }
 public void OnClientPutInServer(int client){
-    GetTimeOut[client] = 5;
+    GetTimeOut[client] = 8;
     CreateTimer(0.5, Timer_GetClientExp, client);
 }
 public void ClearClientExpData(int client){
@@ -67,16 +67,17 @@ public void ClearClientExpData(int client){
     PlayerInfoData[client].winrounds = 0.0;
 }
 public Action Timer_GetClientExp(Handle timer, int iClient){
+    GetTimeOut[iClient]--;
+    ClearClientExpData(iClient);
+    if (GetTimeOut[iClient] < 0) {
+        log.warning("获取 %N 的信息时重试超时", iClient);
+        return Plugin_Stop;
+    }
     if (!IsClientInGame(iClient)){
         CreateTimer(0.5, Timer_GetClientExp, iClient);
         return Plugin_Stop;
     }
     if (IsFakeClient(iClient)) return Plugin_Stop;
-    ClearClientExpData(iClient);
-    if (GetTimeOut[iClient]-- < 0) {
-        log.warning("获取 %N 的信息时重试超时", iClient);
-        return Plugin_Stop;
-    }
     int res = GetClientRP(iClient);
     if (res == -2) {
         CreateTimer(0.5, Timer_GetClientExp, iClient);
