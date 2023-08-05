@@ -24,6 +24,12 @@ forward void L4D2_OnGetExp(int client, int exp);
  */
 native int L4D2_GetClientExp(int client);
 
+/**
+ * @brief 检查所有人的经验评分，如果有人查询失败就再次查询
+ * @note 请之多等待4s以查询完成
+ */
+native void L4D2_CheckAndGetAllClientExp();
+
 public SharedPlugin __pl_exp_interface = 
 {
 	name = "exp_interface",

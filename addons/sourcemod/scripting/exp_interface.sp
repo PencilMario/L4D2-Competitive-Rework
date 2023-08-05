@@ -36,9 +36,27 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 {
     g_hForward_OnGetExp = CreateGlobalForward("L4D2_OnGetExp", ET_Ignore, Param_Cell, Param_Cell);
     CreateNative("L4D2_GetClientExp", _Native_GetClientExp);
+    CreateNative("L4D2_CheckAndGetAllClientExp", _Native_CheckAndGetAllClient);
     RegPluginLibrary("exp_interface");
     return APLRes_Success;
 }
+public int _Native_CheckAndGetAllClient(Handle plugin, int numParams)
+{
+    if (log.IgnoreLevel == LogType_Debug){
+        char name[64];
+        GetPluginFilename(plugin, name, sizeof(name));
+        log.debug("\"%s\" 调用了 _Native_CheckAndGetAllClient()", name);
+    }
+    for (int i = 1; i <= MaxClients; i++){
+        if (IsClientInGame(i) && !IsFakeClient(i)){
+            if (PlayerInfoData[i].rankpoint == -2){
+                OnClientPutInServer(i);
+            }
+        }
+    }
+    return 0;
+}
+
 public int _Native_GetClientExp(Handle plugin, int numParams){
     int client = GetNativeCell(1);
     if (log.IgnoreLevel == LogType_Debug){
@@ -74,6 +92,10 @@ public Action Timer_GetClientExp(Handle timer, int iClient){
         return Plugin_Stop;
     }
     if (!IsClientInGame(iClient)){
+        if (!IsClientConnected(iClient)){
+            log.debug("%i 未连接, 不再尝试查询", iClient);
+            return Plugin_Stop;
+        } 
         log.debug("%i 不在游戏内, 重试%i", iClient, GetTimeOut[iClient]);
         CreateTimer(0.5, Timer_GetClientExp, iClient);
         return Plugin_Stop;
