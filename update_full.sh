@@ -14,7 +14,7 @@ directories=("/home/steam/Steam/steamapps/common/l4d2versus/left4dead2" "/home/s
 for dir in "${directories[@]}"; do
     if [ -d "$dir" ]; then
 
-        ../steamcmd.sh +force_install_dir $dir +login anonymous +app_update 222860 validate +quit
+        ../steamcmd.sh +force_install_dir ${dir%/left4dead2} +login anonymous +app_update 222860 validate +quit
 
 
         find "$dir/addons/sourcemod/" \
