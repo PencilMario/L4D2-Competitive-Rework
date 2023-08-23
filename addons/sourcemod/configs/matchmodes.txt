@@ -12,11 +12,11 @@
 		}
 		"zonemod"
 		{
-			"name" "ZoneMod 2.8.5"
+			"name" "ZoneMod 2.8.6"
 		}
 		"zoneretro"
 		{
-			"name" "ZoneMod Retro 2.8.5"
+			"name" "ZoneMod Retro 2.8.6"
 		}
 		"zm3v3"
 		{
@@ -63,9 +63,9 @@
 		{
 			"name" "Promod Elite 1.1"
 		}
-		"promod"
+		"deadman"
 		{
-			"name"	"Promod 4.5.2 fix"
+			"name" "Deadman 5.0.3"
 		}
 	}
 	"Acemod Revamped Configs"
@@ -117,7 +117,7 @@
 	{
 		"zonehunters"
 		{
-			"name" "ZoneHunters 2.8.5"
+			"name" "ZoneHunters 2.8.6"
 		}
 		"zh3v3"
 		{
