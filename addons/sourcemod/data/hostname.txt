@@ -54,7 +54,7 @@
 	}
 	"48200"
 	{
-		"hostname"		"冷气开放[Zonemod 2.8.5]"
+		"hostname"		"冷气开放[Zonemod 2.8.6]"
 	}
 	"53333"
 	{
