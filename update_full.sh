@@ -1,7 +1,10 @@
 #!/bin/bash
 
+# github存储库名称
+gitrep=L4D2-Competitive-Rework
+
 echo "Get Plugin updates";
-cd /home/steam/L4D2-Competitive-Rework/;
+cd /home/steam/$gitrep/;
 git reset --hard;
 git pull --rebase;
 git status;
@@ -10,6 +13,10 @@ directories=("/home/steam/Steam/steamapps/common/l4d2versus/left4dead2" "/home/s
 
 for dir in "${directories[@]}"; do
     if [ -d "$dir" ]; then
+
+        ../steamcmd.sh +force_install_dir ${dir%/left4dead2} +login anonymous +app_update 222860 validate +quit
+
+
         find "$dir/addons/sourcemod/" \
             ! -path "$dir/addons/sourcemod/logs*" \
             ! -path "$dir/addons/sourcemod/configs/admins_simple.ini" \
@@ -38,7 +45,7 @@ for dir in "${directories[@]}"; do
         rm -f "$dir/l4dtoolz.vdf"
         rm -f "$dir/metamod.vdf"
 
-        \cp -rp /home/steam/L4D2-Competitive-Rework/* "$dir/";
+        \cp -rp /home/steam/$gitrep/* "$dir/";
         chmod 777 "$dir/"
 
         echo "Updated | $dir"
