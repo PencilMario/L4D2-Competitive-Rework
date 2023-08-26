@@ -3,6 +3,7 @@
 #include <sdktools>
 #include <left4dhooks>
 #include <colors>
+#include <exp_interface>
 
 #define PLUGIN_VERSION "1.0.0"
 
@@ -206,7 +207,7 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
 static CallSurrenderMenu()
 {
     surrenderMenu = CreateMenu(TS_MenuCallBack, MenuAction:MENU_ACTIONS_ALL);
-    SetMenuTitle(surrenderMenu, " Chikko's 坦克控制权面板 ");
+    SetMenuTitle(surrenderMenu, "  坦克控制权面板 ");
     
     DebugPrintToAll("Initializing Tank Swap Menu");
     
@@ -295,16 +296,30 @@ public Action:TS_Display_Auto_MenuToTank(Handle:timer)
     }
 
     surrenderMenu = CreateMenu(TS_Auto_MenuCallBack, MenuAction:MENU_ACTIONS_ALL);
-    SetMenuTitle(surrenderMenu, " 坦克控制权面板 ");
-    
+    SetMenuTitle(surrenderMenu, " 坦克控制权面板");
     DebugPrintToAll("Initializing Tank Swap Menu, auto triggered");
     
     decl String:name[MAX_NAME_LENGTH], String:number[10];
     new electables;
     
     AddMenuItem(surrenderMenu, "0", "我来玩克!");
-    AddMenuItem(surrenderMenu, "99", "我不玩克!");
-    
+    AddMenuItem(surrenderMenu, "99", "随便给一个人!");
+    int maxexpplayer = 0, maxexp = -9999999;
+    for (int i = 1; i <= MaxClients; i++){
+        if (i == primaryTankPlayer) continue;
+        if (!IsClientInGame(i)) continue;
+        if (GetClientTeam(i) != TEAM_INFECTED) continue;
+        if (IsFakeClient(i)) continue;
+        int iexp = L4D2_GetClientExp(i);
+        if ( iexp > maxexp){
+            maxexp = iexp;
+            maxexpplayer = i;
+        }
+    }
+    Format(number, sizeof(number), "%i", maxexpplayer);
+    Format(name, sizeof(name), "给经验分最高的(%N, %i)!", maxexpplayer, maxexp);
+    if (maxexpplayer != 0) AddMenuItem(surrenderMenu, number, name);
+
     for (new i = 1; i <= MaxClients; i++)
     {
         if (i == primaryTankPlayer) continue;
@@ -314,7 +329,7 @@ public Action:TS_Display_Auto_MenuToTank(Handle:timer)
         
         DebugPrintToAll("Found valid Tank Swap Choice: %N", i);
         
-        Format(name, sizeof(name), "%N", i);
+        Format(name, sizeof(name), "%i|%N", L4D2_GetClientExp(i) , i);
         Format(number, sizeof(number), "%i", i);
         AddMenuItem(surrenderMenu, number, name);
         
