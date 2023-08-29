@@ -21,7 +21,11 @@
 #include <colors>
 #include <logger>
 
-#define DATA "1.0"
+#define SHORT_LEN 5
+#define Language_NotSupport "NONE"
+
+ConVar g_hTranslateApi;
+ConVar g_hTranslateApiKey,g_hTranslateApiAuth;
 
 Logger log;
 
@@ -29,8 +33,8 @@ public Plugin myinfo =
 {
     name = "SM Translator",
     description = "Translate chat messages",
-    author = "Franc1sco franug",
-    version = DATA,
+    author = "Franc1sco franug, Sir.P",
+    version = "0.0.1",
     url = "http://steamcommunity.com/id/franug"
 };
 
@@ -39,22 +43,214 @@ char ServerCompleteLang[32];
 
 bool g_translator[MAXPLAYERS + 1];
 
-char baiduapi[256] = "https://aip.baidubce.com/rpc/2.0/mt/texttrans/v1?access_token="
+char baiduapi[] = "https://aip.baidubce.com/rpc/2.0/mt/texttrans/v1?access_token="
+char deeplapi[] = "https://api-free.deepl.com/v2/translate"
+char g_cApiKey[256], g_cApiAuth[256], g_cApiToken[256];
 
 
+enum TranslateSource{
+    Translator_None,
+    Translator_Baidu,
+    Translator_DeepL
+}
+
+enum TranslateLanguage{
+    LA_None,
+    LA_English,
+    LA_Arabic,
+    LA_Brazilian,
+    LA_Bulgarian,
+    LA_Czech,
+    LA_Danish,
+    LA_Dutch,
+    LA_Finnish,
+    LA_French,
+    LA_German,
+    LA_Greek,
+    LA_Hebrew,
+    LA_Hungarian,
+    LA_Italian,
+    LA_Japanese,
+    LA_KoreanA,
+    LA_Korean,
+    LA_Latvian,
+    LA_Lithuanian,
+    LA_Norwegian,
+    LA_Polish,
+    LA_Portuguese,
+    LA_Romanian,
+    LA_Russian,
+    LA_SChinese,
+    LA_Slovak,
+    LA_Spanish,
+    LA_Swedish,
+    LA_TChinese,
+    LA_Thai,
+    LA_Turkish,
+    LA_Ukrainian,
+    LA_Vietnamese,
+    LA_Auto,
+    LA_Size,
+};
+char ShortInSM[LA_Size][SHORT_LEN] = {
+    Language_NotSupport,
+    "en", 
+    "ar", 
+    "pt", 
+    "bg", 
+    "cze", 
+    "da", 
+    "nl", 
+    "fi", 
+    "fr", 
+    "de",
+    "el", 
+    "he", 
+    "hu", 
+    "it", 
+    "jp", 
+    "ko", 
+    "ko", 
+    "lv", 
+    "lt", 
+    "no",
+    "pl", 
+    "pt_p", 
+    "ro", 
+    "ru", 
+    "chi", 
+    "sk", 
+    "es", 
+    "sv", 
+    "zho",
+    "th", 
+    "tr", 
+    "ua", 
+    "vi",
+    Language_NotSupport
+}
+char ShortInBaidu[LA_Size][SHORT_LEN] = {
+    Language_NotSupport,
+    "en",
+    "ara",
+    "pt",
+    "bul",
+    "cs",
+    "dan",
+    "nl",
+    "fin",
+    "fra",
+    "de",
+    "el",
+    "heb",
+    "hu",
+    "it",
+    "jp",
+    "kor",
+    "kor",
+    "lav",
+    "lit",
+    "nor",
+    "pl",
+    "pt",
+    "rom",
+    "ru",
+    "zh",
+    "sk",
+    "spa",
+    "swe",
+    "cht",
+    "th",
+    "tr",
+    "ukr",
+    "vie",
+    "auto"
+}
+
+char ShortInDeepL[LA_Size][SHORT_LEN] = {
+    Language_NotSupport,
+    "EN",
+    Language_NotSupport,
+    "PT-BR",
+    "BG",
+    "CS",
+    "DA",
+    "NL",
+    "FI",
+    "FR",
+    "DE",
+    "EL",
+    Language_NotSupport,
+    "HU",
+    "IT",
+    "JA",
+    "KO",
+    "KO",
+    "LV",
+    "LT",
+    "NB",
+    Language_NotSupport,
+    "PT",
+    "RO",
+    "RU",
+    "ZH",
+    Language_NotSupport,
+    "SK",
+    "SV",
+    "ZH", // No support. Use Simplified Chinese instead.
+    Language_NotSupport,
+    "TR",
+    "UK",
+    Language_NotSupport,
+    Language_NotSupport // auto does not need to pass a parameter
+}
+
+enum struct TranslateObject{
+    char message[255];
+    int sayer;
+    bool team;  
+    TranslateLanguage src;
+    TranslateLanguage dst[MAXPLAYERS];  //目标语言 不重复
+    TranslateLanguage clients[MAXPLAYERS];  //需要翻译的玩家 会重复
+
+    bool IsDstLangAdded(TranslateLanguage la){
+        for (int i = 0; i < sizeof(this.dst); i++){
+            if (this.dst[i] == la) return true
+        }
+        return false
+    }
+
+    bool AddDstLanguage(TranslateLanguage la, int client){
+        this.clients[client] = la;
+        for (int i = 0; i < sizeof(this.dst); i++){
+            if (this.dst[i] == LA_None) {
+                if (!this.IsDstLangAdded(la)) this.dst[i] = la; 
+                log.debug("目标语言添加：%i/第%i", la, i);
+                break;
+            }
+            
+        }
+        return true;
+    }   
+}
+TranslateObject g_TlQueue[15];
+int g_TlQueuePos = 0;
+TranslateSource g_TlSource;
 public void OnPluginStart()
 {
     log = new Logger("sm_translator", LoggerType_NewLogFile);
     log.IgnoreLevel = LogType_Debug;
+    log.SetLogPrefix("[Rework]");
     LoadTranslations("sm_translator.phrases.txt");
-    
-    CreateConVar("sm_translator_version", DATA, "SM Translator Version", FCVAR_SPONLY|FCVAR_NOTIFY);
-    
+
+    CreateConVar("sm_translator_version", "1.0.0", "SM Translator Version", FCVAR_SPONLY|FCVAR_NOTIFY);
+    g_hTranslateApi = CreateConVar("sm_translator_api", "1", "SM Translator Api, 0=Disable, 1=Baidu, 2=DeepL");
+    g_hTranslateApiKey = CreateConVar("sm_translator_apikey", "beLX1eoWGvtlzU0GGG542Tox", "SM Translator Apikey, for baidu api");
+    g_hTranslateApiAuth = CreateConVar("sm_translator_apiauth", "znhKVCi8l1gN4V1tssD4TaIa9iwKs2Ek", "SM Translator Apikey, for baidu api and deepl (':fx' is not required)");
     AddCommandListener(Command_Say, "say");	
-    //AddCommandListener(Command_SayTeam, "say_team");	
-    
+    AddCommandListener(Command_SayTeam, "say_team");	
     GetLanguageInfo(GetServerLanguage(), ServerLang, 3, ServerCompleteLang, 32);
-    
+
     RegConsoleCmd("sm_translator", Command_Translator);
     
     for(int i = 1; i <= MaxClients; i++)
@@ -64,8 +260,22 @@ public void OnPluginStart()
                 OnClientPostAdminCheck(i);
             }
         }
-    GetAccessToken("beLX1eoWGvtlzU0GGG542Tox", "znhKVCi8l1gN4V1tssD4TaIa9iwKs2Ek");
+    OnCvarChanged(g_hTranslateApi, "", "");
 
+    g_hTranslateApi.AddChangeHook(OnCvarChanged);
+    g_hTranslateApiKey.AddChangeHook(OnCvarChanged);
+    g_hTranslateApiAuth.AddChangeHook(OnCvarChanged);
+
+}
+
+public void OnCvarChanged(ConVar convar, const char[] oldValue, const char[] newValue){
+    g_TlSource = view_as<TranslateSource>(g_hTranslateApi.IntValue);
+    g_hTranslateApiKey.GetString(g_cApiKey, sizeof(g_cApiKey));
+    g_hTranslateApiAuth.GetString(g_cApiAuth, sizeof(g_cApiAuth));
+
+    if (g_TlSource == Translator_Baidu){
+        GetAccessToken(g_cApiKey, g_cApiAuth);
+    }
 }
 
 public Action Command_Translator(int client, int args)
@@ -126,66 +336,18 @@ public int Menu_select(Menu menu, MenuAction action, int client, int param)
     }
     return 0;
 }
-public Action Command_SayTeam(int client, const char[] command, int args)
-{
-    if (!IsValidClient(client))return Plugin_Continue;
-    
-    char buffer[255];
-    GetCmdArgString(buffer,sizeof(buffer));
-    StripQuotes(buffer);
-    
-    if (strlen(buffer) < 1)return Plugin_Continue;
-    
-    char commands[255];
-    
-    GetCmdArg(1, commands, sizeof(commands));
-    ReplaceString(commands, sizeof(commands), "!", "sm_", false);
-    ReplaceString(commands, sizeof(commands), "/", "sm_", false);
 
-    
-    if (CommandExists(commands))return Plugin_Continue;
-    
-    char temp[6];
-    
-    // Foreign
-    if(GetServerLanguage() != GetClientLanguage(client))
-    {
-        if (!g_translator[client])return Plugin_Continue;
-        
-        Handle request = CreateRequest(buffer, ServerLang, client);
-        SteamWorks_SendHTTPRequest(request);
-        
-        for(int i = 1; i <= MaxClients; i++)
-        {
-            if(IsClientInGame(i) && !IsFakeClient(i) && i != client && GetClientLanguage(client) != GetClientLanguage(i))
-            {
-                GetLanguageInfo(GetClientLanguage(i), temp, 6); // get Foreign language
-                Handle request2 = CreateRequest(buffer, temp, i, client, true); // Translate not Foreign msg to Foreign player
-                SteamWorks_SendHTTPRequest(request2);
-            }
-        }
+TranslateLanguage GetTLangFromChar(const char[] la, char[][] LaGroup){
+    for (TranslateLanguage i = LA_None; i < LA_Size; i++){
+        if (StrEqual(LaGroup[i], la)) return i;
     }
-    else // Not foreign
-    {
-        for(int i = 1; i <= MaxClients; i++)
-        {
-            if(IsClientInGame(i) && !IsFakeClient(i) && i != client)
-            {
-                if (!g_translator[i])continue;
-                
-                GetLanguageInfo(GetClientLanguage(i), temp, 6); // get Foreign language
-                Handle request = CreateRequest(buffer, temp, i, client, true); // Translate not Foreign msg to Foreign player
-                SteamWorks_SendHTTPRequest(request);
-            }
-        }
-    }
-    return Plugin_Continue;
+    return LA_None;
 }
-
 
 public Action Command_Say(int client, const char[] command, int args)
 {
-    if (!IsValidClient(client))return Plugin_Continue;
+    log.debug("Command_Say: %N, %s", client, command);
+    if (!IsValidClient(client)) return Plugin_Continue;
     
     char buffer[255];
     GetCmdArgString(buffer,sizeof(buffer));
@@ -203,25 +365,93 @@ public Action Command_Say(int client, const char[] command, int args)
     
     char temp[6];
     
-    // Foreign
+    TranslateObject tlobj;
+    tlobj.AddDstLanguage(LA_English, 0);
+    tlobj.AddDstLanguage(LA_Japanese, 0);
+    tlobj.AddDstLanguage(LA_Korean, 0);
+    tlobj.AddDstLanguage(LA_SChinese, 0);
+    strcopy(tlobj.message, sizeof(tlobj.message), buffer);
+    tlobj.sayer = client;
+    // Foreign 发言玩家是外国人，翻译该玩家说的话给其他非外国人
     if(GetServerLanguage() != GetClientLanguage(client))
     {
         if (!g_translator[client])return Plugin_Continue;
-        
-        Handle request = CreateRequest(buffer, ServerLang, client);
-        SteamWorks_SendHTTPRequest(request);
-        
+        tlobj.AddDstLanguage(GetTLangFromChar(ServerLang, ShortInSM), 0);
+        GetLanguageInfo(GetClientLanguage(client), temp, 6);
+        tlobj.src = GetTLangFromChar(temp, ShortInSM);
         for(int i = 1; i <= MaxClients; i++)
         {
             if(IsClientInGame(i) && !IsFakeClient(i) && i != client && GetClientLanguage(client) != GetClientLanguage(i))
             {
                 GetLanguageInfo(GetClientLanguage(i), temp, 6); // get Foreign language
-                Handle request2 = CreateRequest(buffer, temp, i, client); // Translate not Foreign msg to Foreign player
-                SteamWorks_SendHTTPRequest(request2);
+                tlobj.AddDstLanguage(GetTLangFromChar(temp, ShortInSM), i);
+                CreateRequest(tlobj); // Translate not Foreign msg to Foreign player
             }
         }
     }
-    else // Not foreign
+    else // Not foreign 发言玩家不是外国人，翻译该玩家的话给其他外国人 
+    {
+        for(int i = 1; i <= MaxClients; i++)
+        {
+            if(IsClientInGame(i) && !IsFakeClient(i)/* && i != client*/)
+            {
+                if (!g_translator[i])continue;
+                
+                GetLanguageInfo(GetClientLanguage(i), temp, 6); // get Foreign language
+                tlobj.AddDstLanguage(GetTLangFromChar(temp, ShortInSM), client);
+                CreateRequest(tlobj); // Translate not Foreign msg to Foreign player
+            }
+        }
+    }
+    log.debug("创建新翻译对象：%i", g_TlQueuePos);
+    log.debug("message: \"%s\" \nsayer: %N\nteam: %i\n src: %s", tlobj.message, tlobj.sayer, tlobj.team, ShortInSM[tlobj.src]);
+    return Plugin_Continue;
+}
+
+public Action Command_SayTeam(int client, const char[] command, int args)
+{
+    log.debug("Command_SayTeam: %N, %s", client, command);
+    if (!IsValidClient(client)) return Plugin_Continue;
+    
+    char buffer[255];
+    GetCmdArgString(buffer,sizeof(buffer));
+    StripQuotes(buffer);
+    
+    if (strlen(buffer) < 1)return Plugin_Continue;
+    
+    char commands[255];
+    
+    GetCmdArg(1, commands, sizeof(commands));
+    ReplaceString(commands, sizeof(commands), "!", "sm_", false);
+    ReplaceString(commands, sizeof(commands), "/", "sm_", false);
+    
+    if (CommandExists(commands))return Plugin_Continue;
+    
+    char temp[6];
+    
+    TranslateObject tlobj;
+    strcopy(tlobj.message, sizeof(tlobj.message), buffer);
+    tlobj.sayer = client;
+    tlobj.team = true;
+    // Foreign 发言玩家是外国人，翻译该玩家说的话给其他不同语言的人
+    if(GetServerLanguage() != GetClientLanguage(client))
+    {
+        if (!g_translator[client])return Plugin_Continue;
+        tlobj.AddDstLanguage(GetTLangFromChar(ServerLang, ShortInSM), 0);
+        GetLanguageInfo(GetClientLanguage(client), temp, 6);
+        tlobj.src = GetTLangFromChar(temp, ShortInSM);
+        for(int i = 1; i <= MaxClients; i++)
+        {
+            if(IsClientInGame(i) && !IsFakeClient(i) && i != client && GetClientLanguage(client) != GetClientLanguage(i))
+            {
+                GetLanguageInfo(GetClientLanguage(i), temp, 6); // get Foreign language
+                tlobj.AddDstLanguage(GetTLangFromChar(temp, ShortInSM), i);
+                CreateRequest(tlobj); // Translate not Foreign msg to Foreign player
+                /*SteamWorks_SendHTTPRequest(request2);*/
+            }
+        }
+    }
+    else // Not foreign 发言玩家不是外国人，翻译该玩家的话给其他外国人 
     {
         for(int i = 1; i <= MaxClients; i++)
         {
@@ -230,13 +460,16 @@ public Action Command_Say(int client, const char[] command, int args)
                 if (!g_translator[i])continue;
                 
                 GetLanguageInfo(GetClientLanguage(i), temp, 6); // get Foreign language
-                Handle request = CreateRequest(buffer, temp, i, client); // Translate not Foreign msg to Foreign player
-                SteamWorks_SendHTTPRequest(request);
+                tlobj.AddDstLanguage(GetTLangFromChar(temp, ShortInSM), client);
+                CreateRequest(tlobj); // Translate not Foreign msg to Foreign player
             }
         }
     }
+    log.debug("创建新翻译对象：%i", g_TlQueuePos);
+    log.debug("message: \"%s\" \nsayer: %N\nteam: %i\n src: %s", tlobj.message, tlobj.sayer, tlobj.team, ShortInSM[tlobj.src]);
     return Plugin_Continue;
 }
+
 
 void GetAccessToken(char[] client_id, char[] client_secret)
 {
@@ -258,165 +491,152 @@ public int Callback_TokenGeted(Handle request, bool bFailure, bool bRequestSucce
     delete request;
     char[] t = new char[iBufferSize]; 
     JSONObject json;
-    log.info("Translator: 获取token api 返回 - %s", result);
+    log.debug("Translator: 获取token api 返回 - %s", result);
     json = JSONObject.FromString(result);
     json.GetString("access_token", t, iBufferSize);
-    log.info("Translator: access_token - %s", t);
-    Format(baiduapi, sizeof(baiduapi), "%s%s", baiduapi, t);
+    log.debug("Translator: access_token - %s", t);
+    Format(g_cApiToken, sizeof(g_cApiToken), "%s", t);
     delete json;
-    log.info("Translator: API Authed: %s", baiduapi);
+    log.debug("Translator: API Authed: %s%s", baiduapi, g_cApiToken);
     return 0;
 }
-Handle CreateRequest(char[] input, char[] target, int client, int other = 0, bool teammate_only = false)
-{
-    Handle request = SteamWorks_CreateHTTPRequest(k_EHTTPMethodPOST, baiduapi);
-    SteamWorks_SetHTTPRequestHeaderValue(request, "Content-Type", "application/json");
-    SteamWorks_SetHTTPRequestHeaderValue(request, "Accept", "application/json");
 
-    if (StrEqual(target, "ar")) Format(target, 5, "ara");
-    else if (StrEqual(target, "bg")) Format(target, 5, "bul");
-    else if (StrEqual(target, "cze")) Format(target, 5, "cs");
-    else if (StrEqual(target, "da")) Format(target, 5, "dan");
-    else if (StrEqual(target, "fi")) Format(target, 5, "fin");
-    else if (StrEqual(target, "fr")) Format(target, 5, "fra");
-    else if (StrEqual(target, "ko")) Format(target, 5, "kor");
-    else if (StrEqual(target, "pl")) Format(target, 5, "pl");
-    else if (StrEqual(target, "pt_p")) Format(target, 5, "pt");
-    else if (StrEqual(target, "ro")) Format(target, 5, "rom");
-    else if (StrEqual(target, "chi")) Format(target, 5, "zh");
-    else if (StrEqual(target, "sk")) Format(target, 5, "slo");
-    else if (StrEqual(target, "es")) Format(target, 5, "spa");
-    else if (StrEqual(target, "sv")) Format(target, 5, "swe");
-    else if (StrEqual(target, "zho")) Format(target, 5, "cht");
-    else if (StrEqual(target, "ua")) Format(target, 5, "ukr");
-    else if (StrEqual(target, "vi")) Format(target, 5, "vie");
+void CreateRequest(TranslateObject tlobj){
+    
+    log.debug("CreateRequest创建新翻译对象：%i", g_TlQueuePos);
+    log.debug("message: \"%s\" \nsayer: %N\nteam: %i\n src: %s", tlobj.message, tlobj.sayer, tlobj.team, ShortInSM[tlobj.src]);
+    g_TlQueue[g_TlQueuePos] = tlobj;
 
-    JSONObject bodyjson = new JSONObject();
-    bodyjson.SetString("from", "auto");
-    bodyjson.SetString("to", target);
-    bodyjson.SetString("q", input);
-    log.debug("目标: %s, 文本: \"%s\"", target, input);
     char body[16536];
-    bodyjson.ToString(body, 16536);
-    SteamWorks_SetHTTPRequestRawPostBody(request, "application/json", body, 256);
-    SteamWorks_SetHTTPRequestContextValue(request, GetClientUserId(client), other>0?GetClientUserId(other):0);
-    if (!teammate_only){
-        SteamWorks_SetHTTPCallbacks(request, Callback_OnHTTPResponse);
-    }else{
-        SteamWorks_SetHTTPCallbacks(request, Callback_OnHTTPResponse_Teammate);
+    // 遍历每种目标语言，构建请求体
+    log.debug("调用api对所有需要语言进行翻译:")
+    for (int i = 0; i < sizeof(tlobj.dst); i++){
+        if (tlobj.dst[i] == LA_None) continue;
+        HTTPRequest request;
+        switch (g_TlSource){
+            case Translator_Baidu:{
+                char url[256];
+                Format(url, sizeof(url), "%s%s", baiduapi, g_cApiToken);
+                request = new HTTPRequest(url);
+            }
+            case Translator_DeepL:{
+                request = new HTTPRequest(deeplapi);
+                request.SetHeader("Authorization", "DeepL-Auth-Key %s:fx", g_cApiAuth);
+                log.debug("Authorization: DeepL-Auth-Key %s", g_cApiAuth);
+            }
+            default:
+                return;
+        }
+        request.SetHeader("Content-Type", "application/json");
+        request.SetHeader("Accept", "application/json");
+        request.SetHeader("User-Agent", "SM Translator/0.0.1");
+        log.debug("翻译至%s", ShortInSM[tlobj.dst[i]])
+        JSONObject bodyjson = new JSONObject();
+        JSONArray _text = new JSONArray();
+        switch (g_TlSource){
+            case Translator_Baidu:{
+                bodyjson.SetString("from", ShortInBaidu[LA_Auto]);
+                bodyjson.SetString("to", ShortInBaidu[tlobj.dst[i]]);
+                bodyjson.SetString("q", tlobj.message);
+                log.debug("[baidu]目标: %s, 文本: \"%s\"", ShortInBaidu[tlobj.dst[i]], tlobj.message);
+            }
+            case Translator_DeepL:{
+                if (_text.PushString(tlobj.message)) bodyjson.Set("text", _text);
+                else {log.error("_text.PushString Failed"); return;}
+                bodyjson.SetString("target_lang", ShortInDeepL[tlobj.dst[i]]);
+                log.debug("[deepl]目标: %s, 文本: \"%s\"", ShortInDeepL[tlobj.dst[i]], tlobj.message);
+                
+            }
+            
+        }
+        bodyjson.ToString(body, 16536);
+        log.debug("body: %s", body);
+        request.Post(bodyjson, OnHttpResponse, g_TlQueuePos);
+        delete bodyjson;
+        delete _text;
     }
-    delete bodyjson;
-    return request;
+    g_TlQueuePos = g_TlQueuePos >= (sizeof(g_TlQueue)-1) ? 0 : g_TlQueuePos++;
+    return;
 }
-
-public void Callback_OnHTTPResponse(Handle request, bool bFailure, bool bRequestSuccessful, EHTTPStatusCode eStatusCode, int userid, int other)
-{
-    if (!bRequestSuccessful || eStatusCode != k_EHTTPStatusCode200OK)
-    {        
+public void OnHttpResponse(HTTPResponse response, any value){
+    log.debug("解析返回内容")
+    int pos = view_as<int>(value);
+    char result[255];
+    char dstbuff[5];
+    if (response.Status != HTTPStatus_OK) {
+        log.error("翻译异常：HTTP %i", response.Status);
         return;
     }
-
-    int iBufferSize;
-    SteamWorks_GetHTTPResponseBodySize(request, iBufferSize);
-    
-    // ==================处理返回json==================
-    char[] result = new char[iBufferSize];  
-    SteamWorks_GetHTTPResponseBodyData(request, result, iBufferSize);
-    delete request;
-    char[] t = new char[iBufferSize]; 
+    char sData[1024];
+    response.Data.ToString(sData, sizeof(sData));
+    log.info("翻译api返回: %s", sData);
     JSONObject json;
-    json = JSONObject.FromString(result);
-    if (json.HasKey("error_msg")){
-        json.GetString("error_msg", t, iBufferSize);
-        Format(result, iBufferSize, "Error: %s", t);
-        log.error("翻译异常：%s | ", t);
-        delete json;
+    TranslateLanguage dst;
+    json = view_as<JSONObject>(response.Data);
+    switch (g_TlSource){
+        case Translator_Baidu:{
+            if (json.HasKey("error_msg")){
+                json.GetString("error_msg", result, sizeof(result));
+                log.error("翻译异常：%s | ", result);
+                delete json; 
+            }
+            else if (json.HasKey("result"))
+            {
+                JSONObject t_json = view_as<JSONObject>(json.Get("result"));
+                t_json.GetString("to", dstbuff, sizeof(dstbuff));
+                JSONArray t_jsona = view_as<JSONArray>(t_json.Get("trans_result"));
+                JSONObject t_json2 = view_as<JSONObject>(t_jsona.Get(0));
+                t_json2.GetString("dst", result, sizeof(result));
+                delete t_json;
+                delete t_jsona;
+                delete t_json2;
+                dst = GetTLangFromChar(dstbuff, ShortInBaidu);
+            }
+        }
+        case Translator_DeepL:{
+            if (json.HasKey("translations")){
+                JSONArray t_jsona = view_as<JSONArray>(json.Get("translations"));
+                JSONObject t_json2 = view_as<JSONObject>(t_jsona.Get(0));
+                t_json2.GetString("text", result, sizeof(result));
+                t_json2.GetString("detected_source_language", dstbuff, sizeof(dstbuff));
+                dst = GetTLangFromChar(dstbuff, ShortInDeepL);
+            }
+        }
     }
-    else if (json.HasKey("result"))
-    {
-        JSONObject t_json = view_as<JSONObject>(json.Get("result"));
-        JSONArray t_jsona = view_as<JSONArray>(t_json.Get("trans_result"))
-        JSONObject t_json2 = view_as<JSONObject>(t_jsona.Get(0));
-        t_json2.GetString("dst", t, iBufferSize);
-        Format(result, iBufferSize, "%s", t);
-        delete t_json;
-        delete t_jsona;
-        delete t_json2;
-    }
-    
+    log.debug("翻译结果：%s \"%s\"", ShortInSM[dst], result);
+    log.debug("解析所有需要输出至的玩家:");
+    // 输出翻译结果
+    for(int i = 1; i <= MaxClients; i++){
+        if (!IsClientInGame(i)) continue;
+        if (g_TlQueue[pos].clients[i] == LA_None) continue;
+        log.debug("%N - 语言: %s - 开始匹配", i, ShortInSM[g_TlQueue[pos].clients[i]]);
+        // 跳过自己
+        if (i == g_TlQueue[pos].sayer) continue;
+        // 如果为队内发言，则仅队友和旁观可见翻译
+        if (g_TlQueue[pos].team && (GetClientTeam(i) != GetClientTeam(g_TlQueue[pos].sayer) && GetClientTeam(i) != 1)) continue;
+        // 如果该玩家的语言符合该次翻译语言，就输出给这个玩家
+        char _color[5];
+        switch (GetClientTeam(g_TlQueue[pos].sayer)){
+            case 1:
+                strcopy(_color, sizeof(_color), "lime");
+            case 2:
+                strcopy(_color, sizeof(_color), "blue");
+            case 3:
+                strcopy(_color, sizeof(_color), "red");
+        }
 
-    // ==================处理结束==================
-    int client = GetClientOfUserId(userid);
-    
-    if (!client || !IsClientInGame(client))return;
-    
-    if(other == 0)
-    {
-        CPrintToChat(client, "{teamcolor}%N {%t}{default}: %s", client, "translated for others", result);
-    }
-    else
-    {
-        int i = GetClientOfUserId(other);
-        if (!i || !IsClientInGame(i))return;
-        CPrintToChat(client, "{teamcolor}%N {%t}{default}: %s", i, "translated for you", result);
-    }
-}  
-
-public void Callback_OnHTTPResponse_Teammate(Handle request, bool bFailure, bool bRequestSuccessful, EHTTPStatusCode eStatusCode, int userid, int other)
-{
-    if (!bRequestSuccessful || eStatusCode != k_EHTTPStatusCode200OK)
-    {        
-        return;
-    }
-
-    int iBufferSize;
-    SteamWorks_GetHTTPResponseBodySize(request, iBufferSize);
-    
-    // ==================处理返回json==================
-    char[] result = new char[iBufferSize];  
-    SteamWorks_GetHTTPResponseBodyData(request, result, iBufferSize);
-    delete request;
-    char[] t = new char[iBufferSize]; 
-    JSONObject json;
-    json = JSONObject.FromString(result);
-    if (json.HasKey("error_msg")){
-        json.GetString("error_msg", t, iBufferSize);
-        Format(result, iBufferSize, "Error: %s", t);
-        log.error("翻译异常：%s", t);
-        delete json;
-    }
-    else if (json.HasKey("result"))
-    {
-        JSONObject t_json = view_as<JSONObject>(json.Get("result"));
-        JSONArray t_jsona = view_as<JSONArray>(t_json.Get("trans_result"))
-        JSONObject t_json2 = view_as<JSONObject>(t_jsona.Get(0));
-        t_json2.GetString("dst", t, iBufferSize);
-        Format(result, iBufferSize, "%s", t);
-        PrintToConsoleAll("Translator: dst: %s", result);
-        delete t_json;
-        delete t_jsona;
-        delete t_json2;
+        if (g_TlQueue[pos].clients[i] == dst){
+            log.debug("为%N提供翻译", i);
+            CPrintToChat(i, "%s{%s}%N <translated>{default}: %s",
+                g_TlQueue[pos].team ? "(TEAM)" : "",
+                _color,
+                g_TlQueue[pos].sayer, 
+                result
+            );
+        }
     }
     
-
-    // ==================处理结束==================
-    int client = GetClientOfUserId(userid);
-    
-    if (!client || !IsClientInGame(client))return;
-    
-    if(other == 0)
-    {
-        CPrintToChat(client, "(team){teamcolor}%N {%t}{default}: %s", client, "translated for others", result);
-    }
-    else
-    {
-        int i = GetClientOfUserId(other);
-        if (!i || !IsClientInGame(i))return;
-        if (GetClientTeam(i) != GetClientTeam(other)) return;
-        CPrintToChat(client, "(team){teamcolor}%N {%t}{default}: %s", i, "translated for you", result);
-    }
-}  
-
+}
 
 stock bool IsValidClient(int client, bool bAllowBots = false, bool bAllowDead = true)
 {
