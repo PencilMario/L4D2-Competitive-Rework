@@ -1,7 +1,8 @@
 #include <sourcemod>
 #include <sdktools>
 #include <colors>
-#define CHECK_INTERVAL 5.0
+#include <l4d2util_constants>
+#define CHECK_INTERVAL 1.0
 #define KICK_DELAY 20.0
 
 
@@ -12,46 +13,25 @@ public void OnPluginStart()
 
 public Action Timer_CheckTeams(Handle timer)
 {
-    int numSurvivors = 0;
-    int numInfected = 0;
-    int numSpectators = 0;
-
-    for (int i = 1; i <= MaxClients; i++)
-    {
+    int players[L4D2Team_Size]
+    // 统计玩家数量
+    for (int i = 1; i <= MaxClients; i++){
         if (!IsClientInGame(i)) continue;
-        
-        int team = GetClientTeam(i);
-        if (IsFakeClient(i)){
-            // 死亡的生还bot应该被计算 去除存活的生还bot
-            if (IsPlayerAlive(i) && GetClientTeam(i) == 2) continue;
-        }
-        switch (team)
-        {
-            case 2:
-                numSurvivors++;
-            case 3:
-                numInfected++;
-            case 1:
-                numSpectators++;
-        }
-    }
-
-    if (numSurvivors < 4 || numInfected < 4)
-    {
-        for (int i = 1; i <= MaxClients; i++)
-        {
-            if (!IsClientInGame(i)) continue;
-            int team = GetClientTeam(i);
-            if (team == 1 && !IsFakeClient(i))
-            {
-                CPrintToChat(i, "[{green}!{default}] 请及时进行补位，不然将会踢出");
-                CreateTimer(KICK_DELAY, Timer_KickSpectator, GetClientUserId(i), TIMER_FLAG_NO_MAPCHANGE);
+        switch (GetClientTeam(i)){
+            case L4D2Team_None:
+                {}
+            case L4D2Team_Spectator: 
+                players[L4D2Team_Spectator]++;
+            case L4D2Team_Survivor:{
+                if (!IsPlayerAlive(i) || !IsFakeClient(i)) players[L4D2Team_Survivor]++;
             }
-            break;
+            case L4D2Team_Infected:
+                players[L4D2Team_Infected]++;
         }
     }
-
-    return Plugin_Continue;
+    for (int i = 1; i <= MaxClients; i++){
+        
+    }
 }
 
 public Action Timer_KickSpectator(Handle timer, any userid)
