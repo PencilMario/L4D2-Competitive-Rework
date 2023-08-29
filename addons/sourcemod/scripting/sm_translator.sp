@@ -393,7 +393,7 @@ public Action Command_Say(int client, const char[] command, int args)
     {
         for(int i = 1; i <= MaxClients; i++)
         {
-            if(IsClientInGame(i) && !IsFakeClient(i)/* && i != client*/)
+            if(IsClientInGame(i) && !IsFakeClient(i) && i != client)
             {
                 if (!g_translator[i])continue;
                 
