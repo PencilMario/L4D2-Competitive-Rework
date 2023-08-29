@@ -40,6 +40,10 @@
 	{
 		"hostname"		"想了解一切"
 	}
+	"35710"
+	{
+		"hostname"		"[N&B.Zonemod]打的催眠都"
+	}
 	"42300"
 	{
 		"hostname"		"我去，喵都！"
