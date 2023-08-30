@@ -562,7 +562,9 @@ void CreateRequest(TranslateObject tlobj){
         delete bodyjson;
         delete _text;
     }
-    g_TlQueuePos = g_TlQueuePos >= (sizeof(g_TlQueue)-1) ? 0 : g_TlQueuePos++;
+    if (++g_TlQueuePos > (sizeof(g_TlQueue)-1)){
+        g_TlQueuePos = 0;
+    }
     return;
 }
 public void OnHttpResponse(HTTPResponse response, any value){
