@@ -406,9 +406,21 @@ public Action Command_Say(int client, const char[] command, int args)
         }
     }
     if (shouldtl) {
+        char _temp[512], _temp2[512];
+        for (int i = 0; i < sizeof(tlobj.dst); i++){
+            if (tlobj.dst[i] != LA_None) {
+                Format(_temp, sizeof(_temp), "%s|%s", _temp,ShortInSM[tlobj.dst[i]]);
+            }
+        }
+        for (int i = 1; i < sizeof(tlobj.clients); i++){
+            if (tlobj.clients[i] != LA_None){
+                Format(_temp2, sizeof(_temp2),"%s|%N",  _temp2, i);
+            }
+        }
         CreateRequest(tlobj); 
         log.debug("创建新翻译对象：%i", g_TlQueuePos);
-        log.debug("message: \"%s\" \nsayer: %N\nteam: %i\n src: %s", tlobj.message, tlobj.sayer, tlobj.team, ShortInSM[tlobj.src]);
+        log.debug("message: \"%s\" \nsayer: %N\nteam: %i\n src: %s \ndst:%S \nplayer: %s", tlobj.message, tlobj.sayer, tlobj.team, ShortInSM[tlobj.src]
+            );
     }
     return Plugin_Continue;
 }
