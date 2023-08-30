@@ -29,6 +29,7 @@ Handle g_hForward_OnGetExp;
 public void OnPluginStart(){
     log = new Logger("exp_interface", LoggerType_NewLogFile);
     log.IgnoreLevel = LogType_Debug;
+    if (log.FileSize > 1024*1024*5) log.DelLogFile();
     log.logfirst("exp interface log记录");
 }
 
