@@ -375,6 +375,7 @@ public Action Command_Say(int client, const char[] command, int args)
     tlobj.sayer = client;
     GetLanguageInfo(GetClientLanguage(client), temp, 6);
     tlobj.src = GetTLangFromChar(temp, ShortInSM);
+    bool shouldtl = false;
     // Foreign 发言玩家是外国人，翻译该玩家说的话给其他非外国人
     if(GetServerLanguage() != GetClientLanguage(client))
     {
@@ -386,7 +387,7 @@ public Action Command_Say(int client, const char[] command, int args)
             {
                 GetLanguageInfo(GetClientLanguage(i), temp, 6); // get Foreign language
                 tlobj.AddDstLanguage(GetTLangFromChar(temp, ShortInSM), i);
-                CreateRequest(tlobj); // Translate not Foreign msg to Foreign player
+                shouldtl = true;// Translate not Foreign msg to Foreign player
             }
         }
     }
@@ -397,21 +398,23 @@ public Action Command_Say(int client, const char[] command, int args)
             if(IsClientInGame(i) && !IsFakeClient(i) && i != client)
             {
                 if (!g_translator[i])continue;
-                
                 GetLanguageInfo(GetClientLanguage(i), temp, 6); // get Foreign language
                 tlobj.AddDstLanguage(GetTLangFromChar(temp, ShortInSM), client);
-                CreateRequest(tlobj); // Translate not Foreign msg to Foreign player
+                shouldtl = true; // Translate not Foreign msg to Foreign player
             }
         }
     }
-    log.debug("创建新翻译对象：%i", g_TlQueuePos);
-    log.debug("message: \"%s\" \nsayer: %N\nteam: %i\n src: %s", tlobj.message, tlobj.sayer, tlobj.team, ShortInSM[tlobj.src]);
+    if (shouldtl) {
+        CreateRequest(tlobj); 
+        log.debug("创建新翻译对象：%i", g_TlQueuePos);
+        log.debug("message: \"%s\" \nsayer: %N\nteam: %i\n src: %s", tlobj.message, tlobj.sayer, tlobj.team, ShortInSM[tlobj.src]);
+    }
     return Plugin_Continue;
 }
 
 public Action Command_SayTeam(int client, const char[] command, int args)
 {
-    log.debug("Command_SayTeam: %N, %s", client, command);
+    log.debug("Command_Say: %N, %s", client, command);
     if (!IsValidClient(client)) return Plugin_Continue;
     
     char buffer[255];
@@ -431,24 +434,25 @@ public Action Command_SayTeam(int client, const char[] command, int args)
     char temp[6];
     
     TranslateObject tlobj;
+
     strcopy(tlobj.message, sizeof(tlobj.message), buffer);
     tlobj.sayer = client;
     tlobj.team = true;
-    // Foreign 发言玩家是外国人，翻译该玩家说的话给其他不同语言的人
+    GetLanguageInfo(GetClientLanguage(client), temp, 6);
+    tlobj.src = GetTLangFromChar(temp, ShortInSM);
+    bool shouldtl = false;
+    // Foreign 发言玩家是外国人，翻译该玩家说的话给其他非外国人
     if(GetServerLanguage() != GetClientLanguage(client))
     {
         if (!g_translator[client])return Plugin_Continue;
         tlobj.AddDstLanguage(GetTLangFromChar(ServerLang, ShortInSM), 0);
-        GetLanguageInfo(GetClientLanguage(client), temp, 6);
-        tlobj.src = GetTLangFromChar(temp, ShortInSM);
         for(int i = 1; i <= MaxClients; i++)
         {
             if(IsClientInGame(i) && !IsFakeClient(i) && i != client && GetClientLanguage(client) != GetClientLanguage(i))
             {
                 GetLanguageInfo(GetClientLanguage(i), temp, 6); // get Foreign language
                 tlobj.AddDstLanguage(GetTLangFromChar(temp, ShortInSM), i);
-                CreateRequest(tlobj); // Translate not Foreign msg to Foreign player
-                /*SteamWorks_SendHTTPRequest(request2);*/
+                shouldtl = true;// Translate not Foreign msg to Foreign player
             }
         }
     }
@@ -459,18 +463,19 @@ public Action Command_SayTeam(int client, const char[] command, int args)
             if(IsClientInGame(i) && !IsFakeClient(i) && i != client)
             {
                 if (!g_translator[i])continue;
-                
                 GetLanguageInfo(GetClientLanguage(i), temp, 6); // get Foreign language
                 tlobj.AddDstLanguage(GetTLangFromChar(temp, ShortInSM), client);
-                CreateRequest(tlobj); // Translate not Foreign msg to Foreign player
+                shouldtl = true; // Translate not Foreign msg to Foreign player
             }
         }
     }
-    log.debug("创建新翻译对象：%i", g_TlQueuePos);
-    log.debug("message: \"%s\" \nsayer: %N\nteam: %i\n src: %s", tlobj.message, tlobj.sayer, tlobj.team, ShortInSM[tlobj.src]);
+    if (shouldtl) {
+        CreateRequest(tlobj); 
+        log.debug("创建新翻译对象：%i", g_TlQueuePos);
+        log.debug("message: \"%s\" \nsayer: %N\nteam: %i\n src: %s", tlobj.message, tlobj.sayer, tlobj.team, ShortInSM[tlobj.src]);
+    }
     return Plugin_Continue;
 }
-
 
 void GetAccessToken(char[] client_id, char[] client_secret)
 {
