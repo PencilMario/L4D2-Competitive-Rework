@@ -419,7 +419,7 @@ public Action Command_Say(int client, const char[] command, int args)
         }
         CreateRequest(tlobj); 
         log.debug("创建新翻译对象：%i", g_TlQueuePos);
-        log.debug("message: \"%s\" \nsayer: %N\nteam: %i\n src: %s \ndst:%s \nplayer: %s", tlobj.message, tlobj.sayer, tlobj.team, ShortInSM[tlobj.src],
+        log.debug("message: \"%s\" \nsayer: %N\nteam: %i\nsrc: %s \ndst:%s \nplayer: %s", tlobj.message, tlobj.sayer, tlobj.team, ShortInSM[tlobj.src],
             _temp, _temp2);
     }
     return Plugin_Continue;
