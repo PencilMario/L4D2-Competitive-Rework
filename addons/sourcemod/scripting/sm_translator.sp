@@ -21,6 +21,7 @@
 #include <colors>
 #include <logger>
 
+#define VER "1.0.1"
 #define SHORT_LEN 5
 #define Language_NotSupport "NONE"
 
@@ -34,7 +35,7 @@ public Plugin myinfo =
     name = "SM Translator",
     description = "Translate chat messages",
     author = "Franc1sco franug, Sir.P",
-    version = "0.0.1",
+    version = VER,
     url = "http://steamcommunity.com/id/franug"
 };
 
@@ -246,7 +247,7 @@ public void OnPluginStart()
     if (log.FileSize > 1024*1024*5) log.DelLogFile();
     LoadTranslations("sm_translator.phrases.txt");
 
-    CreateConVar("sm_translator_version", "1.0.0", "SM Translator Version", FCVAR_SPONLY|FCVAR_NOTIFY);
+    CreateConVar("sm_translator_version", VER, "SM Translator Version", FCVAR_SPONLY|FCVAR_NOTIFY);
     g_hTranslateApi = CreateConVar("sm_translator_api", "1", "SM Translator Api, 0=Disable, 1=Baidu, 2=DeepL api free 3=DeepL api pro");
     g_hTranslateApiKey = CreateConVar("sm_translator_apikey", "beLX1eoWGvtlzU0GGG542Tox", "SM Translator Apikey, for baidu api");
     g_hTranslateApiAuth = CreateConVar("sm_translator_apiauth", "znhKVCi8l1gN4V1tssD4TaIa9iwKs2Ek", "SM Translator Apikey, for baidu api and deepl (':fx' is not required)");
@@ -369,19 +370,16 @@ public Action Command_Say(int client, const char[] command, int args)
     char temp[6];
     
     TranslateObject tlobj;
-    tlobj.AddDstLanguage(LA_English, 0);
-    tlobj.AddDstLanguage(LA_Japanese, 0);
-    tlobj.AddDstLanguage(LA_Korean, 0);
-    tlobj.AddDstLanguage(LA_SChinese, 0);
+
     strcopy(tlobj.message, sizeof(tlobj.message), buffer);
     tlobj.sayer = client;
+    GetLanguageInfo(GetClientLanguage(client), temp, 6);
+    tlobj.src = GetTLangFromChar(temp, ShortInSM);
     // Foreign 发言玩家是外国人，翻译该玩家说的话给其他非外国人
     if(GetServerLanguage() != GetClientLanguage(client))
     {
         if (!g_translator[client])return Plugin_Continue;
         tlobj.AddDstLanguage(GetTLangFromChar(ServerLang, ShortInSM), 0);
-        GetLanguageInfo(GetClientLanguage(client), temp, 6);
-        tlobj.src = GetTLangFromChar(temp, ShortInSM);
         for(int i = 1; i <= MaxClients; i++)
         {
             if(IsClientInGame(i) && !IsFakeClient(i) && i != client && GetClientLanguage(client) != GetClientLanguage(i))
@@ -507,7 +505,7 @@ public int Callback_TokenGeted(Handle request, bool bFailure, bool bRequestSucce
 void CreateRequest(TranslateObject tlobj){
     
     log.debug("CreateRequest创建新翻译对象：%i", g_TlQueuePos);
-    log.debug("message: \"%s\" \nsayer: %N\nteam: %i\n src: %s", tlobj.message, tlobj.sayer, tlobj.team, ShortInSM[tlobj.src]);
+    log.debug("\nmessage: \"%s\" \nsayer: %N\nteam: %i\n src: %s", tlobj.message, tlobj.sayer, tlobj.team, ShortInSM[tlobj.src]);
     g_TlQueue[g_TlQueuePos] = tlobj;
 
     char body[16536];
@@ -537,7 +535,7 @@ void CreateRequest(TranslateObject tlobj){
         }
         request.SetHeader("Content-Type", "application/json");
         request.SetHeader("Accept", "application/json");
-        request.SetHeader("User-Agent", "SM Translator/0.0.1");
+        request.SetHeader("User-Agent", "SM Translator/"...VER);
         log.debug("翻译至%s", ShortInSM[tlobj.dst[i]])
         JSONObject bodyjson = new JSONObject();
         JSONArray _text = new JSONArray();
