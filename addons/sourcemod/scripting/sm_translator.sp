@@ -350,9 +350,8 @@ TranslateLanguage GetTLangFromChar(const char[] la, char[][] LaGroup){
 
 public Action Command_Say(int client, const char[] command, int args)
 {
-    log.debug("Command_Say: %N, %s", client, command);
     if (!IsValidClient(client)) return Plugin_Continue;
-    
+
     char buffer[255];
     GetCmdArgString(buffer,sizeof(buffer));
     StripQuotes(buffer);
@@ -366,7 +365,8 @@ public Action Command_Say(int client, const char[] command, int args)
     ReplaceString(commands, sizeof(commands), "/", "sm_", false);
     
     if (CommandExists(commands))return Plugin_Continue;
-    
+    log.debug("Command_Say: %N, %s", client, command);
+
     char temp[6];
     
     TranslateObject tlobj;
