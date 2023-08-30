@@ -252,7 +252,7 @@ public void OnPluginStart()
     g_hTranslateApiKey = CreateConVar("sm_translator_apikey", "beLX1eoWGvtlzU0GGG542Tox", "SM Translator Apikey, for baidu api");
     g_hTranslateApiAuth = CreateConVar("sm_translator_apiauth", "znhKVCi8l1gN4V1tssD4TaIa9iwKs2Ek", "SM Translator Apikey, for baidu api and deepl (':fx' is not required)");
     AddCommandListener(Command_Say, "say");	
-    AddCommandListener(Command_SayTeam, "say_team");	
+    AddCommandListener(Command_Say, "say_team");	
     GetLanguageInfo(GetServerLanguage(), ServerLang, 3, ServerCompleteLang, 32);
 
     RegConsoleCmd("sm_translator", Command_Translator);
@@ -375,6 +375,7 @@ public Action Command_Say(int client, const char[] command, int args)
     tlobj.sayer = client;
     GetLanguageInfo(GetClientLanguage(client), temp, 6);
     tlobj.src = GetTLangFromChar(temp, ShortInSM);
+    tlobj.team = StrEqual("say_team", command);
     bool shouldtl = false;
     // Foreign 发言玩家是外国人，翻译该玩家说的话给其他非外国人
     if(GetServerLanguage() != GetClientLanguage(client))
@@ -412,70 +413,6 @@ public Action Command_Say(int client, const char[] command, int args)
     return Plugin_Continue;
 }
 
-public Action Command_SayTeam(int client, const char[] command, int args)
-{
-    log.debug("Command_Say: %N, %s", client, command);
-    if (!IsValidClient(client)) return Plugin_Continue;
-    
-    char buffer[255];
-    GetCmdArgString(buffer,sizeof(buffer));
-    StripQuotes(buffer);
-    
-    if (strlen(buffer) < 1)return Plugin_Continue;
-    
-    char commands[255];
-    
-    GetCmdArg(1, commands, sizeof(commands));
-    ReplaceString(commands, sizeof(commands), "!", "sm_", false);
-    ReplaceString(commands, sizeof(commands), "/", "sm_", false);
-    
-    if (CommandExists(commands))return Plugin_Continue;
-    
-    char temp[6];
-    
-    TranslateObject tlobj;
-
-    strcopy(tlobj.message, sizeof(tlobj.message), buffer);
-    tlobj.sayer = client;
-    tlobj.team = true;
-    GetLanguageInfo(GetClientLanguage(client), temp, 6);
-    tlobj.src = GetTLangFromChar(temp, ShortInSM);
-    bool shouldtl = false;
-    // Foreign 发言玩家是外国人，翻译该玩家说的话给其他非外国人
-    if(GetServerLanguage() != GetClientLanguage(client))
-    {
-        if (!g_translator[client])return Plugin_Continue;
-        tlobj.AddDstLanguage(GetTLangFromChar(ServerLang, ShortInSM), 0);
-        for(int i = 1; i <= MaxClients; i++)
-        {
-            if(IsClientInGame(i) && !IsFakeClient(i) && i != client && GetClientLanguage(client) != GetClientLanguage(i))
-            {
-                GetLanguageInfo(GetClientLanguage(i), temp, 6); // get Foreign language
-                tlobj.AddDstLanguage(GetTLangFromChar(temp, ShortInSM), i);
-                shouldtl = true;// Translate not Foreign msg to Foreign player
-            }
-        }
-    }
-    else // Not foreign 发言玩家不是外国人，翻译该玩家的话给其他外国人 
-    {
-        for(int i = 1; i <= MaxClients; i++)
-        {
-            if(IsClientInGame(i) && !IsFakeClient(i) && i != client)
-            {
-                if (!g_translator[i])continue;
-                GetLanguageInfo(GetClientLanguage(i), temp, 6); // get Foreign language
-                tlobj.AddDstLanguage(GetTLangFromChar(temp, ShortInSM), client);
-                shouldtl = true; // Translate not Foreign msg to Foreign player
-            }
-        }
-    }
-    if (shouldtl) {
-        CreateRequest(tlobj); 
-        log.debug("创建新翻译对象：%i", g_TlQueuePos);
-        log.debug("message: \"%s\" \nsayer: %N\nteam: %i\n src: %s", tlobj.message, tlobj.sayer, tlobj.team, ShortInSM[tlobj.src]);
-    }
-    return Plugin_Continue;
-}
 
 void GetAccessToken(char[] client_id, char[] client_secret)
 {
