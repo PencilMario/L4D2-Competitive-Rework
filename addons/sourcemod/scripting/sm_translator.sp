@@ -381,7 +381,6 @@ public Action Command_Say(int client, const char[] command, int args)
     if(GetServerLanguage() != GetClientLanguage(client))
     {
         if (!g_translator[client])return Plugin_Continue;
-        tlobj.AddDstLanguage(GetTLangFromChar(ServerLang, ShortInSM), 0);
         for(int i = 1; i <= MaxClients; i++)
         {
             if(IsClientInGame(i) && !IsFakeClient(i) && i != client && GetClientLanguage(client) != GetClientLanguage(i))
@@ -458,7 +457,7 @@ public int Callback_TokenGeted(Handle request, bool bFailure, bool bRequestSucce
 
 void CreateRequest(TranslateObject tlobj){
     
-    log.debug("CreateRequest创建新翻译对象：%i", g_TlQueuePos);
+    log.debug("CreateRequest开始处理翻译对象：%i", g_TlQueuePos);
     log.debug("\nmessage: \"%s\" \nsayer: %N\nteam: %i\n src: %s", tlobj.message, tlobj.sayer, tlobj.team, ShortInSM[tlobj.src]);
     g_TlQueue[g_TlQueuePos] = tlobj;
 
