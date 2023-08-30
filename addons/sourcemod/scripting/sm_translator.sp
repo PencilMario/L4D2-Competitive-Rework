@@ -45,13 +45,15 @@ bool g_translator[MAXPLAYERS + 1];
 
 char baiduapi[] = "https://aip.baidubce.com/rpc/2.0/mt/texttrans/v1?access_token="
 char deeplapi[] = "https://api-free.deepl.com/v2/translate"
+char deeplproapi[] = "https://api.deepl.com/v2/translate"
 char g_cApiKey[256], g_cApiAuth[256], g_cApiToken[256];
 
 
 enum TranslateSource{
     Translator_None,
     Translator_Baidu,
-    Translator_DeepL
+    Translator_DeepL,
+    Translator_DeepLPro
 }
 
 enum TranslateLanguage{
@@ -241,10 +243,11 @@ public void OnPluginStart()
     log = new Logger("sm_translator", LoggerType_NewLogFile);
     log.IgnoreLevel = LogType_Debug;
     log.SetLogPrefix("[Rework]");
+    if (log.FileSize > 1024*1024*5) log.DelLogFile();
     LoadTranslations("sm_translator.phrases.txt");
 
     CreateConVar("sm_translator_version", "1.0.0", "SM Translator Version", FCVAR_SPONLY|FCVAR_NOTIFY);
-    g_hTranslateApi = CreateConVar("sm_translator_api", "1", "SM Translator Api, 0=Disable, 1=Baidu, 2=DeepL");
+    g_hTranslateApi = CreateConVar("sm_translator_api", "1", "SM Translator Api, 0=Disable, 1=Baidu, 2=DeepL api free 3=DeepL api pro");
     g_hTranslateApiKey = CreateConVar("sm_translator_apikey", "beLX1eoWGvtlzU0GGG542Tox", "SM Translator Apikey, for baidu api");
     g_hTranslateApiAuth = CreateConVar("sm_translator_apiauth", "znhKVCi8l1gN4V1tssD4TaIa9iwKs2Ek", "SM Translator Apikey, for baidu api and deepl (':fx' is not required)");
     AddCommandListener(Command_Say, "say");	
@@ -524,6 +527,11 @@ void CreateRequest(TranslateObject tlobj){
                 request.SetHeader("Authorization", "DeepL-Auth-Key %s:fx", g_cApiAuth);
                 log.debug("Authorization: DeepL-Auth-Key %s", g_cApiAuth);
             }
+            case Translator_DeepLPro:{
+                request = new HTTPRequest(deeplproapi);
+                request.SetHeader("Authorization", "DeepL-Auth-Key %s:fx", g_cApiAuth);
+                log.debug("Authorization: DeepL-Auth-Key %s", g_cApiAuth);
+            }
             default:
                 return;
         }
@@ -540,14 +548,13 @@ void CreateRequest(TranslateObject tlobj){
                 bodyjson.SetString("q", tlobj.message);
                 log.debug("[baidu]目标: %s, 文本: \"%s\"", ShortInBaidu[tlobj.dst[i]], tlobj.message);
             }
-            case Translator_DeepL:{
+            case Translator_DeepL, Translator_DeepLPro:{
                 if (_text.PushString(tlobj.message)) bodyjson.Set("text", _text);
                 else {log.error("_text.PushString Failed"); return;}
                 bodyjson.SetString("target_lang", ShortInDeepL[tlobj.dst[i]]);
                 log.debug("[deepl]目标: %s, 文本: \"%s\"", ShortInDeepL[tlobj.dst[i]], tlobj.message);
                 
             }
-            
         }
         bodyjson.ToString(body, 16536);
         log.debug("body: %s", body);
@@ -593,7 +600,7 @@ public void OnHttpResponse(HTTPResponse response, any value){
                 dst = GetTLangFromChar(dstbuff, ShortInBaidu);
             }
         }
-        case Translator_DeepL:{
+        case Translator_DeepL, Translator_DeepLPro:{
             if (json.HasKey("translations")){
                 JSONArray t_jsona = view_as<JSONArray>(json.Get("translations"));
                 JSONObject t_json2 = view_as<JSONObject>(t_jsona.Get(0));
