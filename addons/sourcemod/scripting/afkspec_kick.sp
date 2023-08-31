@@ -45,3 +45,7 @@ public Action Timer_CheckTeams(Handle timer)
 public void OnClientConnected(int client){
     kicktime[client] = 20;
 }
+
+public void OnClientDisconnect(int client){
+    OnClientConnected(client);
+}
