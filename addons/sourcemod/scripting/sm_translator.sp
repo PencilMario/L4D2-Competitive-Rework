@@ -405,7 +405,7 @@ public Action Command_Say(int client, const char[] command, int args)
                 if (i == tlobj.sayer) continue;
                 if (!g_translator[i]) continue;
                 GetLanguageInfo(GetClientLanguage(i), temp, 6); // get Foreign language
-                tlobj.AddDstLanguage(GetTLangFromChar(temp, ShortInSM), client);
+                tlobj.AddDstLanguage(GetTLangFromChar(temp, ShortInSM), i);
                 shouldtl = true; // Translate not Foreign msg to Foreign player
             }
         }
