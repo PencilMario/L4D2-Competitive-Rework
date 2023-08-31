@@ -3,9 +3,8 @@
 #include <colors>
 #include <l4d2util_constants>
 #define CHECK_INTERVAL 1.0
-#define KICK_DELAY 20.0
 
-
+int kicktime[MAXPLAYERS] = {20};
 public void OnPluginStart()
 {
     CreateTimer(CHECK_INTERVAL, Timer_CheckTeams, _, TIMER_REPEAT);
@@ -18,8 +17,6 @@ public Action Timer_CheckTeams(Handle timer)
     for (int i = 1; i <= MaxClients; i++){
         if (!IsClientInGame(i)) continue;
         switch (GetClientTeam(i)){
-            case L4D2Team_None:
-                {}
             case L4D2Team_Spectator: 
                 players[L4D2Team_Spectator]++;
             case L4D2Team_Survivor:{
@@ -29,19 +26,22 @@ public Action Timer_CheckTeams(Handle timer)
                 players[L4D2Team_Infected]++;
         }
     }
-    for (int i = 1; i <= MaxClients; i++){
-        
+    if (players[L4D2Team_Survivor] < 4 || players[L4D2Team_Infected] < 4){
+        if (players[L4D2Team_Spectator] > 0){
+            for (int i = 1; i <= MaxClients; i++){
+                if (!IsClientInGame(i)) continue;
+                if (GetClientTeam(i) == L4D2Team_Spectator){
+                    CPrintToChat(i, "[{olive}!{default}] 请在 {green}%is 内进入队伍, 不然将会踢出");
+                    if (kicktime[i]-- < 0){
+                        KickClient(i, "你因为旁观占位被踢出");
+                    }
+                }
+            }
+        }
     }
+    return Plugin_Continue;
 }
 
-public Action Timer_KickSpectator(Handle timer, any userid)
-{
-    int client = GetClientOfUserId(userid);
-    if (!IsClientInGame(client)) return Plugin_Stop;
-    if (client != 0 && GetClientTeam(client) == 1)
-    {
-        KickClient(client, "你因为旁观占位被踢出");
-    }
-
-    return Plugin_Continue;
+public void OnClientConnected(int client){
+    kicktime[client] = 20;
 }
