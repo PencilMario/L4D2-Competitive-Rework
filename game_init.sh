@@ -11,6 +11,7 @@ mkdir -p "/home/steam/Steam/steamapps/common/l4d2/left4dead2"
 gitrep=L4D2-Competitive-Rework
 
 echo "Install Game";
+git config --global --add safe.directory /home/steam/L4D2-Competitive-Rework
 cd /home/steam/$gitrep/;
 
 bash update_full.sh
