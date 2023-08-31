@@ -380,6 +380,7 @@ public Action Command_Say(int client, const char[] command, int args)
     // Foreign 发言玩家是外国人，翻译该玩家说的话给其他非外国人
     if(GetServerLanguage() != GetClientLanguage(client))
     {
+        log.debug("发言人使用非服务器语言");
         if (!g_translator[client])return Plugin_Continue;
         for(int i = 1; i <= MaxClients; i++)
         {
@@ -393,6 +394,7 @@ public Action Command_Say(int client, const char[] command, int args)
     }
     else // Not foreign 发言玩家不是外国人，翻译该玩家的话给其他外国人 
     {
+        log.debug("发言人使用服务器语言");
         for(int i = 1; i <= MaxClients; i++)
         {
             if(IsClientInGame(i) && !IsFakeClient(i) && i != client)
