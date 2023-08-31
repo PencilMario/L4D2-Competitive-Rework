@@ -386,9 +386,9 @@ public Action Command_Say(int client, const char[] command, int args)
         if (!g_translator[client])return Plugin_Continue;
         for(int i = 1; i <= MaxClients; i++)
         {
-            if(IsClientInGame(i) && !IsFakeClient(i) && GetClientLanguage(client) != GetClientLanguage(i))
+            if(IsClientInGame(i) && !IsFakeClient(i) && GetClientLanguage(client) != GetClientLanguage(i) && i != client)
             {
-                if (i == tlobj.sayer) continue;
+                if (i == client) continue;
                 GetLanguageInfo(GetClientLanguage(i), temp, 6); // get Foreign language
                 tlobj.AddDstLanguage(GetTLangFromChar(temp, ShortInSM), i);
                 shouldtl = true;// Translate not Foreign msg to Foreign player
@@ -400,9 +400,8 @@ public Action Command_Say(int client, const char[] command, int args)
         log.debug("发言人使用服务器语言");
         for(int i = 1; i <= MaxClients; i++)
         {
-            if(IsClientInGame(i) && !IsFakeClient(i))
+            if(IsClientInGame(i) && !IsFakeClient(i) &&  i != client)
             {
-                if (i == tlobj.sayer) continue;
                 if (!g_translator[i]) continue;
                 GetLanguageInfo(GetClientLanguage(i), temp, 6); // get Foreign language
                 tlobj.AddDstLanguage(GetTLangFromChar(temp, ShortInSM), i);
