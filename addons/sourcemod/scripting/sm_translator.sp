@@ -227,8 +227,10 @@ enum struct TranslateObject{
         this.clients[client] = la;
         for (int i = 0; i < sizeof(this.dst); i++){
             if (this.dst[i] == LA_None) {
-                if (!this.IsDstLangAdded(la)) this.dst[i] = la; 
-                log.debug("目标语言添加：%s/第%i", ShortInSM[la], i);
+                if (!this.IsDstLangAdded(la)) {
+                    this.dst[i] = la; 
+                    log.debug("目标语言添加：%s/第%i", ShortInSM[la], i);
+                }
                 break;
             }
             
