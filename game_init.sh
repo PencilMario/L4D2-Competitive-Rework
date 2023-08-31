@@ -6,7 +6,7 @@ tar -xvzf steamcmd_linux.tar.gz
 
 # git clone https://releases.0721play.top/https://github.com/PencilMario/L4D2-Competitive-Rework
 
-mkdir -r "/home/steam/Steam/steamapps/common/l4d2/left4dead2"
+mkdir -p "/home/steam/Steam/steamapps/common/l4d2/left4dead2"
 
 gitrep=L4D2-Competitive-Rework
 
