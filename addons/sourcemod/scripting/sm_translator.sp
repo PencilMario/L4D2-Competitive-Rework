@@ -377,6 +377,8 @@ public Action Command_Say(int client, const char[] command, int args)
     tlobj.src = GetTLangFromChar(temp, ShortInSM);
     tlobj.team = StrEqual("say_team", command);
     bool shouldtl = false;
+
+
     // Foreign 发言玩家是外国人，翻译该玩家说的话给其他非外国人
     if(GetServerLanguage() != GetClientLanguage(client))
     {
@@ -417,12 +419,12 @@ public Action Command_Say(int client, const char[] command, int args)
         }
         for (int i = 1; i < sizeof(tlobj.clients); i++){
             if (tlobj.clients[i] != LA_None){
-                Format(_temp2, sizeof(_temp2),"%s|%N",  _temp2, i);
+                Format(_temp2, sizeof(_temp2),"%s|%N(%i)",  _temp2, i, i);
             }
         }
         CreateRequest(tlobj); 
         log.debug("创建新翻译对象：%i", g_TlQueuePos);
-        log.debug("message: \"%s\" \nsayer: %N\nteam: %i\nsrc: %s \ndst:%s \nplayer: %s", tlobj.message, tlobj.sayer, tlobj.team, ShortInSM[tlobj.src],
+        log.debug("message: \"%s\" \nsayer: %N(%i)\nteam: %i\nsrc: %s \ndst:%s \nplayer: %s", tlobj.message, tlobj.sayer, tlobj.sayer, tlobj.team, ShortInSM[tlobj.src],
             _temp, _temp2);
     }
     return Plugin_Continue;
