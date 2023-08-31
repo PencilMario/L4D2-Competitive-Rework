@@ -9,7 +9,11 @@ public void OnPluginStart()
 {
     CreateTimer(CHECK_INTERVAL, Timer_CheckTeams, _, TIMER_REPEAT);
 }
-
+public void OnMapStart(){
+    for (int i = 1; i <= MaxClients; i++){
+        kicktime[i] = 20;
+    }
+}
 public Action Timer_CheckTeams(Handle timer)
 {
     int players[L4D2Team_Size]
