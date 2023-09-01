@@ -60,15 +60,15 @@
 	{
 		"hostname"		"冷气开放[Zonemod 2.8.6]"
 	}
-	"53333"
+	"34101"
 	{
 		"hostname"		"[N&B.Zonemod]萌新汪汪屋#1"
 	}
-	"56666"
+	"34102"
 	{
 		"hostname"		"[N&B.Zonemod]萌新汪汪屋#2"
 	}
-	"58888"
+	"34103"
 	{
 		"hostname"		"狗窝"
 	}
@@ -76,27 +76,27 @@
 	{
 		"hostname"		"[N&B.Zonemod]打不过睡大觉"
 	}
-	"60101"
+	"34105"
 	{
 		"hostname"		"[N&B.Zonemod]啊？"
 	}
-	"60102"
+	"34106"
 	{
 		"hostname"		"[N&B.Zonemod]家人们，谁懂啊"
 	}
-	"60103"
+	"34107"
 	{
 		"hostname"		"[N&B.Zonemod]炸鱼的差不多得了"
 	}
-	"60104"
+	"34108"
 	{
 		"hostname"		"[N&B.Zonemod]真厨圣啊"
 	}
-	"60105"
+	"34109"
 	{
 		"hostname"		"[N&B.Zonemod]谢邀 吃够了"
 	}
-	"60106"
+	"34100"
 	{
 		"hostname"		"[N&B.Zonemod]玩不了一点"
 	}
