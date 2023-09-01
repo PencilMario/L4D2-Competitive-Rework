@@ -84,4 +84,20 @@
 	{
 		"hostname"		"[N&B.Zonemod]家人们，谁懂啊"
 	}
+	"60103"
+	{
+		"hostname"		"[N&B.Zonemod]炸鱼的差不多得了"
+	}
+	"60104"
+	{
+		"hostname"		"[N&B.Zonemod]真厨圣啊"
+	}
+	"60105"
+	{
+		"hostname"		"[N&B.Zonemod]谢邀 吃够了"
+	}
+	"60106"
+	{
+		"hostname"		"[N&B.Zonemod]玩不了一点"
+	}
 }
