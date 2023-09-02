@@ -78,7 +78,7 @@
 	}
 	"34105"
 	{
-		"hostname"		"[N&B.Zonemod]啊？"
+		"hostname"		"[N&B.Zonemod 600-][纯萌新]啊？"
 	}
 	"34106"
 	{
