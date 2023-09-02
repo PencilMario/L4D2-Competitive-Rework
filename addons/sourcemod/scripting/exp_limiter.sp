@@ -4,7 +4,7 @@
 #include <colors>
 #include <l4d2util_constants>
 #include <exp_interface>
-
+#define WARMBOT_STEAMID "STEAM_1:1:695917591"
 ConVar enable, max, min;
 
 public void OnPluginStart(){
@@ -21,7 +21,10 @@ public Action Event_PlayerTeam(Event event, const char[] name, bool dontBroadcas
     int team = event.GetInt("team");
     if (team == L4D2Team_Infected || team == L4D2Team_Survivor){
         if (!isInRange(L4D2_GetClientExp(client), min.IntValue, max.IntValue)){
-            CPrintToChat(client, "[{red}!{default}] 你不能进入游戏, 因为你的经验分超出范围了 {olive}(%i~%i)", min.IntValue, max.IntValue);
+            if (L4D2_GetClientExp(client) == -2){
+                CPrintToChat(client, "[{red}!{default}] 你不能进入游戏, 因为暂时未获取到你的经验分, 请稍后重试");
+            }
+            else CPrintToChat(client, "[{red}!{default}] 你不能进入游戏, 因为你的经验分(%i)不在规定范围内 {olive}(%i~%i){default}, 你仍可以旁观",L4D2_GetClientExp(client) ,min.IntValue, max.IntValue);
             CreateTimer(3.0, Timer_SafeToSpec, client);
             return Plugin_Handled;
         }
@@ -34,8 +37,15 @@ public bool isInRange(int i, int mi, int ma){
 }
 
 public Action Timer_SafeToSpec(Handle timer, int client){
-    if (IsClientInGame(client)) FakeClientCommand(client, "sm_s");
+    if (IsClientInGame(client) && !IsWarmBot(client)) FakeClientCommand(client, "sm_s");
     else if (IsClientConnected(client)) CreateTimer(3.0, Timer_SafeToSpec, client);
     else return Plugin_Stop;
     return Plugin_Continue;
+}
+
+bool IsWarmBot(int client)
+{
+    char steamid[64];
+    GetClientAuthId(client, AuthId_Steam2, steamid, sizeof(steamid));
+    return StrEqual(steamid, WARMBOT_STEAMID);
 }
