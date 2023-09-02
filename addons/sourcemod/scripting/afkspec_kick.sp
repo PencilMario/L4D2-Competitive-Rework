@@ -35,7 +35,7 @@ public Action Timer_CheckTeams(Handle timer)
             for (int i = 1; i <= MaxClients; i++){
                 if (!IsClientInGame(i)) continue;
                 if (GetClientTeam(i) == L4D2Team_Spectator){
-                    CPrintToChat(i, "[{olive}!{default}] 请在 {green}%is{default} 内进入队伍, 不然将会踢出", i);
+                    CPrintToChat(i, "[{olive}!{default}] 请在 {green}%is{default} 内进入队伍, 不然将会踢出", kicktime[i]);
                     if (kicktime[i]-- < 0){
                         KickClient(i, "你因为旁观占位被踢出");
                     }
