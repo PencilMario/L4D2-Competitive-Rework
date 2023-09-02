@@ -100,8 +100,8 @@
 	{
 		"hostname"		"[N&B.Zonemod]玩不了一点"
 	}
-	"34201"
+	"34110"
 	{
-		"hostname"		"[N&B.Zonemod 600-1800] 糕手进阶服"
+		"hostname"		"[N&B.Zonemod 600-1800] 我是求生糕手"
 	}
 }
