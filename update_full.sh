@@ -1,4 +1,7 @@
 #!/bin/bash
+echo "==================本次执行时间=================="
+TZ=UTC-8 date
+echo "==================开始执行=================="
 
 # github存储库名称
 gitrep=L4D2-Competitive-Rework
@@ -16,7 +19,7 @@ for dir in "${directories[@]}"; do
 
         ../steamcmd.sh +force_install_dir ${dir%/left4dead2} +login anonymous +app_update 222860 validate +quit
 
-
+        echo ""
         find "$dir/addons/sourcemod/" \
             ! -path "$dir/addons/sourcemod/logs*" \
             ! -path "$dir/addons/sourcemod/configs/admins_simple.ini" \

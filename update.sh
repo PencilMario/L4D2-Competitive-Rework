@@ -1,4 +1,7 @@
 #!/bin/bash
+echo "==================本次执行时间=================="
+TZ=UTC-8 date
+echo "==================开始执行=================="
 
 gitrep=L4D2-Competitive-Rework
 
