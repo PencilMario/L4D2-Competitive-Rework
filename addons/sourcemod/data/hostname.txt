@@ -96,7 +96,7 @@
 	{
 		"hostname"		"[N&B.Zonemod]谢邀 吃够了"
 	}
-	"34100"
+	"34104"
 	{
 		"hostname"		"[N&B.Zonemod]玩不了一点"
 	}
