@@ -21,7 +21,8 @@ public Action Event_PlayerTeam(Event event, const char[] name, bool dontBroadcas
     int team = event.GetInt("team");
     if (team == L4D2Team_Infected || team == L4D2Team_Survivor){
         if (!isInRange(L4D2_GetClientExp(client), min.IntValue, max.IntValue)){
-            CPrintToChat(client, "[{red}!{default}] 你不能进入游戏, 因为你的经验分超出范围了 (%i~%i)", min.IntValue, max.IntValue);
+            CPrintToChat(client, "[{red}!{default}] 你不能进入游戏, 因为你的经验分超出范围了 {olive}(%i~%i)", min.IntValue, max.IntValue);
+            ChangeClientTeam(client, L4D2Team_Spectator);
             return Plugin_Handled;
         }
     }
