@@ -22,7 +22,7 @@ public Action Event_PlayerTeam(Event event, const char[] name, bool dontBroadcas
     if (team == L4D2Team_Infected || team == L4D2Team_Survivor){
         if (!isInRange(L4D2_GetClientExp(client), min.IntValue, max.IntValue)){
             CPrintToChat(client, "[{red}!{default}] 你不能进入游戏, 因为你的经验分超出范围了 {olive}(%i~%i)", min.IntValue, max.IntValue);
-            CreateTimer(3.0, Timer_SafeToSpec);
+            CreateTimer(3.0, Timer_SafeToSpec, client);
             return Plugin_Handled;
         }
     }
@@ -35,7 +35,7 @@ public bool isInRange(int i, int mi, int ma){
 
 public Action Timer_SafeToSpec(Handle timer, int client){
     if (IsClientInGame(client)) FakeClientCommand(client, "sm_s");
-    else if (IsClientConnected(client)) CreateTimer(3.0, Timer_SafeToSpec);
+    else if (IsClientConnected(client)) CreateTimer(3.0, Timer_SafeToSpec, client);
     else return Plugin_Stop;
     return Plugin_Continue;
 }
