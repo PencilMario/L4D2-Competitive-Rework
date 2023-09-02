@@ -39,6 +39,7 @@ public Action Timer_CheckTeams(Handle timer)
                     if (kicktime[i]-- < 0){
                         KickClient(i, "你因为旁观占位被踢出");
                     }
+                    break;
                 }
             }
         }
