@@ -17,6 +17,7 @@ public void OnPluginStart(){
 public Action Event_PlayerTeam(Event event, const char[] name, bool dontBroadcast){
     if (enable.IntValue == 0) return Plugin_Continue;
     int client = GetClientOfUserId(GetEventInt(event, "userid"));
+    if (IsFakeClient(client)) return Plugin_Continue;
     int team = event.GetInt("team");
     if (team == L4D2Team_Infected || team == L4D2Team_Survivor){
         if (!isInRange(L4D2_GetClientExp(client), min.IntValue, max.IntValue)){
