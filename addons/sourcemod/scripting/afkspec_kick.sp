@@ -2,6 +2,7 @@
 #include <sdktools>
 #include <colors>
 #include <l4d2util_constants>
+#include <readyup>
 #define CHECK_INTERVAL 1.0
 
 int kicktime[MAXPLAYERS] = {20};
@@ -16,6 +17,7 @@ public void OnMapStart(){
 }
 public Action Timer_CheckTeams(Handle timer)
 {
+    if (!IsInReady()) return Plugin_Continue;
     int players[L4D2Team_Size]
     // 统计玩家数量
     for (int i = 1; i <= MaxClients; i++){
