@@ -378,6 +378,7 @@ public Action Command_Say(int client, const char[] command, int args)
     GetLanguageInfo(GetClientLanguage(client), temp, 6);
     tlobj.src = GetTLangFromChar(temp, ShortInSM);
     tlobj.team = StrEqual("say_team", command);
+    tlobj.AddDstLanguage(tlobj.src, tlobj.sayer);
     bool shouldtl = false;
 
 
