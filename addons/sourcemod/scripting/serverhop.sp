@@ -220,21 +220,24 @@ public int Menu_Handler(Menu menu, MenuAction action, int param1, int param2) {
 		char menuTitle[MAX_STR_LEN];
 		Format(menuTitle, sizeof(menuTitle), "%T", "AboutToJoinServer", param1);
 		Format(g_sAddress[param1], MAX_STR_LEN, "%s:%i", g_sServerAddress[serverNum], g_iServerPort[serverNum]);
+		CPrintToChat(param1, "\x01[\x03hop\x01] 以下为你要连接到的服务器信息");
+		PrintToChat(param1, g_sAddress[param1]);
 		g_sServer[param1] = g_sServerInfo[serverNum];
+		PrintToChat(param1, g_sServer[param1]);
+		//if (!g_bConnectedFromFavorites[param1]) {
+		//	PrintToChat(param1, "\x01[\x03ServerHop\x01] 因为Valve的修改, 你必须使用connect指令进入本服务器才能通过本插件进入其他服务器");
+		//	PrintToChat(param1, "\x01[\x03ServerHop\x01] %s:\x03 %s", g_sServer[param1], g_sAddress[param1]);
+		//	return;
+		//}
 
-		if (!g_bConnectedFromFavorites[param1]) {
-			PrintToChat(param1, "\x01[\x03ServerHop\x01] 因为Valve的修改, 你必须使用connect指令进入本服务器才能通过本插件进入其他服务器");
-			PrintToChat(param1, "\x01[\x03ServerHop\x01] %s:\x03 %s", g_sServer[param1], g_sAddress[param1]);
-			return;
-		}
-
+		char buffer[128];
+		Format(buffer, sizeof(buffer), "%s", g_sServer[param1]);
 		Panel panel = new Panel();
 		panel.SetTitle(menuTitle);
-		panel.DrawText(g_sServerInfo[serverNum]);
-		panel.DrawText("以上信息正确吗?");
+		panel.DrawText("聊天栏的信息正确吗?");
 		panel.CurrentKey = 3;
 		panel.DrawItem("正确");
-		panel.DrawItem("算了");
+		panel.DrawItem("不正确");
 		panel.Send(param1, MenuConfirmHandler, 15);
 
 		delete panel;
