@@ -5,7 +5,7 @@
 #include <colors>
 #define PLUGIN_VERSION "1.0.2"
 #define PLUGIN_DESCRIPTION "Provides live server info with join option"
-#define MAX_SERVERS 10
+#define MAX_SERVERS 25
 #define REFRESH_TIME 60.0
 #define SERVER_TIMEOUT 10.0
 #define MAX_STR_LEN 160
