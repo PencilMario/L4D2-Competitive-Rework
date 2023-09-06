@@ -26,7 +26,7 @@ public Action Event_PlayerTeam(Event event, const char[] name, bool dontBroadcas
             }
             else CPrintToChat(client, "[{red}!{default}] 你不能进入游戏, 因为你的经验分(%i)不在规定范围内 {olive}(%i~%i){default}, 你仍可以旁观",L4D2_GetClientExp(client) ,min.IntValue, max.IntValue);
             CreateTimer(3.0, Timer_SafeToSpec, client);
-            return Plugin_Handled;
+            return Plugin_Continue;
         }
     }
     return Plugin_Continue;
