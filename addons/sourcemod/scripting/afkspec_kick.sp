@@ -5,12 +5,23 @@
 #include <readyup>
 #define CHECK_INTERVAL 1.0
 
+char snd1[] = "buttons/blip2.wav";
+char snd2[] = "buttons/button22.wav";
+char snd3[] = "buttons/button22.wav";
+char snd5[] = "music/scavenge/level_03_01.wav";
+char snd4[] = "ui/menu_enter05.wav";
+
 int kicktime[MAXPLAYERS] = {20};
 public void OnPluginStart()
 {
     CreateTimer(CHECK_INTERVAL, Timer_CheckTeams, _, TIMER_REPEAT);
 }
 public void OnMapStart(){
+    PrecacheSound(snd1);
+    PrecacheSound(snd2);
+    PrecacheSound(snd3);
+    PrecacheSound(snd4);
+    PrecacheSound(snd5);
     for (int i = 1; i <= MaxClients; i++){
         kicktime[i] = 20;
     }
@@ -38,6 +49,13 @@ public Action Timer_CheckTeams(Handle timer)
                 if (!IsClientInGame(i)) continue;
                 if (GetClientTeam(i) == L4D2Team_Spectator){
                     CPrintToChat(i, "[{olive}!{default}] 请在 {green}%is{default} 内进入队伍, 不然将会踢出", kicktime[i]);
+
+                    if (kicktime[i] > 19) EmitSoundToClient(i, snd1, SOUND_FROM_PLAYER, SNDCHAN_STATIC, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_NORMAL, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
+                    else if (kicktime[i]>10) EmitSoundToClient(i, snd2, SOUND_FROM_PLAYER, SNDCHAN_STATIC, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_NORMAL, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
+                    else if(kicktime[i]>5) EmitSoundToClient(i, snd3, SOUND_FROM_PLAYER, SNDCHAN_STATIC, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_NORMAL, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
+                    else if(kicktime[i] > 1) EmitSoundToClient(i, snd4, SOUND_FROM_PLAYER, SNDCHAN_STATIC, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_NORMAL, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
+                    else if(kicktime[i] == 0) EmitSoundToClient(i, snd5, SOUND_FROM_PLAYER, SNDCHAN_STATIC, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_NORMAL, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
+
                     if (kicktime[i]-- < 0){
                         KickClient(i, "你因为旁观占位被踢出");
                     }
