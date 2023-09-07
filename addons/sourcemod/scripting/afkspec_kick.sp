@@ -8,8 +8,8 @@
 char snd1[] = "buttons/blip2.wav";
 char snd2[] = "buttons/button22.wav";
 char snd3[] = "buttons/button22.wav";
-char snd5[] = "music/scavenge/level_03_01.wav";
-char snd4[] = "ui/menu_enter05.wav";
+char snd4[] = "music/scavenge/level_03_01.wav";
+char snd5[] = "ui/menu_enter05.wav";
 
 int kicktime[MAXPLAYERS] = {20};
 public void OnPluginStart()
