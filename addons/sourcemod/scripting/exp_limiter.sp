@@ -17,6 +17,7 @@ public void OnPluginStart(){
 public Action Timer_CheckAllPlayer(Handle timer){
     if (enable.IntValue == 0) return Plugin_Continue;
     for (int client = 1; client <= MaxClients; client++){
+        if (!IsClientInGame(client)) continue;
         int team = GetClientTeam(client);
         if (team == L4D2Team_Infected || team == L4D2Team_Survivor){
             if (!isInRange(L4D2_GetClientExp(client), min.IntValue, max.IntValue)){
