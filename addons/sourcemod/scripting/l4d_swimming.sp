@@ -118,20 +118,20 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnPluginStart()
 {
-	g_hCvarAllow =		CreateConVar(	"l4d_swim_allow",		"1",			"0=Plugin off, 1=Plugin on.", CVAR_FLAGS );
+	g_hCvarAllow =		CreateConVar(	"l4d_swim_allow",		"0",			"0=Plugin off, 1=Plugin on.", CVAR_FLAGS );
 	g_hCvarModes =		CreateConVar(	"l4d_swim_modes",		"",				"Turn on the plugin in these game modes, separate by commas (no spaces). (Empty = all).", CVAR_FLAGS );
 	g_hCvarModesOff =	CreateConVar(	"l4d_swim_modes_off",	"",				"Turn off the plugin in these game modes, separate by commas (no spaces). (Empty = none).", CVAR_FLAGS );
 	g_hCvarModesTog =	CreateConVar(	"l4d_swim_modes_tog",	"0",			"Turn on the plugin in these game modes. 0=All, 1=Coop, 2=Survival, 4=Versus, 8=Scavenge. Add numbers together.", CVAR_FLAGS );
-	g_hCvarDive =		CreateConVar(	"l4d_swim_dive",		"1",			"0=Only bobbin on the surface, 1=Allows players to dive.", CVAR_FLAGS);
+	g_hCvarDive =		CreateConVar(	"l4d_swim_dive",		"0",			"0=Only bobbin on the surface, 1=Allows players to dive.", CVAR_FLAGS);
 	g_hCvarDrown =		CreateConVar(	"l4d_swim_drown",		"1",			"0=Stay on surface when caught by infected, 1=Sink when caught.", CVAR_FLAGS);
 	g_hCvarIncap =		CreateConVar(	"l4d_swim_incap",		"1",			"0=Allow being incapacitated when swimming (they float). 1=Stops the player swimming letting them drown.", CVAR_FLAGS);
-	g_hCvarRate =		CreateConVar(	"l4d_swim_rate",		"0.1",			"0.0=Off. How much air is lost per second when diving. Players die when they have 0 air.", CVAR_FLAGS);
+	g_hCvarRate =		CreateConVar(	"l4d_swim_rate",		"0.0",			"0.0=Off. How much air is lost per second when diving. Players die when they have 0 air.", CVAR_FLAGS);
 	g_hCvarSpeedDown =	CreateConVar(	"l4d_swim_speed_down",	"-30.0",		"How fast to teleport downwards when they hold DUCK.", CVAR_FLAGS);
 	g_hCvarSpeedIdle =	CreateConVar(	"l4d_swim_speed_idle",	"15.0",			"How fast to teleport players when they are not pressing any keys.", CVAR_FLAGS);
 	g_hCvarSpeedJmp =	CreateConVar(	"l4d_swim_speed_jump",	"400.0",		"How fast to teleport players when jumping out of the water.", CVAR_FLAGS);
 	g_hCvarSpeedUp =	CreateConVar(	"l4d_swim_speed_up",	"30.0",			"How fast to teleport players who are pressing the SPRINT/WALK key.", CVAR_FLAGS);
 	CreateConVar(						"l4d_swim_version",		PLUGIN_VERSION, "Swimming plugin version.", FCVAR_NOTIFY|FCVAR_DONTRECORD);
-	AutoExecConfig(true,				"l4d_swim");
+	//AutoExecConfig(true,				"l4d_swim");
 
 	g_hCvarDecayRate = FindConVar("pain_pills_decay_rate");
 	g_hCvarMPGameMode = FindConVar("mp_gamemode");
@@ -178,7 +178,19 @@ void ResetPlugin()
 	}
 }
 
+public void OnRoundLiveCountdownPre(){
+	ResetPlugin();
+	g_hCvarAllow.IntValue = 0;
+}
 
+public void OnRoundIsLivePre(){
+	ResetPlugin();
+	g_hCvarAllow.IntValue = 0;
+}
+
+public void OnReadyUpInitiate(){
+	g_hCvarAllow.IntValue = 1;
+}
 
 // ====================================================================================================
 //					CVARS
