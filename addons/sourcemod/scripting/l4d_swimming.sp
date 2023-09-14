@@ -178,10 +178,6 @@ void ResetPlugin()
 	}
 }
 
-public void OnRoundLiveCountdownPre(){
-	ResetPlugin();
-	g_hCvarAllow.IntValue = 0;
-}
 
 public void OnRoundIsLivePre(){
 	ResetPlugin();
