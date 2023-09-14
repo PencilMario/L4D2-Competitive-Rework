@@ -289,6 +289,7 @@ Action Timer_RestartServer(Handle timer)
 
 void RestartServer()
 {
+	if (RealPlayerExist()) return;
 	switch( g_iCvarMethod )
 	{
 		case 1: {
