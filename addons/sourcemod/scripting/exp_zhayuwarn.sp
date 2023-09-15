@@ -7,8 +7,8 @@
 
 
 public void L4D2_OnGetExp(int client, int exp){
-    int count = 0
-    int totalexp = 0
+    int count = 0;
+    int totalexp = 0;
     for (int i = 1; i <= MaxClients; i++){
         if (IsClientInGame(i)){
             if (GetClientTeam(i) == L4D2Team_Infected || GetClientTeam(i) == L4D2Team_Survivor){
