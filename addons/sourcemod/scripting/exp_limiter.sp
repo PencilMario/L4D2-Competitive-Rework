@@ -18,6 +18,7 @@ public Action Timer_CheckAllPlayer(Handle timer){
     if (enable.IntValue == 0) return Plugin_Continue;
     for (int client = 1; client <= MaxClients; client++){
         if (!IsClientInGame(client)) continue;
+        if (IsFakeClient(client)) continue;
         int team = GetClientTeam(client);
         if (team == L4D2Team_Infected || team == L4D2Team_Survivor){
             if (!isInRange(L4D2_GetClientExp(client), min.IntValue, max.IntValue)){
@@ -38,6 +39,7 @@ public bool isInRange(int i, int mi, int ma){
 
 public Action Timer_SafeToSpec(Handle timer, int client){
     if (IsWarmBot(client)) return Plugin_Stop;
+    if (IsFakeClient(client)) return Plugin_Stop;
     if (IsClientInGame(client) && GetClientTeam(client) != L4D2Team_Spectator) FakeClientCommand(client, "sm_s");
     else if (IsClientConnected(client)) CreateTimer(3.0, Timer_SafeToSpec, client);
     else return Plugin_Stop;
