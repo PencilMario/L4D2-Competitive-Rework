@@ -139,4 +139,5 @@ public int L4D2_ChangeLevelNV(Handle plugin, int numParams)
 		bResetScores = view_as<bool>(GetNativeCell(2));
 	
 	L4D2_ChangeLevel(sMapName, bResetScores);
+	return 1;
 }
