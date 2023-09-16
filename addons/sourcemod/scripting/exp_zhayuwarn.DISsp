@@ -5,7 +5,7 @@
 #include <l4d2util_constants>
 #include <exp_interface>
 
-
+/*
 public void L4D2_OnGetExp(int client, int exp){
     int count = 0;
     int totalexp = 0;
@@ -19,9 +19,9 @@ public void L4D2_OnGetExp(int client, int exp){
             }
         }
     }
-    float avgexp = (float)totalexp / (float)count;
-    float per = (float)exp / avgexp;
+    float avgexp = float(totalexp) / float(count);
+    float per = float(exp) / avgexp;
     if (per > 2.0){
-        PrintToChatAll("有炸鱼的来了！")
+        PrintToChatAll("有炸鱼的来了！");
     }
-    }
+    }*/
