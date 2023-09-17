@@ -99,7 +99,7 @@
     }
     "21"
     {
-        "chat"      "{green}如果服务器掉帧卡顿，可以使用{default}!votemenu{green}投票修改demo录制帧率，可以有效缓解"
+        "chat"      "{green}服务器新增经验分限制，怕萌新可以用!votemenu打开"
     }
     "22"
     {
