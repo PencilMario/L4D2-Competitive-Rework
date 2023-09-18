@@ -378,7 +378,7 @@ public Action Command_Say(int client, const char[] command, int args)
     GetLanguageInfo(GetClientLanguage(client), temp, 6);
     tlobj.src = GetTLangFromChar(temp, ShortInSM);
     tlobj.team = StrEqual("say_team", command);
-    tlobj.AddDstLanguage(tlobj.src, tlobj.sayer);
+    if (g_translator[tlobj.sayer]) tlobj.AddDstLanguage(GetTLangFromChar(ServerLang, ShortInSM), tlobj.sayer);
     bool shouldtl = false;
 
 
@@ -389,7 +389,7 @@ public Action Command_Say(int client, const char[] command, int args)
         log.debug("发言人使用非服务器语言");
         for(int i = 1; i <= MaxClients; i++)
         {
-            if(IsClientInGame(i) && !IsFakeClient(i) && GetClientLanguage(client) != GetClientLanguage(i) && i != client)
+            if(IsClientInGame(i) && !IsFakeClient(i) && GetClientLanguage(client) != GetClientLanguage(i))
             {
                 GetLanguageInfo(GetClientLanguage(i), temp, 6); // get Foreign language
                 tlobj.AddDstLanguage(GetTLangFromChar(temp, ShortInSM), i);
@@ -578,7 +578,7 @@ public void OnHttpResponse(HTTPResponse response, any value){
         if (g_TlQueue[pos].clients[i] == LA_None) continue;
         log.debug("%N - 语言: %s - 开始匹配", i, ShortInSM[g_TlQueue[pos].clients[i]]);
         // 跳过自己
-        if (i == g_TlQueue[pos].sayer) continue;
+        //if (i == g_TlQueue[pos].sayer) continue;
         // 如果为队内发言，则仅队友和旁观可见翻译
         if (g_TlQueue[pos].team && (GetClientTeam(i) != GetClientTeam(g_TlQueue[pos].sayer) && GetClientTeam(i) != 1)) continue;
         // 如果该玩家的语言符合该次翻译语言，就输出给这个玩家
