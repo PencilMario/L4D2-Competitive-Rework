@@ -33,7 +33,7 @@ public Action Timer_CheckAllPlayer(Handle timer){
                 CreateTimer(3.0, Timer_SafeToSpec, client);
             } else if (isFamilyShared[client]){
                 if (!isInRange(L4D2_GetClientExp(client), sharedmin.IntValue, max.IntValue)){
-                    CPrintToChat(client, "[{red}!{default}] 你不能进入游戏, 因为家庭共享玩家至少要求{olive}%i{default}经验分才能进入游戏", sharedmin.IntValue);
+                    CPrintToChat(client, "[{red}!{default}] 你不能进入游戏, 因为家庭共享玩家至少要求{olive}%i{default}经验分才能进入游戏, 你仍可以旁观", sharedmin.IntValue);
                     CreateTimer(3.0, Timer_SafeToSpec, client);
                 }
             }
