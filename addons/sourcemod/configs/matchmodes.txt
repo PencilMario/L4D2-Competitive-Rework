@@ -12,7 +12,7 @@
 		}
 		"zonemod4K"
 		{
-			"name"	"ZoneMod Quad v2.8.5"
+			"name"	"ZoneMod Quad （4控, 自动更新）"
 		}
 		"zonemod"
 		{
