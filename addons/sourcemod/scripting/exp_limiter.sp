@@ -25,18 +25,21 @@ public Action Timer_CheckAllPlayer(Handle timer){
         if (IsFakeClient(client)) continue;
         int team = GetClientTeam(client);
         if (team == L4D2Team_Infected || team == L4D2Team_Survivor){
+            if (isFamilyShared[client]){
+                if (!isInRange(L4D2_GetClientExp(client), sharedmin.IntValue, max.IntValue)){
+                    CPrintToChat(client, "[{red}!{default}] 你不能进入游戏, 因为家庭共享玩家至少要求{olive}%i{default}经验分才能进入游戏, 你仍可以旁观", sharedmin.IntValue);
+                    CreateTimer(3.0, Timer_SafeToSpec, client);
+                    return Plugin_Continue;
+                }
+            }
             if (!isInRange(L4D2_GetClientExp(client), min.IntValue, max.IntValue)){
                 if (L4D2_GetClientExp(client) == -2){
                     CPrintToChat(client, "[{red}!{default}] 你不能进入游戏, 因为暂时未获取到你的经验分, 请稍后重试");
                 }
                 else CPrintToChat(client, "[{red}!{default}] 你不能进入游戏, 因为你的经验分(%i)不在规定范围内 {olive}(%i~%i){default}, 你仍可以旁观",L4D2_GetClientExp(client) ,min.IntValue, max.IntValue);
                 CreateTimer(3.0, Timer_SafeToSpec, client);
-            } else if (isFamilyShared[client]){
-                if (!isInRange(L4D2_GetClientExp(client), sharedmin.IntValue, max.IntValue)){
-                    CPrintToChat(client, "[{red}!{default}] 你不能进入游戏, 因为家庭共享玩家至少要求{olive}%i{default}经验分才能进入游戏, 你仍可以旁观", sharedmin.IntValue);
-                    CreateTimer(3.0, Timer_SafeToSpec, client);
-                }
-            }
+            }  
+
         }
     }
     return Plugin_Continue;
