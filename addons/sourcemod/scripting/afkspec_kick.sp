@@ -26,6 +26,16 @@ public void OnMapStart(){
         kicktime[i] = 20;
     }
 }
+
+void ResetTimeout(int client){
+    if (IsInReady()){
+        kicktime[client] = 60
+    }
+    else {
+        kicktime[client] = 20
+    }
+}
+
 public Action Timer_CheckTeams(Handle timer)
 {
     if (IsInReady()) return Plugin_Continue;
@@ -49,8 +59,8 @@ public Action Timer_CheckTeams(Handle timer)
                 if (!IsClientInGame(i)) continue;
                 if (GetClientTeam(i) == L4D2Team_Spectator){
                     CPrintToChat(i, "[{olive}!{default}] 请在 {green}%is{default} 内进入队伍, 不然将会踢出", kicktime[i]);
-
-                    if (kicktime[i] > 19) EmitSoundToClient(i, snd1, SOUND_FROM_PLAYER, SNDCHAN_STATIC, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_NORMAL, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
+                    if (kicktime[i] > 20) {}
+                    else if (kicktime[i] > 19) EmitSoundToClient(i, snd1, SOUND_FROM_PLAYER, SNDCHAN_STATIC, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_NORMAL, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
                     else if (kicktime[i]>10) EmitSoundToClient(i, snd2, SOUND_FROM_PLAYER, SNDCHAN_STATIC, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_NORMAL, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
                     else if(kicktime[i]>5) EmitSoundToClient(i, snd3, SOUND_FROM_PLAYER, SNDCHAN_STATIC, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_NORMAL, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
                     else if(kicktime[i] > 1) EmitSoundToClient(i, snd4, SOUND_FROM_PLAYER, SNDCHAN_STATIC, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_NORMAL, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
@@ -68,9 +78,21 @@ public Action Timer_CheckTeams(Handle timer)
 }
 
 public void OnClientConnected(int client){
-    kicktime[client] = 20;
+    ResetTimeout(client);
 }
 
 public void OnClientDisconnect(int client){
     OnClientConnected(client);
+}
+
+public void OnReadyUpInitiate(){
+    for (int i = 1; i <= MaxClients; i++){
+        if (IsClientInGame(i)){
+            OnClientConnected(i);
+        }
+    }
+}
+
+public void OnRoundIsLive(){
+    OnReadyUpInitiate()
 }
