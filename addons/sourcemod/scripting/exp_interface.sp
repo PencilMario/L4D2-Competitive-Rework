@@ -31,6 +31,13 @@ public void OnPluginStart(){
     //log.IgnoreLevel = LogType_Debug;
     if (log.FileSize > 1024*1024*5) log.DelLogFile();
     log.logfirst("exp interface log记录");
+
+    for (int i = 1; i <= MaxClients; i++){
+        if (IsClientInGame(i) && !IsFakeClient(i)){
+            OnClientPutInServer(i);
+        }
+    }
+
 }
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
@@ -50,7 +57,7 @@ public int _Native_CheckAndGetAllClient(Handle plugin, int numParams)
     }
     for (int i = 1; i <= MaxClients; i++){
         if (IsClientInGame(i) && !IsFakeClient(i)){
-            if (PlayerInfoData[i].rankpoint == -2){
+            if (PlayerInfoData[i].rankpoint <= 0){
                 OnClientPutInServer(i);
             }
         }
