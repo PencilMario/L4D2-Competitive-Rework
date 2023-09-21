@@ -29,6 +29,7 @@ public Action Timer_KickClients(Handle timer){
     for (int i = 1; i<=MaxClients; i++){
         if (IsClientInGame(i) && Kick[i]){
             SBPP_BanPlayer(0, i, 0, "[nan det.]检测到非法输入");
+            log.info("封禁 %N", i)
         }
     }
     CreateTimer(15.0, Timer_KickClients);
