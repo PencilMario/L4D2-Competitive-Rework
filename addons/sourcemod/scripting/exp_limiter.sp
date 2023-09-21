@@ -10,7 +10,7 @@ ConVar enable, max, min, sharedmin;
 bool isFamilyShared[MAXPLAYERS];
 
 public void OnPluginStart(){
-    CreateTimer(2.0, Timer_CheckAllPlayer, _, TIMER_REPEAT);
+    CreateTimer(2.0, Timer_CheckAllPlayer);
     enable = CreateConVar("exp_limit_enabled", "1");
     min = CreateConVar("exp_limit_min", "75");
     max = CreateConVar("exp_limit_max", "7355608");
@@ -19,7 +19,10 @@ public void OnPluginStart(){
 }
 
 public Action Timer_CheckAllPlayer(Handle timer){
-    if (enable.IntValue == 0) return Plugin_Continue;
+    if (enable.IntValue == 0) {
+        CreateTimer(2.0, Timer_CheckAllPlayer);
+        return Plugin_Stop;
+    }
     for (int client = 1; client <= MaxClients; client++){
         if (!IsClientInGame(client)) continue;
         if (IsFakeClient(client)) continue;
@@ -41,7 +44,8 @@ public Action Timer_CheckAllPlayer(Handle timer){
 
         }
     }
-    return Plugin_Continue;
+    CreateTimer(2.0, Timer_CheckAllPlayer);
+    return Plugin_Stop;
 }
 public Action CMD_Exp(int client, int args){
     for (int i = 1; i<=MaxClients; i++){
