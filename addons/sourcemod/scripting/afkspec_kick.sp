@@ -58,7 +58,7 @@ public Action Timer_CheckTeams(Handle timer)
                 if (!IsClientInGame(i)) continue;
                 if (GetClientTeam(i) == L4D2Team_Spectator){
                     CPrintToChat(i, "[{olive}!{default}] 请在 {green}%is{default} 内进入队伍, 不然将会踢出", kicktime[i]);
-                    if (kicktime[i] > 20) {}
+                    if (kicktime[i] > 20) EmitSoundToClient(i, snd2, SOUND_FROM_PLAYER, SNDCHAN_STATIC, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_NORMAL, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
                     else if (kicktime[i] > 19) EmitSoundToClient(i, snd1, SOUND_FROM_PLAYER, SNDCHAN_STATIC, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_NORMAL, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
                     else if (kicktime[i]>10) EmitSoundToClient(i, snd2, SOUND_FROM_PLAYER, SNDCHAN_STATIC, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_NORMAL, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
                     else if(kicktime[i]>5) EmitSoundToClient(i, snd3, SOUND_FROM_PLAYER, SNDCHAN_STATIC, SNDLEVEL_NORMAL, SND_NOFLAGS, SNDVOL_NORMAL, SNDPITCH_NORMAL, -1, NULL_VECTOR, NULL_VECTOR, true, 0.0);
