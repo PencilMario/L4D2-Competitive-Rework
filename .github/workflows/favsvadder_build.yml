@@ -1,0 +1,16 @@
+name: Package Application with Pyinstaller
+            
+on: 
+
+jobs:
+  pyinstaller-build:
+    runs-on: windows-latest
+    steps:
+      - name: Create Executable
+        uses: Martin005/pyinstaller-action@v1.2.0
+        with:
+          python_ver: '3.9'
+          spec: 'Dedicated Server Install Guide\auto_add_to_favserver\add_to_favserver.py'
+          requirements: 'Dedicated Server Install Guide\auto_add_to_favserver\requirements.txt'
+          upload_exe_with_name: '一键添加NB组服务器'
+          options: --onefile, --name "一键添加NB组服务器", 
