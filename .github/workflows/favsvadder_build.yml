@@ -3,7 +3,7 @@ name: Package Application with Pyinstaller
 on: 
     push:
         paths:
-            - 'E:\GithubKu\L4D2-Competitive-Rework\Dedicated Server Install Guide\auto_add_to_favserver'
+            - 'Dedicated Server Install Guide\auto_add_to_favserver'
 
 jobs:
   pyinstaller-build:
