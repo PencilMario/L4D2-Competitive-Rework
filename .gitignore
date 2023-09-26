@@ -26,3 +26,4 @@ addons/sourcemod/configs/databases.cfg
 addons/sourcemod/scripting/l4d_pig_infected_notify.sp
 addons/sourcemod/logs
 .vscode
+Dedicated Server Install Guide/auto_add_to_favserver/__pycache__/*
