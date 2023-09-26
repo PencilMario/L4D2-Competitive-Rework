@@ -61,5 +61,3 @@ def get_steam_root_directory():
 
 
 steam = get_steam_root_directory()["Possible Locations"]
-
-print(os.path.join(steam, "userdata"))
