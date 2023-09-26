@@ -5,6 +5,9 @@ on:
         paths:
             - 'Dedicated Server Install Guide\auto_add_to_favserver'
 
+    workflow_dispatch:
+        paths:
+            - 'Dedicated Server Install Guide\auto_add_to_favserver'
 jobs:
   pyinstaller-build:
     runs-on: windows-latest
