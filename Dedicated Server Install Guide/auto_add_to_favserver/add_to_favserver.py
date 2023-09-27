@@ -69,10 +69,10 @@ for vdfp in files:
         print("文件不存在!")
         continue
     for i in data:
-        print(i)
         try:
             i[0] = convert_to_ip(i[0])
             insert_to_fav("{}:{}".format(i[0], i[1]), vdfdata)
+            print(i)
         except Exception as e:
             print("处理失败: {} {}",format(i, str(e)))
     
