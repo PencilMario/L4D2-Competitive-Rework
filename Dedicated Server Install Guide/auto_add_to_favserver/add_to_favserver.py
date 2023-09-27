@@ -41,6 +41,7 @@ def insert_to_fav(addres,data):
 print("本程序将自动将NB组服务器添加到服务器收藏列表中")
 print("这将影响所有在本机登录过的steam账号")
 print("部分服不定期更换ip, 届时需要重新执行本程序")
+print("服务器列表会自动拉取, 一般情况下无需更新")
 print("你可以在 https://github.com/PencilMario/L4D2-Competitive-Rework/actions 下载最新构建")
 print("按下回车键继续...")
 input()
