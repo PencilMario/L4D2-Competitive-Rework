@@ -8,7 +8,7 @@
 char snd1[] = "buttons/blip2.wav";
 char snd2[] = "buttons/button22.wav";
 char snd3[] = "ui/beep07.wav";
-char snd4[] = "music/scavenge/level_02_01.wav";
+char snd4[] = "buttons/button14.wav";
 char snd5[] = "ui/menu_enter05.wav";
 
 int kicktime[MAXPLAYERS] = {20};
