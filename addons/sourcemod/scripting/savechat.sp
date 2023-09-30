@@ -228,5 +228,5 @@ public OnMapStart(){
 }
 
 public void L4D2_OnGetExp(int client, int e){
-	exp.info("'%N' 的经验分为 e")
+	exp.info("'%N' 的经验分为 %i", client, e);
 }
