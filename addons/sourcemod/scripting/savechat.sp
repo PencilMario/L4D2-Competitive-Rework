@@ -26,12 +26,13 @@
 #include <string.inc>
 #include <logger>
 #include <left4dhooks>
+#include <exp_interface>
 
 #define PLUGIN_VERSION "SaveChat_1.2.1"
 
 static String:chatFile[128]
 new Handle:sc_record_detail = INVALID_HANDLE
-Logger log;
+Logger log, exp;
 public Plugin:myinfo = 
 {
 	name = "SaveChat",
@@ -61,6 +62,8 @@ public OnPluginStart()
 
 	Format(chatFile, 48, "Chat%s", date)
 	log = new Logger(chatFile, LoggerType_NewLogFile);
+	exp = new Logger(chatFile, LoggerType_NewLogFile);
+	exp.SetLogPrefix("exp_interface");
 }
 
 /*
@@ -218,9 +221,12 @@ public OnMapStart(){
 	GetCurrentMap(map, sizeof(map))
 
 	log.lograw("--=================================================================--")
-	log.info(  "* 地图 >>> '%s'   ", map);
+	log.info(  "* 地图 >>> '%s'   ", 		map);
 	log.info(  "* 配置文件: '%s'", 			cfg);
 	log.info(  "* 比分 %i : %i", 			L4D2Direct_GetVSCampaignScore(GameRules_GetProp("m_bAreTeamsFlipped")), L4D2Direct_GetVSCampaignScore(!GameRules_GetProp("m_bAreTeamsFlipped")));
-	log.lograw("--=================================================================--")
+	log.lograw("----------------------------------")
 }
 
+public void L4D2_OnGetExp(int client, int e){
+	exp.info("'%N' 的经验分为 e")
+}
