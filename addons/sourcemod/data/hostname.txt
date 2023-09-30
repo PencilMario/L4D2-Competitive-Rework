@@ -60,7 +60,7 @@
 	{
 		"hostname"		"冷气开放[Zonemod 2.8.6]"
 	}
-	"34101"
+	"28013"
 	{
 		"hostname"		"[N&B.Zonemod]萌新汪汪屋#1"
 	}
@@ -68,7 +68,7 @@
 	{
 		"hostname"		"[N&B.Zonemod]萌新汪汪屋#2"
 	}
-	"34103"
+	"28014"
 	{
 		"hostname"		"狗窝"
 	}

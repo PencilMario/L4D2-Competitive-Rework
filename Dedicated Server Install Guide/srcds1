@@ -36,7 +36,7 @@ DAEMON="$DIR/srcds_run"
 SVNUM=1
 PORT=53333
 NAME=L4D2_Server$SVNUM
-PARAMS="-game left4dead2 -sv_lan 0 -ip 0.0.0.0 -plugin_load addons/l4dtoolz -plugin_load addons/metamod/bin/server -port $PORT +tv_enable 1 +sv_clockcorrection_msecs 25 -timeout 10 -tickrate 100 +map c2m1_highway versus -maxplayers 32 +sv_setmax 32 +servercfgfile server1.cfg"
+PARAMS="-game left4dead2 -sv_lan 0 -ip 0.0.0.0 -port $PORT +sv_clockcorrection_msecs 25 -timeout 10 -tickrate 100 +map c2m1_highway versus -maxplayers 32 +sv_setmax 32 +servercfgfile server1.cfg"
 DESC="L4D2 Dedicated Server #$SVNUM on port $PORT"
 
 
