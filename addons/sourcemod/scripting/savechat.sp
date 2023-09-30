@@ -26,7 +26,6 @@
 #include <string.inc>
 #include <logger>
 #include <left4dhooks>
-#include <exp_interface>
 
 #define PLUGIN_VERSION "SaveChat_1.2.1"
 
@@ -225,8 +224,4 @@ public OnMapStart(){
 	log.info(  "* 配置文件: '%s'", 			cfg);
 	log.info(  "* 比分 %i : %i", 			L4D2Direct_GetVSCampaignScore(GameRules_GetProp("m_bAreTeamsFlipped")), L4D2Direct_GetVSCampaignScore(!GameRules_GetProp("m_bAreTeamsFlipped")));
 	log.lograw("----------------------------------")
-}
-
-public void L4D2_OnGetExp(int client, int e){
-	exp.info("'%N' 的经验分为 %i", client, e);
 }
