@@ -25,6 +25,7 @@
 #include <geoip.inc>
 #include <string.inc>
 #include <logger>
+#include <left4dhooks>
 
 #define PLUGIN_VERSION "SaveChat_1.2.1"
 
@@ -104,12 +105,18 @@ public OnClientPostAdminCheck(client)
 			country = "  "
 		}
 	}
+	bool isADM;
+	AdminId id = GetUserAdmin(client);
+	isADM = GetAdminFlag(id, Admin_Generic);
 
-	Format(msg, sizeof(msg), "[%s] %N 进入游戏 (%s | %s)",
+
+	Format(msg, sizeof(msg), "[%s] %N 进入游戏 (%s | %s%s)",
 		country,
 		client,
 		steamID,
-		playerIP)
+		playerIP,
+		isADM ? " | 管理员" : ""
+		)
 
 	log.info(msg)
 }
@@ -167,31 +174,15 @@ public LogChat(client, args, bool:teamchat)
  */
 public OnMapStart(){
 	new String:map[128]
-	new String:msg[1024]
-	new String:date[21]
-	new String:time[21]
-	new String:logFile[100]
-
+	char cfg[64];
+	ConVar config = FindConVar("l4d_ready_cfg_name")
+	GetConVarString(config != INVALID_HANDLE ? config : FindConVar("mp_gamemode"), cfg, sizeof(cfg))
 	GetCurrentMap(map, sizeof(map))
 
-	/* The date may have rolled over, so update the logfile name here */
-	FormatTime(date, sizeof(date), "%d%m%y", -1)
-	Format(logFile, sizeof(logFile), "/logs/chat%s.log", date)
-	BuildPath(Path_SM, chatFile, PLATFORM_MAX_PATH, logFile)
-
-	FormatTime(time, sizeof(time), "%d/%m/%Y %H:%M:%S", -1)
-	Format(msg, sizeof(msg), "[%s] --- 	地图切换: %s ---", time, map)
-
-	SaveMessage("--=================================================================--")
-	SaveMessage(msg)
-	SaveMessage("--=================================================================--")
-}
-
-/*
- * Log the message to file
- */
-public SaveMessage(const String:message[])
-{
-	log.lograw(message);
+	log.lograw("--=================================================================--")
+	log.info(  "* 地图 >>> %s   ", map);
+	log.info(  "* 配置文件: %s", 			cfg);
+	log.info(  "* 比分 %i : %i", 			L4D2Direct_GetVSCampaignScore(GameRules_GetProp("m_bAreTeamsFlipped")), L4D2Direct_GetVSCampaignScore(!GameRules_GetProp("m_bAreTeamsFlipped")));
+	log.lograw("--=================================================================--")
 }
 
