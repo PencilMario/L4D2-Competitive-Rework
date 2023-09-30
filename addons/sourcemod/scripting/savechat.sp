@@ -145,7 +145,7 @@ public LogChat(client, args, bool:teamchat)
 	}
 
 	if(GetConVarInt(sc_record_detail) == 1) {
-		Format(msg, sizeof(msg), "[%s] [%-11s] %N :%s %s",
+		Format(msg, sizeof(msg), "[%s] [%s] %N :%s %s",
 			country,
 			teamName,
 			client,
