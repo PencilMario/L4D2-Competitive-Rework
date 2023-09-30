@@ -110,7 +110,7 @@ public OnClientPostAdminCheck(client)
 	isADM = GetAdminFlag(id, Admin_Generic);
 
 
-	Format(msg, sizeof(msg), "[%s] %N 进入游戏 (%s | %s%s)",
+	Format(msg, sizeof(msg), "[%s] %N 进入游戏 ('%s' | '%s'%s)",
 		country,
 		client,
 		steamID,
@@ -120,7 +120,45 @@ public OnClientPostAdminCheck(client)
 
 	log.info(msg)
 }
+public void OnClientDisconnect(int client){
+		/* Only record player detail if CVAR set */
+	if(GetConVarInt(sc_record_detail) != 1)
+		return
 
+	if(IsFakeClient(client)) 
+		return
+
+	new String:msg[2048]
+	new String:country[3]
+	new String:steamID[128]
+	new String:playerIP[50]
+	
+	GetClientAuthString(client, steamID, sizeof(steamID))
+
+	/* Get 2 digit country code for current player */
+	if(GetClientIP(client, playerIP, sizeof(playerIP), true) == false) {
+		country   = "  "
+	} else {
+		if(GeoipCode2(playerIP, country) == false) {
+			country = "  "
+		}
+	}
+	bool isADM;
+	AdminId id = GetUserAdmin(client);
+	isADM = GetAdminFlag(id, Admin_Generic);
+
+
+	Format(msg, sizeof(msg), "[%s] %N 离开游戏 ('%s' | '%s'%s)",
+		country,
+		client,
+		steamID,
+		playerIP,
+		isADM ? " | 管理员" : ""
+		)
+
+	log.info(msg)
+
+}
 /*
  * Extract all relevant information and format 
  */
@@ -159,7 +197,7 @@ public LogChat(client, args, bool:teamchat)
 			teamchat == true ? " (TEAM)" : "",
 			text)
 	} else {
-		Format(msg, sizeof(msg), "[%s] %N :%s %s",
+		Format(msg, sizeof(msg), "[%s] %N :%s '%s'",
 			country,
 			client,
 			teamchat == true ? " (TEAM)" : "",
@@ -180,8 +218,8 @@ public OnMapStart(){
 	GetCurrentMap(map, sizeof(map))
 
 	log.lograw("--=================================================================--")
-	log.info(  "* 地图 >>> %s   ", map);
-	log.info(  "* 配置文件: %s", 			cfg);
+	log.info(  "* 地图 >>> '%s'   ", map);
+	log.info(  "* 配置文件: '%s'", 			cfg);
 	log.info(  "* 比分 %i : %i", 			L4D2Direct_GetVSCampaignScore(GameRules_GetProp("m_bAreTeamsFlipped")), L4D2Direct_GetVSCampaignScore(!GameRules_GetProp("m_bAreTeamsFlipped")));
 	log.lograw("--=================================================================--")
 }
