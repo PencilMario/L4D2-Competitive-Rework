@@ -81,4 +81,5 @@ for vdfp in files:
 
 
 print("处理完成!")
+print("重启steam生效!")
 exit()
