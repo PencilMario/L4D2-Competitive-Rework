@@ -55,7 +55,7 @@ public OnPluginStart()
 	RegConsoleCmd("say", Command_Say)
 	RegConsoleCmd("say_team", Command_SayTeam)
 	/* Format date for log filename */
-	FormatTime(date, sizeof(date), "%d%m%y", -1)
+	FormatTime(date, sizeof(date), "%y%m%d", -1)
 
 
 	Format(chatFile, 48, "Chat%s", date)
@@ -105,13 +105,13 @@ public OnClientPostAdminCheck(client)
 		}
 	}
 
-	Format(msg, sizeof(msg), "[%s] %-35N 进入游戏 (%s | %s)",
+	Format(msg, sizeof(msg), "[%s] %N 进入游戏 (%s | %s)",
 		country,
 		client,
 		steamID,
 		playerIP)
 
-	SaveMessage(msg)
+	log.info(msg)
 }
 
 /*
@@ -145,14 +145,14 @@ public LogChat(client, args, bool:teamchat)
 	}
 
 	if(GetConVarInt(sc_record_detail) == 1) {
-		Format(msg, sizeof(msg), "[%s] [%-11s] %-35N :%s %s",
+		Format(msg, sizeof(msg), "[%s] [%-11s] %N :%s %s",
 			country,
 			teamName,
 			client,
 			teamchat == true ? " (TEAM)" : "",
 			text)
 	} else {
-		Format(msg, sizeof(msg), "[%s] %-35N :%s %s",
+		Format(msg, sizeof(msg), "[%s] %N :%s %s",
 			country,
 			client,
 			teamchat == true ? " (TEAM)" : "",
@@ -161,7 +161,6 @@ public LogChat(client, args, bool:teamchat)
 
 
 	log.info(msg)
-	SaveMessage(msg)
 }
 /*
  * Log a map transition
