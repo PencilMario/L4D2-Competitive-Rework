@@ -48,7 +48,7 @@ public OnPluginStart()
 	/* Register CVars */
 	CreateConVar("sm_savechat_version", PLUGIN_VERSION, "Save Player Chat Messages Plugin", 
 		FCVAR_DONTRECORD|FCVAR_REPLICATED)
-
+	HookEvent("player_disconnect", Event_OnClientDisconnect)
 	sc_record_detail = CreateConVar("sc_record_detail", "1", 
 		"Record player Steam ID and IP address")
 
@@ -83,7 +83,7 @@ public Action:Command_SayTeam(client, args)
 	return Plugin_Continue
 }
 
-public OnClientPostAdminCheck(client)
+public void OnClientPostAdminCheck(client)
 {
 	/* Only record player detail if CVAR set */
 	if(GetConVarInt(sc_record_detail) != 1)
@@ -122,13 +122,14 @@ public OnClientPostAdminCheck(client)
 
 	log.info(msg)
 }
-public void OnClientDisconnect(int client){
+
+public Action Event_OnClientDisconnect(Event event, const char[] name, bool dontBroadcast){
 		/* Only record player detail if CVAR set */
 	if(GetConVarInt(sc_record_detail) != 1)
-		return
-
+		return Plugin_Continue
+	new client = GetClientOfUserId(GetEventInt(event, "userid"));
 	if(IsFakeClient(client)) 
-		return
+		return Plugin_Continue
 
 	new String:msg[2048]
 	new String:country[3]
@@ -149,16 +150,20 @@ public void OnClientDisconnect(int client){
 	AdminId id = GetUserAdmin(client);
 	isADM = GetAdminFlag(id, Admin_Generic);
 
+	char reason[128];
+	event.GetString("reason", reason, sizeof(reason));
 
-	Format(msg, sizeof(msg), "[%s] %N 离开游戏 ('%s' | '%s'%s)",
+	Format(msg, sizeof(msg), "[%s] %N 离开游戏 '%s' ('%s' | '%s'%s)",
 		country,
 		client,
+		reason,
 		steamID,
 		playerIP,
 		isADM ? " | 管理员" : ""
 		)
 
 	log.info(msg)
+	return Plugin_Continue
 
 }
 /*
