@@ -32,7 +32,7 @@ void lilac_warn_admins(int client, int cheat, int detections)
 	for (int i = 1; i <= MaxClients; i++) {
 		if (!is_player_valid(i))
 			continue;
-
+		
 		if (IsFakeClient(i))
 			continue;
 		
@@ -40,7 +40,9 @@ void lilac_warn_admins(int client, int cheat, int detections)
 			admins[n++] = i;
 	}
 	
-
+	/* No admins are on. */
+	if (!n)
+		return;
 	
 	switch (cheat) {
 	case CHEAT_BHOP: { strcopy(type, sizeof(type), "Bhop"); }
@@ -53,23 +55,10 @@ void lilac_warn_admins(int client, int cheat, int detections)
 	if (!GetClientName(client, name, sizeof(name)))
 		strcopy(name, sizeof(name), "[NAME_ERROR]");
 	
-	for (int i = 1; i <= MaxClients; i++)
-	{
-		if (IsClientSourceTV(i)){
-			PrintToChat(i, "[Lilac] %s 疑似使用 %s (检测：%d)",
-			name, type, detections);
-		}
-	}
-
-	/* No admins are on. */
-	if (!n)
-		return;
-
 	for (int i = 0; i < n; i++)
 		PrintToChat(admins[i],
 			"[Lilac] %T", "admin_chat_warning_generic",
 			admins[i], name, type, detections);
-
 }
 
 /* Useless Todo: I should update this soon... But I won't :P */
