@@ -75,7 +75,6 @@ OnPostAdminCheck_CountryShow(client)
 		}
 		char msgl[128];
 		Format(msgl, 128, "%N 进入游戏", client)
-		AddToChatLog2(msgl);
 	}	
 }
 
@@ -143,7 +142,6 @@ public Action:event_PlayerDisc_CountryShow(Handle:event, const String:name[], bo
 		}
 		char msgl[128];
 		Format(msgl, 128, "%N 离开游戏 (%s)", client, reason)
-		AddToChatLog2(msgl);
 		//if sm_ca_showenhancedadmins - show diff messages to admins
 		if( GetConVarInt(g_CvarShowEnhancedToAdmins) )
 		{
