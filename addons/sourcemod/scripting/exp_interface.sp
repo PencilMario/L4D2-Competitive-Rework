@@ -83,7 +83,7 @@ public void OnClientPutInServer(int client){
 }
 public void ClearClientExpData(int client){
     PlayerInfoData[client].gametime = 0;
-    PlayerInfoData[client].rankpoint = 0;
+    PlayerInfoData[client].rankpoint = -2;
     PlayerInfoData[client].shotgunkills = 0;
     PlayerInfoData[client].smgkills = 0;
     PlayerInfoData[client].tankrocks = 0;
