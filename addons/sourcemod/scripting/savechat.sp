@@ -32,6 +32,7 @@
 static String:chatFile[128]
 new Handle:sc_record_detail = INVALID_HANDLE
 Logger log, exp;
+bool g_SkipOnce;
 public Plugin:myinfo = 
 {
 	name = "SaveChat",
@@ -125,6 +126,11 @@ public void OnClientPostAdminCheck(client)
 
 public Action Event_OnClientDisconnect(Event event, const char[] name, bool dontBroadcast){
 		/* Only record player detail if CVAR set */
+	if (g_SkipOnce){
+		g_SkipOnce = false;
+		return Plugin_Continue
+	}
+	g_SkipOnce = true;
 	if(GetConVarInt(sc_record_detail) != 1)
 		return Plugin_Continue
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
