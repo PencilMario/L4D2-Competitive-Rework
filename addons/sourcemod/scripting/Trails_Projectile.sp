@@ -144,7 +144,7 @@ void TE_SendToInf()
 {
     for (int i = 1; i <= MaxClients; i++)
     {
-        if (!IsFakeClient(i) && IsClientInGame(i) && !IsSurvivor(i)){
+        if (IsClientInGame(i) && !IsSurvivor(i) && !IsFakeClient(i)){
             TE_SendToClient(i);
         }
     }
