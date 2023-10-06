@@ -25,6 +25,7 @@ public Action Timer_CheckAllPlayer(Handle timer){
     }
     for (int client = 1; client <= MaxClients; client++){
         if (!IsClientInGame(client)) continue;
+        if (!IsClientAuthorized(client)) continue;
         if (IsFakeClient(client)) continue;
         int team = GetClientTeam(client);
         if (team == L4D2Team_Infected || team == L4D2Team_Survivor){
