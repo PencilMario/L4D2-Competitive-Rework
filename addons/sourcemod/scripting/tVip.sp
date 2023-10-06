@@ -10,7 +10,7 @@
 
 #pragma newdecls required
 
-char dbconfig[] = "tVip";
+char dbconfig[] = "sourcebans";
 Database g_DB;
 
 /*
@@ -46,6 +46,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	//Create natives
 	CreateNative("tVip_GrantVip", NativeGrantVip);
 	CreateNative("tVip_DeleteVip", NativeDeleteVip);
+	CreateNative("tVip_isVip", _Native_IsVip);
 	return APLRes_Success;
 }
 
@@ -80,7 +81,7 @@ public void OnPluginStart() {
 	AutoExecConfig_SetFile("tVip");
 	AutoExecConfig_SetCreateFile(true);
 	
-	g_hFlag = AutoExecConfig_CreateConVar("tVip_flag", "19", "20=Custom6, 19=Custom5 etc. Numeric Flag See: 'https://wiki.alliedmods.net/Checking_Admin_Flags_(SourceMod_Scripting)' for Definitions ---- Multiple flags seperated with Space: '16 17 18 19' !!");
+	g_hFlag = AutoExecConfig_CreateConVar("tVip_flag", "19 0 1 2 3 5 6 9 10 13", "20=Custom6, 19=Custom5 etc. Numeric Flag See: 'https://wiki.alliedmods.net/Checking_Admin_Flags_(SourceMod_Scripting)' for Definitions ---- Multiple flags seperated with Space: '16 17 18 19' !!");
 	g_hTestVipDuration = AutoExecConfig_CreateConVar("tVip_testVipDuration", "15", "Test Vip duration in minutes");
 	
 	AutoExecConfig_CleanFile();
@@ -425,7 +426,10 @@ public void grantVip(int admin, int client, int duration, int reason) {
 	CPrintToChat(client, "{green}You've been granted {orange}%i{green} %s of {orange}VIP{green} by {orange}%N", duration, reason == 3 ? "Minutes":"Month", admin);
 	setFlags(client);
 }
-
+public int _Native_IsVip(Handle plugin, int numParams){
+    int client = GetNativeCell(1);
+    return g_bIsVip[client];
+}
 public void grantVipEx(int admin, char playerid[20], int duration, char[] pname, int timeFormat) {
 	char admin_playerid[20];
 	if (admin != 0) {

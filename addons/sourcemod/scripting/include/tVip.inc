@@ -29,6 +29,8 @@ native void tVip_GrantVip(int client, int admin, int duration, int format = 1);
  */
 native void tVip_DeleteVip(char SteamId[20]);
 
+native tVip_isVip(int client);
+
 
 /**
  * Forward on Client pre loaded - Vip is about to be loaded
