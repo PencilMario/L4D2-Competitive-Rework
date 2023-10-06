@@ -53,11 +53,13 @@ public void SBPP_OnBanPlayer(int iAdmin, int iTarget, int iTime, const char[] sR
     congratulation.DrawItem("", ITEMDRAW_SPACER);
     Format(buffer, sizeof(buffer), "原因: %s", sReason);
     congratulation.DrawText(buffer);
-    Format(buffer, sizeof(buffer), "封禁时长: %s", iTime == 0 ? "永久" : "%i 分钟", iTime);
+    char time[64];
+    Format(time, sizeof(time), "%i 分钟", iTime)
+    Format(buffer, sizeof(buffer), "封禁时长: %s", iTime == 0 ? "永久" : iTime);
     congratulation.DrawText(buffer);
     congratulation.DrawItem("", ITEMDRAW_SPACER);
     congratulation.DrawText("==================================");
-    congratulation.DrawItem("Exit", ITEMDRAW_CONTROL);
+    congratulation.DrawItem("好死", ITEMDRAW_CONTROL);
 
     for (int i = 1; i <= MaxClients; i++){
         if (IsClientInGame(i) && !IsFakeClient(i)){
