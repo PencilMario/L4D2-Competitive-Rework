@@ -10,7 +10,7 @@
 
 #pragma newdecls required
 
-char dbconfig[] = "sourcebans";
+char dbconfig[] = "tVip";
 Database g_DB;
 
 /*
