@@ -26,8 +26,25 @@
 #include <string.inc>
 #include <logger>
 #include <left4dhooks>
-
+#define FLAG_STRINGS		14
 #define PLUGIN_VERSION "SaveChat_1.2.1"
+char g_FlagNames[FLAG_STRINGS][20] =
+{
+	"res",
+	"admin",
+	"kick",
+	"ban",
+	"unban",
+	"slay",
+	"map",
+	"cvars",
+	"cfg",
+	"chat",
+	"vote",
+	"pass",
+	"rcon",
+	"cheat"
+};
 
 static String:chatFile[128]
 new Handle:sc_record_detail = INVALID_HANDLE
@@ -100,6 +117,27 @@ public void OnClientPostAdminCheck(client)
 	
 	GetClientAuthString(client, steamID, sizeof(steamID))
 
+	AdminId id = GetUserAdmin(client);
+	char flagstring[255];
+	if (id != INVALID_ADMIN_ID)
+	{
+		int flags = GetUserFlagBits(client);
+		char flagstring[255];
+		if (flags == 0)
+		{
+			strcopy(flagstring, sizeof(flagstring), "无权限");
+		}
+		else if (flags & ADMFLAG_ROOT)
+		{
+			strcopy(flagstring, sizeof(flagstring), "root");
+		}
+		else
+		{
+			FlagsToString(flagstring, sizeof(flagstring), flags);
+		}
+	}
+
+
 	/* Get 2 digit country code for current player */
 	if(GetClientIP(client, playerIP, sizeof(playerIP), true) == false) {
 		country   = "  "
@@ -108,20 +146,56 @@ public void OnClientPostAdminCheck(client)
 			country = "  "
 		}
 	}
-	bool isADM;
-	AdminId id = GetUserAdmin(client);
-	isADM = GetAdminFlag(id, Admin_Generic);
-
-
+	
 	Format(msg, sizeof(msg), "[%s] %N 进入游戏 ('%s' | '%s'%s)",
 		country,
 		client,
 		steamID,
 		playerIP,
-		isADM ? " | 管理员" : ""
+		id != INVALID_ADMIN_ID ? flagstring : ""
 		)
 
 	log.info(msg)
+}
+
+void FlagsToString(char[] buffer, int maxlength, int flags)
+{
+	char joins[FLAG_STRINGS+1][32];
+	int total;
+
+	for (int i=0; i<FLAG_STRINGS; i++)
+	{
+		if (flags & (1<<i))
+		{
+			strcopy(joins[total++], 32, g_FlagNames[i]);
+		}
+	}
+	
+	char custom_flags[32];
+	if (CustomFlagsToString(custom_flags, sizeof(custom_flags), flags))
+	{
+		Format(joins[total++], 32, "custom(%s)", custom_flags);
+	}
+
+	ImplodeStrings(joins, total, ", ", buffer, maxlength);
+}
+
+int CustomFlagsToString(char[] buffer, int maxlength, int flags)
+{
+	char joins[6][6];
+	int total;
+	
+	for (int i=view_as<int>(Admin_Custom1); i<=view_as<int>(Admin_Custom6); i++)
+	{
+		if (flags & (1<<i))
+		{
+			IntToString(i - view_as<int>(Admin_Custom1) + 1, joins[total++], 6);
+		}
+	}
+	
+	ImplodeStrings(joins, total, ",", buffer, maxlength);
+	
+	return total;
 }
 
 public Action Event_OnClientDisconnect(Event event, const char[] name, bool dontBroadcast){
