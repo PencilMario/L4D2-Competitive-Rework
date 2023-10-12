@@ -45,6 +45,7 @@ char baiduapi[256] = "https://aip.baidubce.com/rpc/2.0/mt/texttrans/v1?access_to
 public void OnPluginStart()
 {
     log = new Logger("sm_translator", LoggerType_NewLogFile);
+    log.IgnoreLevel = LogType_Debug;
     LoadTranslations("sm_translator.phrases.txt");
     
     CreateConVar("sm_translator_version", DATA, "SM Translator Version", FCVAR_SPONLY|FCVAR_NOTIFY);
@@ -144,7 +145,7 @@ public Action Command_SayTeam(int client, const char[] command, int args)
     
     if (CommandExists(commands))return Plugin_Continue;
     
-    char temp[3];
+    char temp[6];
     
     // Foreign
     if(GetServerLanguage() != GetClientLanguage(client))
@@ -158,7 +159,7 @@ public Action Command_SayTeam(int client, const char[] command, int args)
         {
             if(IsClientInGame(i) && !IsFakeClient(i) && i != client && GetClientLanguage(client) != GetClientLanguage(i))
             {
-                GetLanguageInfo(GetClientLanguage(i), temp, 3); // get Foreign language
+                GetLanguageInfo(GetClientLanguage(i), temp, 6); // get Foreign language
                 Handle request2 = CreateRequest(buffer, temp, i, client, true); // Translate not Foreign msg to Foreign player
                 SteamWorks_SendHTTPRequest(request2);
             }
@@ -172,7 +173,7 @@ public Action Command_SayTeam(int client, const char[] command, int args)
             {
                 if (!g_translator[i])continue;
                 
-                GetLanguageInfo(GetClientLanguage(i), temp, 3); // get Foreign language
+                GetLanguageInfo(GetClientLanguage(i), temp, 6); // get Foreign language
                 Handle request = CreateRequest(buffer, temp, i, client, true); // Translate not Foreign msg to Foreign player
                 SteamWorks_SendHTTPRequest(request);
             }
@@ -200,7 +201,7 @@ public Action Command_Say(int client, const char[] command, int args)
     
     if (CommandExists(commands))return Plugin_Continue;
     
-    char temp[3];
+    char temp[6];
     
     // Foreign
     if(GetServerLanguage() != GetClientLanguage(client))
@@ -214,7 +215,7 @@ public Action Command_Say(int client, const char[] command, int args)
         {
             if(IsClientInGame(i) && !IsFakeClient(i) && i != client && GetClientLanguage(client) != GetClientLanguage(i))
             {
-                GetLanguageInfo(GetClientLanguage(i), temp, 3); // get Foreign language
+                GetLanguageInfo(GetClientLanguage(i), temp, 6); // get Foreign language
                 Handle request2 = CreateRequest(buffer, temp, i, client); // Translate not Foreign msg to Foreign player
                 SteamWorks_SendHTTPRequest(request2);
             }
@@ -228,7 +229,7 @@ public Action Command_Say(int client, const char[] command, int args)
             {
                 if (!g_translator[i])continue;
                 
-                GetLanguageInfo(GetClientLanguage(i), temp, 3); // get Foreign language
+                GetLanguageInfo(GetClientLanguage(i), temp, 6); // get Foreign language
                 Handle request = CreateRequest(buffer, temp, i, client); // Translate not Foreign msg to Foreign player
                 SteamWorks_SendHTTPRequest(request);
             }
@@ -294,6 +295,7 @@ Handle CreateRequest(char[] input, char[] target, int client, int other = 0, boo
     bodyjson.SetString("from", "auto");
     bodyjson.SetString("to", target);
     bodyjson.SetString("q", input);
+    log.debug("目标: %s, 文本: \"%s\"", target, input);
     char body[16536];
     bodyjson.ToString(body, 16536);
     SteamWorks_SetHTTPRequestRawPostBody(request, "application/json", body, 256);
@@ -327,7 +329,7 @@ public void Callback_OnHTTPResponse(Handle request, bool bFailure, bool bRequest
     if (json.HasKey("error_msg")){
         json.GetString("error_msg", t, iBufferSize);
         Format(result, iBufferSize, "Error: %s", t);
-        log.error("翻译异常：%s", t);
+        log.error("翻译异常：%s | ", t);
         delete json;
     }
     else if (json.HasKey("result"))

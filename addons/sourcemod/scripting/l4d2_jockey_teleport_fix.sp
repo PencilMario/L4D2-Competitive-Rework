@@ -97,20 +97,47 @@ void OnPreThink(int client) {
         return;
     }*/
     CreateTimer(0.1, Timer_WaitClientUnPinned, client);
+}
+
+public Action Timer_WaitClientUnPinned(Handle timer, int client)
+{
+    // ?
+    if (!IsValidEntity(client)) {
+        SDKUnhook(client, SDKHook_PreThink, OnPreThink);
+        return Plugin_Stop;
+    }
+    if (IsJockeyVictim(client) || IsChargerVictim(client)) {CheckClient(client); return Plugin_Continue;}
+    SDKUnhook(client, SDKHook_PreThink, OnPreThink);
+    #if DEBUG
+        PrintToChatAll("移除SDKHook OnPreThink()");
+    #endif
+
+    return Plugin_Stop;
+}
+
+public void CheckClient(int client){
     float safeVector[3];
     safeVector = fPreviousOrigin[client];
 
     float preVector[3];
     GetClientAbsOrigin(client, preVector);
 
+    float susVector[3];
+    GetClientAbsOrigin(g_iCurrentSuspect, susVector);
+    #if DEBUG
+        PrintToChatAll("%N - %f %f %f", client, safeVector[0], safeVector[1], safeVector[2]);
+        PrintToChatAll("%N(sus) - %f %f %f", g_iCurrentSuspect, susVector[0], susVector[1], susVector[2]);
+    #endif
     // Teleporting
     if (GetVectorDistance(safeVector, preVector) > MAX_SINGLE_FRAME_UNITS) {
         char curmap[64];
         GetCurrentMap(curmap, 64);
-        log.info("检测到被传送： %N - 从 %f %f %f 至 %f %f %f - 地图%s - 传送者: %N", client, 
+        char stmid[64];
+        GetClientAuthId(g_iCurrentSuspect, AuthId_Steam2, stmid, sizeof(stmid));
+        log.info("检测到被传送： %N - 从 %f %f %f 至 %f %f %f - 地图%s - 传送者: %N[%s]", client, 
         safeVector[0], safeVector[1], safeVector[2],
         preVector[0], preVector[1], preVector[2], 
-        curmap, g_iCurrentSuspect);
+        curmap, g_iCurrentSuspect, stmid);
         #if DEBUG
             PrintToChatAll("检测到传送特感");
             PrintToChatAll("Prevented %N from being teleported to %f %f %f", client, preVector[0], preVector[1], preVector[2]);
@@ -134,41 +161,25 @@ void OnPreThink(int client) {
 
     // Normal behaviour
     fPreviousOrigin[client] = preVector;
-}
 
-public Action Timer_WaitClientUnPinned(Handle timer, int client)
-{
-    // ?
-    if (!IsValidEntity(client)) {
-        SDKUnhook(client, SDKHook_PreThink, OnPreThink);
-        return Plugin_Stop;
-    }
-    if (IsJockeyVictim(client) || IsChargerVictim(client)) return Plugin_Continue;
-    SDKUnhook(client, SDKHook_PreThink, OnPreThink);
-    #if DEBUG
-        PrintToChatAll("移除SDKHook OnPreThink()");
-    #endif
-
-    return Plugin_Stop;
-}
-
-bool IsJockeyVictim(int client) {
-    return GetEntProp(client, Prop_Send, "m_jockeyAttacker") > 0;
-}
-bool IsChargerVictim(int client){
-    return GetEntPropEnt(client, Prop_Send, "m_carryAttacker") > 0 || GetEntPropEnt(client, Prop_Send, "m_pummelAttacker") > 0 ;
 }
 
 public Action Timer_BanSuspect(Handle timer, int client){
     BanPlayer()
     return Plugin_Stop;
 }
-
+bool IsJockeyVictim(int client) {
+    return GetEntProp(client, Prop_Send, "m_jockeyAttacker") > 0;
+}
+bool IsChargerVictim(int client){
+    return GetEntPropEnt(client, Prop_Send, "m_carryAttacker") > 0 || GetEntPropEnt(client, Prop_Send, "m_pummelAttacker") > 0 ;
+}
 void BanPlayer()
 {
-    #if DEBUG
-        PrintToChatAll("封禁%i", g_iCurrentSuspect);
-    #endif
+#if DEBUG
+    PrintToChatAll("封禁%i/debug", g_iCurrentSuspect);
+    return;
+#endif
     if (IsClientInGame(g_iCurrentSuspect)){
         if (g_iClientSuspectTime[g_iCurrentSuspect] >= 1){
             SBPP_BanPlayer(0, g_iCurrentSuspect, 0, "[jk tele.]检测到传送特感");
