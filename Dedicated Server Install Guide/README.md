@@ -8,7 +8,7 @@
 This purpose of this document is to make it very easy to get Optimized Servers ready for people interested in hosting their own servers for L4D2.  Most (if not all) server hosts will refuse to assist with the installation of 3rd party software so this document aims to help you do everything from start to finish without needing outside assistance.  
 
 > **Recommended Server Specifications:**
-* **OS:** Ubuntu **18.04 or earlier**.  Newer versions of Ubuntu appear to have blood splatter on your screen if you shoot a zombie that is far away.
+* **OS:** Ubuntu
 * A Dedicated Server Space, do not use shared resources. (A proper VDS will work just fine)
 * 1 core per server, 1GB Memory per server
   * Gameservers are usually hosted in a Shared Environment, thus not recommended. 
@@ -58,8 +58,8 @@ apt-get install screen**
 **wget http://media.steampowered.com/installer/steamcmd_linux.tar.gz  
 tar -xvzf steamcmd_linux.tar.gz  
 ./steamcmd.sh  
-login anonymous  
 force_install_dir ./Steam/steamapps/common/l4d2  
+login anonymous  
 app_update 222860 validate  
 quit**
 

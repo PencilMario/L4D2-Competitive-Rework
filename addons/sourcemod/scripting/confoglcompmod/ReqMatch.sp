@@ -15,6 +15,8 @@ static bool
 	RM_bIsAMatchActive	  = false,
 	RM_bIsPluginsLoaded	  = false,
 	RM_bIsMapRestarted	  = false;
+	RM_bIsChangeLevelAvailable = false;
+	RM_bIsChmatchRequest = false;
 
 static Handle
 	RM_hFwdMatchLoad   = null,
@@ -38,6 +40,22 @@ void RM_APL()
 	RM_hFwdMatchUnload = CreateGlobalForward("LGO_OnMatchModeUnloaded", ET_Ignore);
 
 	CreateNative("LGO_IsMatchModeLoaded", native_IsMatchModeLoaded);
+}
+
+public void OnLibraryAdded(const char[] name)
+{
+	if (strcmp(name, "l4d2_changelevel") == 0)
+	{
+		RM_bIsChangeLevelAvailable = true;
+	}
+}
+
+public void OnLibraryRemoved(const char[] name)
+{
+	if (strcmp(name, "l4d2_changelevel") == 0)
+	{
+		RM_bIsChangeLevelAvailable = false;
+	}
 }
 
 void RM_OnModuleStart()
@@ -82,6 +100,12 @@ void RM_OnModuleStart()
 		RM_bIsPluginsLoaded = true;
 		RM_hReloaded.SetInt(0);
 		RM_Match_Load();
+	}
+
+	// ChangeLevel
+	if (LibraryExists("l4d2_changelevel"))
+	{
+		RM_bIsChangeLevelAvailable = true;
 	}
 }
 
@@ -208,6 +232,8 @@ static void RM_Match_Load()
 		LogMessage("[%s] Match mode loaded!", RM_MODULE_NAME);
 	}
 
+	RM_bIsChmatchRequest = false;
+
 	Call_StartForward(RM_hFwdMatchLoad);
 	Call_Finish();
 }
@@ -250,7 +276,19 @@ static void RM_Match_Unload(bool bForced = false)
 	CPrintToChatAll("{blue}[{default}Confogl{blue}]{default} Match mode unloaded!");
 
 	RM_hConfigFile_Off.GetString(sBuffer, sizeof(sBuffer));
-	ExecuteCfg(sBuffer);
+
+	if (!RM_bIsChmatchRequest)
+	{
+		ExecuteCfg(sBuffer);
+	}
+	else
+	{
+		// if we are using chmatch, don't let predictable_unloader unload confogl itself.
+		// all plugins will be unload and load when the new config excuted.
+		ServerCommand("sm plugins load_unlock");
+		ServerCommand("sm plugins unload optional/predictable_unloader.smx");
+		ExecuteCfg(sBuffer);
+	}
 
 	if (RM_DEBUG || IsDebugEnabled())
 	{
@@ -271,7 +309,8 @@ public Action RM_Match_MapRestart_Timer(Handle hTimer, DataPack hDp)
 	hDp.Reset();
 	hDp.ReadString(sMap, sizeof(sMap));
 
-	ServerCommand("changelevel %s", sMap);
+	if (RM_bIsChangeLevelAvailable) L4D2_ChangeLevel(sMap);
+	else ServerCommand("changelevel %s", sMap);
 
 	RM_bIsMapRestarted = true;
 
@@ -456,8 +495,18 @@ public Action RM_CMD_ChangeMatch(int client, int args)
 		LogMessage("[%s] Match mode forced to unload! [Change in this case!]", RM_MODULE_NAME);
 	}
 
+	RM_bIsChmatchRequest = true;
+
 	RM_Match_Unload(true);
 
+	// give time to fully finish unloading.
+	CreateTimer(1.0, Timer_DelayToLoadMatchMode);
+
+	return Plugin_Handled;
+}
+
+public Action Timer_DelayToLoadMatchMode(Handle timer)
+{
 	// Load
 	if (RM_bIsMatchModeLoaded)
 	{
