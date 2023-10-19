@@ -7,7 +7,6 @@
 #define L4D2_TEAM_INFECTED 3
 
 bool fixTeam = false;
-
 ArrayList winners;
 ArrayList losers;
 
@@ -76,7 +75,6 @@ public void PlayerTeam_Event(Event event, const char[] name, bool dontBroadcast)
 public Action FixTeam_Timer(Handle timer)
 {
     FixTeams();
-
     return Plugin_Continue;
 }
 
@@ -156,7 +154,8 @@ public void MoveToSpectatorWhoIsNotInTheTeam(ArrayList arrayList, int team)
         
         if (FindValueInArray(arrayList, client) == -1){
             MovePlayerToTeam(client, L4D2_TEAM_SPECTATOR);
-            PrintToChat(client,"为防止错位，你当前不能加入游戏，请等待一段时间后重试");
+            PrintToChat(client,"为防止错位，你当前不能更改队伍, 请等待上回合相关玩家就位");
+            PrintToChat(client,"请等待约30s, 或者回合开始后可以正常切换");
         }
     }
 }
@@ -214,12 +213,6 @@ public void EnableFixTeam()
 public void DisableFixTeam()
 {
     fixTeam = false;
-    for(int i = 1;i<=MaxClients;i++){
-        if(!IsClientInGame(i)) continue;
-        if(GetClientTeam(i)==L4D2_TEAM_SPECTATOR){
-            PrintToChat(i, "你现在可以进入队伍了");
-        }
-    }
 }
 
 public void ClearTeamsData()
