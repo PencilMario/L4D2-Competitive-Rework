@@ -24,6 +24,14 @@
 	{
 		"hostname"		"萌新不喵呜|60Tick"
 	}
+	"26000"
+	{
+		"hostname"		"[N&B.Zonemod]那个回不去的暑假"
+	}	
+	"26001"
+	{
+		"hostname"		"[N&B.Zonemod]下头南通"
+	}	
 	"26100"
 	{
 		"hostname"		"阴阳人烂屁眼"
