@@ -9,6 +9,8 @@ data.append(("dx1.nekoyun.cn",34109))
 data.append(("dx1.nekoyun.cn",34110))
 data.append(("sq.xubw.cn",28013))
 data.append(("sq.xubw.cn",28014))
+data.append(("sq.xubw.cn",26001))
+data.append(("sq.xubw.cn",26000))
 
 
 with open('nb_servers.json', 'w', encoding = 'utf-8') as files:
