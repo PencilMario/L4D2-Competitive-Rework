@@ -40,7 +40,7 @@ public Action FakeLagCmd(int client, int args) {
 
   int lagAmount = GetCmdArgInt_Plugin(2);
   CFakeLag_SetPlayerLatency(target, lagAmount * 1.0);
-  ShowActivity2(client, "[SM]", "Set fake lag of %dms on player %N", lagAmount, target);
+  ShowActivity2(client, "[SM]", "给 %N 添加 %dms 延迟 ", target, lagAmount);
   return Plugin_Handled;
 }
 
