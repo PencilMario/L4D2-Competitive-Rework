@@ -18,6 +18,10 @@
 		{
 			"name" "ZoneMod 2.8.7"
 		}
+		"zonemod6v6"
+		{
+			"name" "ZoneMod 6V6(自动更新/测试中)"
+		}
 		"zoneretro"
 		{
 			"name" "ZoneMod Retro 2.8.7"
