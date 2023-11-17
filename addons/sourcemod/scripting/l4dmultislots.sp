@@ -186,7 +186,7 @@ public void OnPluginStart()
 	g_hCvar_VSCommandBalance  	= CreateConVar(	"l4d_multislots_versus_command_balance", 		"1", 	"If 1, Check team balance when player tries to use 'Join Survivors' command to join survivor team in versus/scavenge.\nIf team is unbanlance, will fail to join survivor team!", CVAR_FLAGS, true, 0.0, true, 1.0);
 	g_hCvar_VSUnBalanceLimit  	= CreateConVar(	"l4d_multislots_versus_teams_unbalance_limit", 	"1", 	"Teams are unbalanced when one team has this many more players than the other team in versus/scavenge.", CVAR_FLAGS, true, 1.0);
 	CreateConVar(								"l4d_multislots_version",						PLUGIN_VERSION,	"MultiSlots Improved plugin version.", FCVAR_NOTIFY|FCVAR_DONTRECORD);
-	AutoExecConfig(true, 						"l4dmultislots");
+	//AutoExecConfig(true, 						"l4dmultislots");
 
 	GetCvars();
 	g_hSurvivorsLimit.AddChangeHook(ConVarChanged_Cvars);
