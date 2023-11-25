@@ -92,7 +92,12 @@ public Action EnableFixTeam_Timer(Handle timer)
 public Action DisableFixTeam_Timer(Handle timer)
 {
     DisableFixTeam();
-
+    for(int i = 1;i<=MaxClients;i++){
+        if(!IsClientInGame(i)) continue;
+        if(GetClientTeam(i)==L4D2_TEAM_SPECTATOR){
+            PrintToChat(i, "你现在可以进入队伍了");
+        }
+    }
     return Plugin_Continue;
 }
 
@@ -214,12 +219,6 @@ public void EnableFixTeam()
 public void DisableFixTeam()
 {
     fixTeam = false;
-    for(int i = 1;i<=MaxClients;i++){
-        if(!IsClientInGame(i)) continue;
-        if(GetClientTeam(i)==L4D2_TEAM_SPECTATOR){
-            PrintToChat(i, "你现在可以进入队伍了");
-        }
-    }
 }
 
 public void ClearTeamsData()
