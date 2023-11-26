@@ -31,7 +31,8 @@ static char query_list[][] = {
 	"r_drawrenderboxes",
 	"r_modelwireframedecal",
 	"z_gun_vertical_punch",
-	"r_flashlightfov"
+	"r_flashlightfov",
+	"mat_fullbright"
 };
 
 static int query_index[MAXPLAYERS + 1];
