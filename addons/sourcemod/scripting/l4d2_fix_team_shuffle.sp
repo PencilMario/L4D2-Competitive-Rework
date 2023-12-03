@@ -29,6 +29,15 @@ public void OnPluginStart()
     losers = CreateArray(64);
 }
 
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+    CreateNative("isFixTeamShuffleRunning", Native_isFixTeamShuffleRunning);
+    RegPluginLibrary("fix_team_shuffle");
+    return APLRes_Success;
+}
+public int Native_isFixTeamShuffleRunning(Handle plugin, int numParams){
+    return MustFixTheTeams();
+}
 public void OnRoundIsLive()
 {
     DisableFixTeam();
