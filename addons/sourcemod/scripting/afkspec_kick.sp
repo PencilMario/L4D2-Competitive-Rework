@@ -60,7 +60,7 @@ public Action Timer_CheckTeams(Handle timer)
                 if (!IsClientInGame(i)) continue;
                 if (IsFakeClient(i)) continue;
                 if (isFixTeamShuffleRunning()) {
-                    if (printedfixteamshuffing) CPrintToChat(i, "[{olive}!{default}] 防错位插件运行中，占位踢出将在防错位结束后开始执行");\
+                    if (!printedfixteamshuffing) CPrintToChat(i, "[{olive}!{default}] 防错位插件运行中，占位踢出将在防错位结束后开始倒数计时");
                     printedfixteamshuffing = true;
                     break;
                 }
