@@ -68,7 +68,7 @@
 	{
 		"hostname"		"[N&B.Zonemod]我去，狗服！#2"
 	}
-	"48200"
+	"34200"
 	{
 		"hostname"		"冷气开放[Zonemod 2.8.6]"
 	}
