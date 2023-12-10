@@ -158,18 +158,87 @@ public void OnClientPostAdminCheck(client)
 		)
 
 	log.info(msg)
+	CreateTimer(5.0, Timer_PerformWho, client);
 }
 
-public Action Timer_ShowFlag
+
+public Action Timer_PerformWho(Handle timer, int target)
+{
+	char name[MAX_NAME_LENGTH];
+	GetClientName(target, name, sizeof(name));
+	
+	bool show_name = false;
+	char admin_name[MAX_NAME_LENGTH];
+	AdminId id = GetUserAdmin(target);
+	if (id != INVALID_ADMIN_ID && id.GetUsername(admin_name, sizeof(admin_name)))
+	{
+		show_name = true;
+	}
+	if (id == INVALID_ADMIN_ID)
+	{
+		return Plugin_Stop;
+	}
+	else
+	{
+		int flags = GetUserFlagBits(target);
+		char flagstring[255];
+		if (flags == 0)
+		{
+			strcopy(flagstring, sizeof(flagstring), "none");
+			return Plugin_Stop;
+		}
+		else if (flags & ADMFLAG_ROOT)
+		{
+			strcopy(flagstring, sizeof(flagstring), "root");
+		}
+		else
+		{
+			FlagsToString(flagstring, sizeof(flagstring), flags);
+		}
+		
+		if (show_name)
+		{
+			log.info("'%s' 为 云端管理 '%s'，拥有权限 '%s'", name, admin_name, flagstring);
+		}
+		else
+		{
+			log.info("'%s' 为 本地管理员，拥有权限 '%s'", name, flagstring);
+		}
+		
+	}
+	return Plugin_Stop;
+}	
+
 
 public void SteamWorks_OnValidateClient(int ownerauthid, int authid)
 {
     int client = GetClientOfAuthId(authid);
     if (client == -1) return;
-    if(ownerauthid != authid) isFamilyShared[client] = true;
-    else isFamilyShared[client] = false;
+    if(ownerauthid != authid) {
+		log.info("'%N' 为家庭共享账户，主账户authid为 '[U:1:%i]' !请知悉，中间一位数:1:可能为0", ownerauthid);
+	}
 }
+stock int GetClientOfAuthId(int authid)
+{
+    for(int i = 1; i <= MaxClients; i++)
+    {
+        if(IsClientConnected(i))
+        {
+            char steamid[32]; GetClientAuthId(i, AuthId_Steam3, steamid, sizeof(steamid));
+            char split[3][32]; 
+            ExplodeString(steamid, ":", split, sizeof(split), sizeof(split[]));
+            ReplaceString(split[2], sizeof(split[]), "]", "");
+            //Split 1: [U:
+            //Split 2: 1:
+            //Split 3: 12345]
+            
+            int auth = StringToInt(split[2]);
+            if(auth == authid) return i;
+        }
+    }
 
+    return -1;
+}
 void FlagsToString(char[] buffer, int maxlength, int flags)
 {
 	char joins[FLAG_STRINGS+1][32];
