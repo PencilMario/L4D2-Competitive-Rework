@@ -5,9 +5,9 @@
 #define L4D2_TEAM_SPECTATOR 1
 #define L4D2_TEAM_SURVIVOR 2
 #define L4D2_TEAM_INFECTED 3
-
+const float COUNT_SPEED = 0.3;
 bool fixTeam = false;
-
+float time = 0.0;
 ArrayList winners;
 ArrayList losers;
 
@@ -93,21 +93,21 @@ public Action EnableFixTeam_Timer(Handle timer)
 {
     EnableFixTeam();
     FixTeams();
-    CreateTimer(30.0, DisableFixTeam_Timer);
+    time = 30.0;
+    CreateTimer(COUNT_SPEED, DisableFixTeam_Timer, _, TIMER_REPEAT);
 
     return Plugin_Continue;
 }
 
 public Action DisableFixTeam_Timer(Handle timer)
 {
-    DisableFixTeam();
-    for(int i = 1;i<=MaxClients;i++){
-        if(!IsClientInGame(i)) continue;
-        if(GetClientTeam(i)==L4D2_TEAM_SPECTATOR){
-            PrintToChat(i, "你现在可以进入队伍了");
-        }
+    if (MustFixTheTeams()) {
+        PrintHintTextToAll("防错位运行中...\n剩余%.1fs", time);
+        time -= COUNT_SPEED;
     }
-    return Plugin_Continue;
+    if (time > 0.0) return Plugin_Continue;
+    DisableFixTeam();
+    return Plugin_Stop;
 }
 
 public void SaveTeams()
