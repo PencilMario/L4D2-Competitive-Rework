@@ -103,8 +103,8 @@ public Action DisableFixTeam_Timer(Handle timer)
 {
     if (MustFixTheTeams()) {
         PrintHintTextToAll("防错位运行中...\n剩余%.1fs", time);
-        time -= COUNT_SPEED;
     }
+    time -= COUNT_SPEED;
     if (time > 0.0) return Plugin_Continue;
     DisableFixTeam();
     return Plugin_Stop;
