@@ -26,8 +26,10 @@
 #include <string.inc>
 #include <logger>
 #include <left4dhooks>
+#include <SteamWorks>
+
 #define FLAG_STRINGS		14
-#define PLUGIN_VERSION "SaveChat_1.2.1"
+#define PLUGIN_VERSION "SaveChat_1.2.2"
 char g_FlagNames[FLAG_STRINGS][20] =
 {
 	"res",
@@ -156,6 +158,16 @@ public void OnClientPostAdminCheck(client)
 		)
 
 	log.info(msg)
+}
+
+public Action Timer_ShowFlag
+
+public void SteamWorks_OnValidateClient(int ownerauthid, int authid)
+{
+    int client = GetClientOfAuthId(authid);
+    if (client == -1) return;
+    if(ownerauthid != authid) isFamilyShared[client] = true;
+    else isFamilyShared[client] = false;
 }
 
 void FlagsToString(char[] buffer, int maxlength, int flags)
@@ -300,11 +312,14 @@ public LogChat(client, args, bool:teamchat)
 public OnMapStart(){
 	new String:map[128]
 	char cfg[64];
-	ConVar config = FindConVar("l4d_ready_cfg_name")
+	ConVar config = FindConVar("l4d_ready_cfg_name");
 	GetConVarString(config != INVALID_HANDLE ? config : FindConVar("mp_gamemode"), cfg, sizeof(cfg))
 	GetCurrentMap(map, sizeof(map))
-
+	ConVar sname = FindConVar("hostname");
+	char name[64];
+	sname.GetString(name, sizeof(name));
 	log.lograw("--=================================================================--")
+	log.info(  "* >>> %s <<<", name)
 	log.info(  "* 地图 >>> '%s'   ", 		map);
 	log.info(  "* 配置文件: '%s'", 			cfg);
 	log.info(  "* 比分 %i : %i", 			L4D2Direct_GetVSCampaignScore(GameRules_GetProp("m_bAreTeamsFlipped")), L4D2Direct_GetVSCampaignScore(!GameRules_GetProp("m_bAreTeamsFlipped")));
