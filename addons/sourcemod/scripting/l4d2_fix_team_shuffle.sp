@@ -8,6 +8,13 @@
 const float COUNT_SPEED = 0.3;
 bool fixTeam = false;
 float time = 0.0;
+int symbol = 0;
+char funsymbol[4][2] = {
+    "◤",
+    "◥",
+    "◣",
+    "◢"
+};
 ArrayList winners;
 ArrayList losers;
 
@@ -102,7 +109,8 @@ public Action EnableFixTeam_Timer(Handle timer)
 public Action DisableFixTeam_Timer(Handle timer)
 {
     if (MustFixTheTeams()) {
-        PrintHintTextToAll("防错位运行中...\n剩余%.1fs", time);
+        PrintHintTextToAll("/// 防错位机制生效中...%s ///\n%.1f秒",funsymbol[symbol++], time);
+        if (symbol >= sizeof(funsymbol)) symbol = 0;
     }
     time -= COUNT_SPEED;
     if (time > 0.0) return Plugin_Continue;
