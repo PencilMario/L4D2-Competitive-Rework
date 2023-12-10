@@ -13,7 +13,7 @@ char snd4[] = "buttons/button14.wav";
 char snd5[] = "ui/menu_enter05.wav";
 
 int kicktime[MAXPLAYERS] = {20};
-bool printedfixteamshuffing[MAXPLAYERS];
+int butitolazy = 0;
 public void OnPluginStart()
 {
     CreateTimer(CHECK_INTERVAL, Timer_CheckTeams, _, TIMER_REPEAT);
@@ -30,7 +30,6 @@ public void OnMapStart(){
 }
 
 void ResetTimeout(int client){
-    printedfixteamshuffing[client] = false;
     if (IsInReady()){
         kicktime[client] = 60
     }
@@ -61,8 +60,10 @@ public Action Timer_CheckTeams(Handle timer)
                 if (!IsClientInGame(i)) continue;
                 if (IsFakeClient(i)) continue;
                 if (isFixTeamShuffleRunning()) {
-                    if (!printedfixteamshuffing) CPrintToChat(i, "[{olive}!{default}] 防错位插件运行中，占位踢出将在防错位结束后开始倒数计时");
-                    printedfixteamshuffing[i] = true;
+                    if (butitolazy-- < 0) {
+                        CPrintToChat(i, "[{olive}!{default}] 防错位插件运行中，占位踢出将在防错位结束后开始倒数计时");
+                        butitolazy = 5;
+                        }
                     break;
                 }
                 if (GetClientTeam(i) == L4D2Team_Spectator){
