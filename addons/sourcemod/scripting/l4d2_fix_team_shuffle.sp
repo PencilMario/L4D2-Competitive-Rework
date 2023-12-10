@@ -9,7 +9,7 @@ const float COUNT_SPEED = 0.3;
 bool fixTeam = false;
 float time = 0.0;
 int symbol = 0;
-char funsymbol[4][2] = {
+char funsymbol[4][3] = {
     "◤",
     "◥",
     "◣",
