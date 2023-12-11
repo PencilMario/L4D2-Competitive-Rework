@@ -12,8 +12,8 @@ int symbol = 0;
 char funsymbol[4][3] = {
     "◤",
     "◥",
-    "◣",
-    "◢"
+    "◢",
+    "◣"
 };
 ArrayList winners;
 ArrayList losers;
