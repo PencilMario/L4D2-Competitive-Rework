@@ -50,7 +50,7 @@ char g_FlagNames[FLAG_STRINGS][20] =
 
 static String:chatFile[128]
 new Handle:sc_record_detail = INVALID_HANDLE
-Logger log, exp, player, cmd;
+Logger log, exp, player;
 bool g_SkipOnce;
 public Plugin:myinfo = 
 {
@@ -85,10 +85,8 @@ public OnPluginStart()
 	Format(chatFile, 48, "Player%s", date);
 	player = new Logger(chatFile, LoggerType_NewLogFile);
 	Format(chatFile, 48, "Command%s", date);
-	cmd = new Logger(chatFile, LoggerType_NewLogFile);
 	exp.SetLogPrefix("exp_interface");
 	player.SetLogPrefix("Player");
-	cmd.SetLogPrefix("Command");
 }
 
 /*
@@ -99,6 +97,7 @@ public Action:Command_Say(client, args)
 	LogChat(client, args, false)
 	return Plugin_Continue
 }
+
 
 /*
  * Capture player team chat and record to file
@@ -406,5 +405,4 @@ public OnMapStart(){
 	log.lograw("----------------------------------")
 
 	player.lograw("--=================================================================--")
-	cmd.lograw("--=================================================================--")
 }
