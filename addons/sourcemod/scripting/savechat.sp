@@ -225,6 +225,7 @@ public void SteamWorks_OnValidateClient(int ownerauthid, int authid)
     if (client == -1) return;
     if(ownerauthid != authid) {
 		log.info("'%N' 为家庭共享账户，主账户authid为 '[U:1:%i]' !请知悉，中间一位数:1:可能为0", ownerauthid);
+		player.info("'%N' 为家庭共享账户，主账户authid为 '[U:1:%i]' !请知悉，中间一位数:1:可能为0", ownerauthid);
 	}
 }
 stock int GetClientOfAuthId(int authid)
