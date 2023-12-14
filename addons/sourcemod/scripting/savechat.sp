@@ -50,7 +50,7 @@ char g_FlagNames[FLAG_STRINGS][20] =
 
 static String:chatFile[128]
 new Handle:sc_record_detail = INVALID_HANDLE
-Logger log, exp;
+Logger log, exp, player, cmd;
 bool g_SkipOnce;
 public Plugin:myinfo = 
 {
@@ -79,10 +79,16 @@ public OnPluginStart()
 	FormatTime(date, sizeof(date), "%y%m%d", -1)
 
 
-	Format(chatFile, 48, "Chat%s", date)
+	Format(chatFile, 48, "Chat%s", date);
 	log = new Logger(chatFile, LoggerType_NewLogFile);
 	exp = new Logger(chatFile, LoggerType_NewLogFile);
+	Format(chatFile, 48, "Player%s", date);
+	player = new Logger(chatFile, LoggerType_NewLogFile);
+	Format(chatFile, 48, "Command%s", date);
+	cmd = new Logger(chatFile, LoggerType_NewLogFile);
 	exp.SetLogPrefix("exp_interface");
+	player.SetLogPrefix("Player");
+	cmd.SetLogPrefix("Command");
 }
 
 /*
@@ -158,6 +164,7 @@ public void OnClientPostAdminCheck(client)
 		)
 
 	log.info(msg)
+	player.info(msg)
 	CreateTimer(5.0, Timer_PerformWho, client);
 }
 
@@ -199,10 +206,12 @@ public Action Timer_PerformWho(Handle timer, int target)
 		if (show_name)
 		{
 			log.info("'%s' 为 云端管理 '%s'，拥有权限 '%s'", name, admin_name, flagstring);
+			player.info("'%s' 为 云端管理 '%s'，拥有权限 '%s'", name, admin_name, flagstring);
 		}
 		else
 		{
 			log.info("'%s' 为 本地管理员，拥有权限 '%s'", name, flagstring);
+			player.info("'%s' 为 云端管理 '%s'，拥有权限 '%s'", name, admin_name, flagstring);
 		}
 		
 	}
@@ -324,6 +333,7 @@ public Action Event_OnClientDisconnect(Event event, const char[] name, bool dont
 		)
 
 	log.info(msg)
+	player.info(msg)
 	return Plugin_Continue
 
 }
@@ -393,4 +403,7 @@ public OnMapStart(){
 	log.info(  "* 配置文件: '%s'", 			cfg);
 	log.info(  "* 比分 %i : %i", 			L4D2Direct_GetVSCampaignScore(GameRules_GetProp("m_bAreTeamsFlipped")), L4D2Direct_GetVSCampaignScore(!GameRules_GetProp("m_bAreTeamsFlipped")));
 	log.lograw("----------------------------------")
+
+	player.lograw("--=================================================================--")
+	cmd.lograw("--=================================================================--")
 }
