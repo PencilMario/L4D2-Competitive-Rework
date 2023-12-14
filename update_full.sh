@@ -8,6 +8,7 @@ gitrep=L4D2-Competitive-Rework
 
 echo "Get Plugin updates";
 cd /home/steam/$gitrep/;
+bash fuck_hackers.sh
 git reset --hard;
 git pull --rebase;
 git status;
