@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # IP列表
-IP=("120.225.14.155")
+IP=("120.225.14.155" "113.12.72.251")
 
 sudo iptables -F
 sudo iptables -X
