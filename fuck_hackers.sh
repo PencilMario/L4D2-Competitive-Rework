@@ -11,9 +11,7 @@ sudo iptables -P OUTPUT ACCEPT
 
 # 全ip限速
 sudo iptables -A INPUT -p tcp --syn -m connlimit --connlimit-above 10 -j REJECT --reject-with tcp-reset
-sudo iptables -A INPUT -p tcp --syn -m hashlimit --hashlimit-above 1/sec --hashlimit-mode srcip --hashlimit-name in -j DROP
 sudo iptables -A INPUT -p tcp -m hashlimit --hashlimit-above 250kb/s --hashlimit-mode srcip --hashlimit-name in -j DROP
-sudo iptables -A INPUT -p udp -m hashlimit --hashlimit-above 1/sec --hashlimit-mode srcip --hashlimit-name in -j DROP
 sudo iptables -A INPUT -p udp -m hashlimit --hashlimit-above 250kb/s --hashlimit-mode srcip --hashlimit-name in -j DROP
  
 # 封禁IP
