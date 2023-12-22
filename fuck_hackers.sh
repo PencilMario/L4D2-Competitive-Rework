@@ -1,10 +1,7 @@
 #!/bin/bash
 cd ~
 
-if [ ! -f /tmp/lockfile ]; then
-    touch /tmp/lockfile
-else
-    exit 1
+sudo apt-get install -y ipset tcpdump
 
 # 设定阈值，10秒内数据包超过这个数量的IP将被封禁
 THRESHOLD=1000
@@ -26,7 +23,9 @@ for file in serverport_*.cfg; do
     digits=$(echo "$file" | grep -o '[0-9]\{4,5\}')
     # Check if the digits are a valid port number
     if [[ $digits -ge 1024 && $digits -le 65535 ]]; then
-        port_list+=( $((digits)) )
+        if sudo lsof -i :$digits; then
+            port_list+=( $((digits)) )
+        fi
     fi
 done
 echo "Valid port numbers found: ${port_list[@]}"
