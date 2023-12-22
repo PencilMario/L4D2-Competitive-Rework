@@ -5,6 +5,7 @@ THRESHOLD=300
 
 # 封禁的时间（秒）
 TIMEOUT=3600
+gitrep=L4D2-Competitive-Rework
 
 # 准备一个文件来保存被封禁的IP
 BLOCKED_IP_FILE="/home/steam/blocked_ip.txt"
