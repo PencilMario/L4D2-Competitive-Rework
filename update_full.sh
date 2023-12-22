@@ -10,7 +10,6 @@ gitrep=L4D2-Competitive-Rework
 
 echo "Get Plugin updates";
 cd /home/steam/$gitrep/;
-bash fuck_hackers.sh
 sudo timedatectl set-timezone Asia/Shanghai
 git reset --hard;
 git pull --rebase;
@@ -65,4 +64,5 @@ echo "File Copy Success";
 echo "==================当前commit=================="
 git log -1
 echo "================== 运行结束 =================="
-
+cd /home/steam/$gitrep/;
+bash fuck_hackers.sh
