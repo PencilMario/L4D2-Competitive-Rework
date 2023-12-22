@@ -1,9 +1,6 @@
 #!/bin/bash
-cd ~
 
-#sudo apt-get install -y ipset tcpdump
-
-# 设定阈值，10秒内数据包超过这个数量的IP将被封禁
+# 设定阈值，1秒内数据包超过这个数量的IP将被封禁
 THRESHOLD=300
 
 # 封禁的时间（秒）
@@ -12,11 +9,11 @@ TIMEOUT=3600
 # 准备一个文件来保存被封禁的IP
 BLOCKED_IP_FILE="/home/steam/blocked_ip.txt"
 
-gitrep=L4D2-Competitive-Rework
+# 日志文件路径
+BLOCKED_IP_LOG="/home/steam/blocked_ip.log"
 
 # 指定要监控的端口
 PORTS=()
-port_list=()
 cd /home/steam/$gitrep/cfg/spcontrol_server/;
 for file in serverport_*.cfg; do
     # Extract the digits from the filename
@@ -24,15 +21,11 @@ for file in serverport_*.cfg; do
     # Check if the digits are a valid port number
     if [[ $digits -ge 1024 && $digits -le 65535 ]]; then
         if sudo lsof -i :$digits; then
-            port_list+=( $((digits)) )
+            PORTS+=( $((digits)) )
         fi
     fi
 done
 echo "Valid port numbers found: ${port_list[@]}"
-echo "Valid port numbers found: ${port_list[@]}" >> $BLOCKED_IP_FILE
-
-PORTS=$port_list
-cd ~
 # 创建一个ipset集合来存储被封禁的IP
 ipset -exist create blocked_ip hash:ip timeout $TIMEOUT
 
@@ -40,7 +33,6 @@ ipset -exist create blocked_ip hash:ip timeout $TIMEOUT
 iptables -I INPUT -m set --match-set blocked_ip src -j DROP
 iptables -I OUTPUT -m set --match-set blocked_ip dst -j DROP
 
-echo "===================================" >> $BLOCKED_IP_FILE
 while true; do
     # 对每个端口执行tcpdump命令
     for PORT in "${PORTS[@]}"; do
@@ -67,5 +59,3 @@ while true; do
         done
     done
 done
-
-fi
