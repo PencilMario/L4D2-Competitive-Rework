@@ -43,13 +43,10 @@ iptables -I OUTPUT -m set --match-set blocked_ip dst -j DROP
 while true; do
     # 对每个端口执行tcpdump命令
     for PORT in "${PORTS[@]}"; do
-        # 使用tcpdump捕获10秒内的流量，通过awk命令分析并找出数据包数量超过阈值的IP
-        IP_LIST=$(timeout 5 tcpdump -i eth0 -n 'port '$PORT| awk '{print $3}' | cut -d. -f1-4 | sort | uniq -c | sort -nr | awk -v threshold=$THRESHOLD '$1 > threshold {print $2}')
-
-        # 使用tcpdump捕获流量，通过awk命令分析并找出长度为8的数据包的IP
-        #IP_LIST=$(tcpdump -i eth0 -n -c 2000 'port '$PORT | awk '{if ($8 == 8) print $3}' | cut -d. -f1-4 | sort | uniq -c | sort -nr | awk -v threshold=$THRESHOLD '$1 > threshold {print $2}')
-
-        # 将超过阈值的IP添加到ipset集合进行封禁，同时保存到文本文件中
+        # 使用tcpdump捕获1秒内的流量，通过awk命令分析并找出数据包数量超过阈值的IP
+        IP_LIST=$(timeout 1 tcpdump -i eth0 -n 'port '$PORT' and less 90'| awk '{print $3}' | cut -d. -f1-4 | sort | uniq -c | sort -nr | awk -v threshold=$THRESHOLD '$1 > threshold {print $2}')
+        
+        # 将超过阈值的IP添加到ipset集合进行封禁，同时保存到文本文件和日志文件中
         for IP in $IP_LIST; do
             # 检查IP是否合法
             if [[ $IP =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -58,14 +55,14 @@ while true; do
                     ipset add blocked_ip $IP timeout $TIMEOUT
                     echo "Blocked IP: $IP"
                     echo $IP >> $BLOCKED_IP_FILE
+                    # 记录封禁事件
+                    echo "$(date) [BLOCKED] IP: $IP exceeded the threshold with more than $THRESHOLD packets per second" | tee -a $BLOCKED_IP_LOG
                 fi
             else
+                # 记录无效IP的日志
                 echo "Invalid IP: $IP"
+                echo "$(date) [INVALID] IP: $IP is not a valid IP address format" | tee -a $BLOCKED_IP_LOG
             fi
         done
-        if [-f /tmp/lockfile ]; then
-            touch /tmp/lockfile
-        else
-            exit 1
     done
 done
