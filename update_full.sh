@@ -8,6 +8,12 @@ rm /tmp/lockfile
 # github存储库名称
 gitrep=L4D2-Competitive-Rework
 
+sudo iptables -F
+sudo iptables -X
+sudo iptables -P INPUT ACCEPT
+sudo iptables -P FORWARD ACCEPT
+sudo iptables -P OUTPUT ACCEPT
+
 echo "Get Plugin updates";
 cd /home/steam/$gitrep/;
 sudo timedatectl set-timezone Asia/Shanghai
