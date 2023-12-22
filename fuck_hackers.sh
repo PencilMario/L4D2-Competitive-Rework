@@ -38,6 +38,7 @@ ipset -exist create blocked_ip hash:ip timeout $TIMEOUT
 iptables -I INPUT -m set --match-set blocked_ip src -j DROP
 iptables -I OUTPUT -m set --match-set blocked_ip dst -j DROP
 
+echo "===================================" >> $BLOCKED_IP_FILE
 while true; do
     # 对每个端口执行tcpdump命令
     for PORT in "${PORTS[@]}"; do
