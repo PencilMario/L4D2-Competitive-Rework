@@ -28,11 +28,11 @@ for file in serverport_*.cfg; do
 done
 echo "Valid port numbers found: ${port_list[@]}"
 # 创建一个ipset集合来存储被封禁的IP
-ipset -exist create blocked_ip hash:ip timeout $TIMEOUT
+sudo ipset -exist create blocked_ip hash:ip timeout $TIMEOUT
 
 # 将ipset集合添加到iptables规则中
-iptables -I INPUT -m set --match-set blocked_ip src -j DROP
-iptables -I OUTPUT -m set --match-set blocked_ip dst -j DROP
+sudo iptables -I INPUT -m set --match-set blocked_ip src -j DROP
+sudo iptables -I OUTPUT -m set --match-set blocked_ip dst -j DROP
 
 while true; do
     # 对每个端口执行tcpdump命令
@@ -45,8 +45,8 @@ while true; do
             # 检查IP是否合法
             if [[ $IP =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
                 # 检查IP是否已经在ipset中
-                if ! ipset -test blocked_ip $IP > /dev/null 2>&1; then
-                    ipset add blocked_ip $IP timeout $TIMEOUT
+                if ! sudo ipset -test blocked_ip $IP > /dev/null 2>&1; then
+                    sudo ipset add blocked_ip $IP timeout $TIMEOUT
                     echo "Blocked IP: $IP"
                     echo $IP >> $BLOCKED_IP_FILE
                     # 记录封禁事件
