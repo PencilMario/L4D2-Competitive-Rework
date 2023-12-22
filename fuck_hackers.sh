@@ -4,7 +4,7 @@ cd ~
 #sudo apt-get install -y ipset tcpdump
 
 # 设定阈值，10秒内数据包超过这个数量的IP将被封禁
-THRESHOLD=1000
+THRESHOLD=300
 
 # 封禁的时间（秒）
 TIMEOUT=3600
