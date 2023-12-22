@@ -5,7 +5,6 @@ if [ ! -f /tmp/lockfile ]; then
     touch /tmp/lockfile
 else
     exit 1
-sudo apt-get install -y ipset tcpdump
 
 # 设定阈值，10秒内数据包超过这个数量的IP将被封禁
 THRESHOLD=1000
@@ -69,3 +68,5 @@ while true; do
         done
     done
 done
+
+fi
