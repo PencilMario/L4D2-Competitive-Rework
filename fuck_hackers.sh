@@ -29,6 +29,8 @@ for file in serverport_*.cfg; do
     fi
 done
 echo "Valid port numbers found: ${port_list[@]}"
+echo "Valid port numbers found: ${port_list[@]}" >> $BLOCKED_IP_FILE
+
 PORTS=$port_list
 cd ~
 # 创建一个ipset集合来存储被封禁的IP
@@ -42,9 +44,6 @@ echo "===================================" >> $BLOCKED_IP_FILE
 while true; do
     # 对每个端口执行tcpdump命令
     for PORT in "${PORTS[@]}"; do
-        if [ ! -f /tmp/lockfile ]; then
-            exit 1
-        fi
         # 使用tcpdump捕获1秒内的流量，通过awk命令分析并找出数据包数量超过阈值的IP
         IP_LIST=$(timeout 1 tcpdump -i eth0 -n 'port '$PORT' and less 90'| awk '{print $3}' | cut -d. -f1-4 | sort | uniq -c | sort -nr | awk -v threshold=$THRESHOLD '$1 > threshold {print $2}')
         
