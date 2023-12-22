@@ -44,10 +44,10 @@ while true; do
     # 对每个端口执行tcpdump命令
     for PORT in "${PORTS[@]}"; do
         # 使用tcpdump捕获10秒内的流量，通过awk命令分析并找出数据包数量超过阈值的IP
-        # IP_LIST=$(timeout 5 tcpdump -i eth0 -n 'port '$PORT| awk '{print $3}' | cut -d. -f1-4 | sort | uniq -c | sort -nr | awk -v threshold=$THRESHOLD '$1 > threshold {print $2}')
+        IP_LIST=$(timeout 5 tcpdump -i eth0 -n 'port '$PORT| awk '{print $3}' | cut -d. -f1-4 | sort | uniq -c | sort -nr | awk -v threshold=$THRESHOLD '$1 > threshold {print $2}')
 
         # 使用tcpdump捕获流量，通过awk命令分析并找出长度为8的数据包的IP
-        IP_LIST=$(tcpdump -i eth0 -n -c 2000 'port '$PORT | awk '{if ($8 == 8) print $3}' | cut -d. -f1-4 | sort | uniq -c | sort -nr | awk -v threshold=$THRESHOLD '$1 > threshold {print $2}')
+        #IP_LIST=$(tcpdump -i eth0 -n -c 2000 'port '$PORT | awk '{if ($8 == 8) print $3}' | cut -d. -f1-4 | sort | uniq -c | sort -nr | awk -v threshold=$THRESHOLD '$1 > threshold {print $2}')
 
         # 将超过阈值的IP添加到ipset集合进行封禁，同时保存到文本文件中
         for IP in $IP_LIST; do
