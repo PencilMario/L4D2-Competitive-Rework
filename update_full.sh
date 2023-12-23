@@ -71,4 +71,3 @@ echo "==================当前commit=================="
 git log -1
 echo "================== 运行结束 =================="
 cd /home/steam/$gitrep/;
-bash fuck_hackers.sh
