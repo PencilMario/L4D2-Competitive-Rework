@@ -6,7 +6,7 @@ PACKET_SIZE=64                        # UDP数据包的最大长度限制
 BAN_TIME=36                         # 封禁IP的时间（秒）
 INTERFACE="eth0"                      # 使用的网络接口名称                      # 需要监控的端口列表，使用逗号分隔
 LOG_FILE="/home/steam/banned_ips.log"    # 记录封禁IP的日志文件路径
-
+gitrep=L4D2-Competitive-Rework
 # 指定要监控的端口
 PORTS=()
 cd /home/steam/$gitrep/cfg/spcontrol_server/;
@@ -20,7 +20,7 @@ for file in serverport_*.cfg; do
         fi
     fi
 done
-echo "Valid port numbers found: ${port_list[@]}"
+echo "Valid port numbers found: $PORTS"
 port_s=$(printf "%s," "${PORTS[@]}")
 PORTS=${port_s::-1}
 
