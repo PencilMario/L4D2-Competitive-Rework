@@ -3,7 +3,7 @@
 # 配置参数
 THRESHOLD=30                          # 设置每秒允许的UDP请求的阈值
 PACKET_SIZE=64                        # UDP数据包的最大长度限制
-BAN_TIME=36                         # 封禁IP的时间（秒）
+BAN_TIME=7200                         # 封禁IP的时间（秒）
 INTERFACE="eth0"                      # 使用的网络接口名称                      # 需要监控的端口列表，使用逗号分隔
 LOG_FILE="/home/steam/banned_ips.log"    # 记录封禁IP的日志文件路径
 gitrep=L4D2-Competitive-Rework
