@@ -16,7 +16,7 @@
 		}
 		"zonemod"
 		{
-			"name" "ZoneMod 2.8.8"
+			"name" "ZoneMod 2.8.9"
 		}
 		"zonemod6v6"
 		{
@@ -24,7 +24,7 @@
 		}
 		"zoneretro"
 		{
-			"name" "ZoneMod Retro 2.8.8"
+			"name" "ZoneMod Retro 2.8.9"
 		}
 		"zm3v3"
 		{
@@ -125,7 +125,7 @@
 	{
 		"zonehunters"
 		{
-			"name" "ZoneHunters 2.8.8"
+			"name" "ZoneHunters 2.8.9"
 		}
 		"zh3v3"
 		{
