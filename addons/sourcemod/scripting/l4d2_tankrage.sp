@@ -86,7 +86,7 @@ public void Event_TankSpawn(Event hEvent, char[] sEventName, bool dontBroadcast)
 
     if (!IsFakeClient(iTank))
     {
-        CPrintToChatAll("{red}[{default}Tank Rage{red}] {default}For every {olive}%i{green}%% {default}Survivors run back, the Tank will have their frustration frozen for {olive}%0.1f {green}seconds{default}.", convarRageFlowPercent.IntValue, convarRageFreezeTime.FloatValue);
+        CPrintToChatAll("{red}[{default}Tank Rage{red}] {default} 生还者每退{olive}%i{green}%% {default}进度, 坦克的控制权将冻结{olive}%0.1f {green}秒{default}.", convarRageFlowPercent.IntValue, convarRageFreezeTime.FloatValue);
         hTankTimer = CreateTimer(0.1, timerTank, _, TIMER_REPEAT)
         bHaveHadFlowOrStaticTank = true;
     }
