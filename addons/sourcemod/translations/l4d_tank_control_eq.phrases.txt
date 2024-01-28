@@ -7,29 +7,36 @@
 	"Tag_Rage"
 	{
 		"en"		"{red}<{default}Tank Rage{red}>{default}"
+
 	}
 	"YouBecomeTank"
 	{
 		"en"		"{green}You{default} will become the {red}Tank{default}!"
+		"chi"		"{green}你{default} 为本回合的 {red}Tank{default}!"
 	}
 	"BecomeTank"
 	{
 		"en"		"{olive}%s{default} will become the {red}Tank{default}!"
+		"chi"		"{olive}%s{default} 为本回合的 {red}Tank{default}!"
 	}
 	"UnableGiveTank"
 	{
 		"en"		"[{olive}SM{default}] %s not on infected. Unable to give tank"
+		"chi"		"[{olive}SM{default}] %s 不在感染者队伍，无法设置Tank"
 	}
 	"Hit_RageMeterRefilled"
 	{
 		"en"		"Rage Meter Refilled"
+		"chi"		"一控结束"
 	}
 	"YouRageMeterRefilled"
 	{
 		"en"		"{olive}Rage Meter {red}Refilled{default}"
+		"chi"		"{olive}第一次控制权 {red}结束{default}"
 	}
 	"RageMeterRefilled"
 	{
 		"en"		"({green}%N{default}'s) {olive}Rage Meter {red}Refilled"
+		"chi"		"({green}%N{default}) {olive}第一次控制权 {red}结束"
 	}
 }
