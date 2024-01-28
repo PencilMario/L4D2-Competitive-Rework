@@ -6,6 +6,8 @@
 
 ConVar convarRageFlowPercent;
 ConVar convarRageFreezeTime;
+ConVar convarRageAnnounceToTank;
+
 ConVar convarDebug;
 ConVar g_hVsBossBuffer;
 
@@ -17,7 +19,6 @@ bool
 
 int iTank = -1;
 int tankSpawnedSurvivorFlow = 0;
-
 public Plugin myinfo =
 {
     name = "L4D2 Tank Rage",
@@ -33,6 +34,7 @@ public void OnPluginStart()
     convarRageFlowPercent = CreateConVar("l4d2_tankrage_flowpercent", "7", "The percentage in flow the survival have to run back to grant frustration freeze (Furthest Survivor)");
     convarRageFreezeTime  = CreateConVar("l4d2_tankrage_freezetime", "4.0", "Time in seconds to freeze the Tank's frustration when survivors have ran back per <flowpercent>.");
     convarDebug = CreateConVar("l4d2_tankrage_debug", "0", "Are we debugging?");
+    convarRageAnnounceToTank = CreateConVar("l4d2_tankrage_freezetimeannounce", "0", "当tank控制权暂停时，是否对tank玩家显示倒计时.");
     HookEvent("tank_spawn", Event_TankSpawn);
     HookEvent("round_start", Event_ResetTank, EventHookMode_PostNoCopy);
     HookEvent("player_death", Event_ResetTank, EventHookMode_Post);
@@ -114,6 +116,21 @@ public void Event_ResetTank(Event hEvent, char[] sEventName, bool dontBroadcast)
     
     delete hTankTimer;
 }
+public void StartAnnounceToTank(int client){
+    if (convarRageAnnounceToTank.IntValue == 0) return;
+    CPrintToChat(client, "{red}[{default}Tank Rage{red}] {default} 因为生还者回退过远，你的控制权将延长 %.1f 秒！", convarRageFreezeTime.FloatValue);
+    CreateTimer(0.1, Timer_AnnounceTankRageFreezeTime, client, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public Action Timer_AnnounceTankRageFreezeTime(Handle timer, int client){
+    CountdownTimer tankFreezeTimer = GetFrustrationTimer(client);
+    float tankFreezeRageTime = CTimer_GetRemainingTime(tankFreezeTimer);
+    if (tankFreezeRageTime > 0.0){
+        PrintHintText(client, "控制权延长: %.1f", tankFreezeRageTime);
+        return Plugin_Continue;
+    }
+    return Plugin_Stop;
+}
 
 public Action timerTank(Handle timer)
 {
@@ -151,6 +168,7 @@ public Action timerTank(Handle timer)
 
             fTankGrace += fTimeToAdd;
             CTimer_Start(GetFrustrationTimer(iTank), fTankGrace);
+            StartAnnounceToTank(iTank);
         }
     }
     
