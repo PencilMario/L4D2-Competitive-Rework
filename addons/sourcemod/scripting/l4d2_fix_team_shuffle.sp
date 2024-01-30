@@ -122,13 +122,15 @@ public Action DisableFixTeam_Timer(Handle timer)
         HUDSetLayout(HUD_MID_BOX, HUD_FLAG_ALIGN_CENTER|HUD_FLAG_TEXT, text);
     }
     time -= COUNT_SPEED;
-    HUDPlace(HUD_MID_BOX, -0.02, 0.00, 1.0, 0.03);
+    HUDPlace(HUD_MID_BOX, -0.02, 0.00, 1.0, 0.06);
     if (time > 0.0) return Plugin_Continue;
-    RemoveHUD(HUD_MID_BOX);
+    RequestFrame(CloseHud);
     DisableFixTeam();
     return Plugin_Stop;
 }
-
+void CloseHud(){
+    if (HUDSlotIsUsed(HUD_MID_BOX)) RemoveHUD(HUD_MID_BOX);
+}
 public void SaveTeams()
 {
     ClearTeamsData();
