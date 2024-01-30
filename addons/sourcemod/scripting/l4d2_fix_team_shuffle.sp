@@ -122,7 +122,7 @@ public Action DisableFixTeam_Timer(Handle timer)
         HUDSetLayout(HUD_MID_BOX, HUD_FLAG_ALIGN_CENTER|HUD_FLAG_TEXT, text);
     }
     time -= COUNT_SPEED;
-    HUDPlace(HUD_MID_BOX, -0.02, 0.00, 1.0, 0.06);
+    HUDPlace(HUD_MID_BOX, 0.0, 0.00, 0.65, 0.06);
     if (time > 0.0) return Plugin_Continue;
     RequestFrame(CloseHud);
     DisableFixTeam();
