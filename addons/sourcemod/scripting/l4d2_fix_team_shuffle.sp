@@ -1,6 +1,7 @@
 #include <sourcemod>
 #include <sdktools>
 #include <left4dhooks>
+#include <l4d2_ems_hud>
 
 #define L4D2_TEAM_SPECTATOR 1
 #define L4D2_TEAM_SURVIVOR 2
@@ -15,6 +16,7 @@ char funsymbol[4][3] = {
     "◢",
     "◣"
 };
+char text[128];
 ArrayList winners;
 ArrayList losers;
 
@@ -44,6 +46,9 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 }
 public int Native_isFixTeamShuffleRunning(Handle plugin, int numParams){
     return MustFixTheTeams();
+}
+public void OnMapStart(){
+    EnableHUD();
 }
 public void OnRoundIsLive()
 {
@@ -109,11 +114,17 @@ public Action EnableFixTeam_Timer(Handle timer)
 public Action DisableFixTeam_Timer(Handle timer)
 {
     if (MustFixTheTeams()) {
-        PrintHintTextToAll("/// 防错位机制生效中...%s ///\n%.1f秒",funsymbol[symbol++], time);
+        Format(text, sizeof(text), "/// 防错位机制生效中...%s ///\n%.1f秒",funsymbol[symbol++], time);
+        HUDSetLayout(HUD_MID_BOX, HUD_FLAG_ALIGN_RIGHT|HUD_FLAG_TEXT, text);
         if (symbol >= sizeof(funsymbol)) symbol = 0;
+    }else{
+        Format(text, sizeof(text), "/// 防错位机制已结束 ///\n旁观者现在可以加入游戏了",funsymbol[symbol++], time);
+        HUDSetLayout(HUD_MID_BOX, HUD_FLAG_ALIGN_CENTER|HUD_FLAG_TEXT, text);
     }
     time -= COUNT_SPEED;
+    HUDPlace(HUD_MID_BOX, -0.02, 0.00, 1.0, 0.03);
     if (time > 0.0) return Plugin_Continue;
+    RemoveHUD(HUD_MID_BOX);
     DisableFixTeam();
     return Plugin_Stop;
 }
