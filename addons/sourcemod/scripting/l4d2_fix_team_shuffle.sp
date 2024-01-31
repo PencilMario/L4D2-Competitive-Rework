@@ -117,9 +117,11 @@ public Action DisableFixTeam_Timer(Handle timer)
         Format(text, sizeof(text), "/// 防错位机制生效中... ///\n%s 剩余%.1f秒",funsymbol[symbol++], time);
         HUDSetLayout(HUD_MID_BOX, HUD_FLAG_ALIGN_CENTER|HUD_FLAG_TEXT, text);
         if (symbol >= sizeof(funsymbol)) symbol = 0;
+        time -= COUNT_SPEED;
     }else{
         Format(text, sizeof(text), "/// 防错位机制已结束... ///\n旁观者现在可以加入游戏了");
         HUDSetLayout(HUD_MID_BOX, HUD_FLAG_ALIGN_CENTER|HUD_FLAG_TEXT, text);
+        time -= COUNT_SPEED * 2.0;
     }
     time -= COUNT_SPEED;
     HUDPlace(HUD_MID_BOX, 0.0, 0.00, 1.0, 0.06);
