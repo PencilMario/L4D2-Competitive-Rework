@@ -16,7 +16,7 @@ char funsymbol[4][3] = {
     "◢",
     "◣"
 };
-char text[128];
+char text[192];
 ArrayList winners;
 ArrayList losers;
 
@@ -114,11 +114,11 @@ public Action EnableFixTeam_Timer(Handle timer)
 public Action DisableFixTeam_Timer(Handle timer)
 {
     if (MustFixTheTeams()) {
-        Format(text, sizeof(text), "/// 防错位机制生效中...%s ///\n%.1f秒",funsymbol[symbol++], time);
+        Format(text, sizeof(text), "/// 防错位机制生效中... ///\n%s 剩余%.1f秒",funsymbol[symbol++], time);
         HUDSetLayout(HUD_MID_BOX, HUD_FLAG_ALIGN_RIGHT|HUD_FLAG_TEXT, text);
         if (symbol >= sizeof(funsymbol)) symbol = 0;
     }else{
-        Format(text, sizeof(text), "/// 防错位机制已结束 ///\n旁观者现在可以加入游戏了",funsymbol[symbol++], time);
+        Format(text, sizeof(text), "/// 防错位机制已结束... ///\n旁观者现在可以加入游戏了");
         HUDSetLayout(HUD_MID_BOX, HUD_FLAG_ALIGN_CENTER|HUD_FLAG_TEXT, text);
     }
     time -= COUNT_SPEED;
