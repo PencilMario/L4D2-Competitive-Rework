@@ -126,10 +126,10 @@ public Action Timer_AnnounceTankRageFreezeTime(Handle timer, int client){
     CountdownTimer tankFreezeTimer = GetFrustrationTimer(client);
     float tankFreezeRageTime = CTimer_GetRemainingTime(tankFreezeTimer);
     if (tankFreezeRageTime > 0.0){
-        PrintHintText(client, "控制权延长: %.1f", tankFreezeRageTime);
+        PrintCenterText(client, "控制权延长: %.1f", tankFreezeRageTime);
         return Plugin_Continue;
     }
-    PrintHintText(client, "控制权延长已结束！", tankFreezeRageTime);
+    PrintCenterText(client, "控制权延长已结束！", tankFreezeRageTime);
     return Plugin_Stop;
 }
 
