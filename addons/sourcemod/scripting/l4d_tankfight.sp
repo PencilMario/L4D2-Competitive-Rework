@@ -129,6 +129,7 @@ public Action IsTankFightEnd(Handle timer)
     if (!IsCanEndRound()) return Plugin_Continue;
     // 防止影响下一队
     if (IsInReady()) return Plugin_Stop;
+    PrintToConsoleAll("EndTankFightRound()");
     EndTankFightRound();
     
     return Plugin_Stop;
@@ -169,7 +170,7 @@ int healthbonus, damageBonus, pillsBonus;
 // 传送生还者到安全屋并结束本回合
 void EndTankFightRound(){
     // 如果是团灭则不做处理
-    if (!AllSurInjured()) return;
+    if (AllSurInjured()) return;
     
     if (g_iMapTFType == TYPE_FINISH){
         healthbonus = SMPlus_GetHealthBonus();
@@ -309,6 +310,7 @@ bool IsMissionFinalMap()
     g_hTrieMaps = CreateTrie();
     SetTrieValue(g_hTrieMaps, "c1m4_atrium",					MP_FINALE);
     SetTrieValue(g_hTrieMaps, "c2m5_concert",				   MP_FINALE);
+    SetTrieValue(g_hTrieMaps, "c3m1_plankcountry",				MP_FINALE);
     SetTrieValue(g_hTrieMaps, "c3m4_plantation",				MP_FINALE);
     SetTrieValue(g_hTrieMaps, "c4m5_milltown_escape",		   MP_FINALE);
     SetTrieValue(g_hTrieMaps, "c5m5_bridge",					MP_FINALE);
@@ -338,7 +340,6 @@ Action ChangtToNewMap(Handle Timer)
     ArrayList offmaps = new ArrayList(32);
     offmaps.PushString("c1m1_hotel");
     offmaps.PushString("c2m1_highway");
-    offmaps.PushString("c3m1_plankcountry");
     offmaps.PushString("c4m1_milltown_a");
     offmaps.PushString("c5m1_waterfront");
     offmaps.PushString("c6m1_riverbank");
