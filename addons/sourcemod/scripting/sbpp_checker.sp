@@ -102,16 +102,16 @@ public OnConnectBanCheck(Handle:owner, Handle:hndl, const String:error[], any:us
     if (bancount > 0 || commcount > 0)
     {
         if(bancount == 0){
-            PrintToBanAdmins("\x04[SourceBans++]\x01 Warning: Player \"%N\" has %d previous commban%s.",
+            PrintToBanAdmins("\x04[SourceBans++]\x01 警告: 玩家 \"%N\" 有 %d 次禁言%s.",
                 client,commcount,((commcount > 1 || commcount == 0) ? "s":""));
         }
         else if(commcount == 0){
-            PrintToBanAdmins("\x04[SourceBans++]\x01 Warning: Player \"%N\" has %d previous ban%s.",
+            PrintToBanAdmins("\x04[SourceBans++]\x01 警告: 玩家 \"%N\" 有 %d 次封禁%s.",
                 client, bancount, ((bancount > 1 || bancount == 0) ? "s":""));
         }
         else{
-            PrintToBanAdmins("\x04[SourceBans++]\x01 Warning: Player \"%N\" has %d previous ban%s and %d previous commban%s.",
-                client, bancount, ((bancount > 1 || bancount == 0) ? "s":""),commcount,((commcount > 1 || commcount == 0) ? "s":""));
+            PrintToBanAdmins("\x04[SourceBans++]\x01 警告: 玩家 \"%N\" 有 %d 次封禁%s 和 %d 禁言%s.",
+                client, bancount, ((bancount > 1 || bancount == 0) ? "":""),commcount,((commcount > 1 || commcount == 0) ? "":""));
         }
     }
 }
