@@ -54,7 +54,7 @@
 ExtraMenu g_Extramenu;
 Handle hAdminMenu;
 
-int g_RemoveLobby,g_playnumber,g_skipsteamcheck, g_infrespawn, g_Tankrespawnarea, g_reset_tank_iron;
+int g_RemoveLobby,g_playnumber,g_skipsteamcheck, g_infrespawn, g_Tankrespawnarea, g_reset_tank_iron, g_saveprops;
 
 
 
@@ -97,6 +97,7 @@ public void OnLibraryAdded(const char[] name)
         g_infrespawn = g_Extramenu.AddEntryAdd          ("1. 特感复活时间: _OPT_", false, GetConvarIntEx("z_respawn_interval"), 1, 5, 20);
         g_Tankrespawnarea = g_Extramenu.AddEntryAdd     ("2. Tank刷新位置: _OPT_", false,  20, 5, 20, 80);
         g_reset_tank_iron = g_Extramenu.AddEntryOnly    ("3. 铁位置重置");
+        g_saveprops = g_Extramenu.AddEntryOnly           ("4. 保存当前铁位置");
         g_Extramenu.AddEntry                            ("  ");
 
 
@@ -169,6 +170,9 @@ public void ExtraMenu_OnSelect(int client, int menu_id, int option, int value){
     }
     else if (option == g_reset_tank_iron){
         ServerCommand("sm_resetprop");
+    }
+    else if (option == g_saveprops){
+        ServerCommand("sm_saveprop");
     }
     
 }
