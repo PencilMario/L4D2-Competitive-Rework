@@ -1,7 +1,7 @@
 #define MAX_HITTABLES 2048
 #include <logger>
 #include <sdktools>
-//#include <l4d2_hittable_control>
+#include <l4d2_hittable_control>
 // 铁坐标
 float g_HittableOrigin[MAX_HITTABLES][3];
 // 铁角度
@@ -76,14 +76,14 @@ bool IsTankProp(int iEntity)
 
 	// Exception
 	bool bAreForkliftsUnbreakable = true;
-	//if (g_bHittableControlExists)
-	//{
-	//	bAreForkliftsUnbreakable = AreForkliftsUnbreakable();
-	//}
-	//else
-	//{
-	//	bAreForkliftsUnbreakable = false;
-	//}
+	if (g_bHittableControlExists)
+	{
+		bAreForkliftsUnbreakable = AreForkliftsUnbreakable();
+	}
+	else
+	{
+		bAreForkliftsUnbreakable = false;
+	}
 
 	char sModel[PLATFORM_MAX_PATH];
 	GetEntPropString(iEntity, Prop_Data, "m_ModelName", sModel, sizeof(sModel));
