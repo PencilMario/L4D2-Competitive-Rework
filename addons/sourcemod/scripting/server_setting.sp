@@ -69,6 +69,12 @@ int g_RemoveLobby,g_playnumber,g_skipsteamcheck, g_infrespawn, g_Tankrespawnarea
 // ====================================================================================================
 public void OnPluginStart()
 {
+    TopMenu topmenu;
+    if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != null))
+    {
+      /* If so, manually fire the callback */
+      OnAdminMenuReady(topmenu);
+    }
     RegAdminCmd("sm_setmenu", CmdMenuTest, ADMFLAG_ROOT);
 }
 public void OnAllPluginsLoaded(){
