@@ -78,7 +78,7 @@ public void OnLibraryAdded(const char[] name)
 {
     if( strcmp(name, "extra_menu") == 0 )
     {
-        g_Extramenu = ExtraMenu(false, "", false);
+        g_Extramenu = ExtraMenu(false, "", true);
         g_Extramenu.AddEntry                            ("<服务器控制菜单 Page1>");
         g_Extramenu.AddEntry                            ("使用W/S选择选项, A/D进行调整");
         g_Extramenu.AddEntry                            ("  ");
@@ -89,7 +89,7 @@ public void OnLibraryAdded(const char[] name)
         g_Extramenu.AddEntry                            ("  ");
         g_Extramenu.AddEntry                            ("B. 特感设置 ");
         g_infrespawn = g_Extramenu.AddEntryAdd          ("1. 特感复活时间: _OPT_", false, GetConvarIntEx("z_respawn_interval"), 1, 5, 20);
-        g_Tankrespawnarea = g_Extramenu.AddEntryAdd     ("2. Tank刷新位置: _OPT_", false,  5, 20, 80);
+        g_Tankrespawnarea = g_Extramenu.AddEntryAdd     ("2. Tank刷新位置: _OPT_", false,  20, 5, 20, 80);
         g_reset_tank_iron = g_Extramenu.AddEntryOnly    ("3. 铁位置重置");
         g_Extramenu.AddEntry                            ("  ");
 
