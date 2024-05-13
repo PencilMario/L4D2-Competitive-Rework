@@ -15,6 +15,8 @@ public void OnPluginStart(){
 	log.info("安可sb")
 	log.IgnoreLevel = LogType_Critical;
 	RegConsoleCmd("sm_resetprop", CMD_ResetProps);
+	RegConsoleCmd("sm_saveprop", CMD_SaveProps);
+	
 }    
 public void OnMapStart(){
 	g_IsSaved = false;
@@ -27,6 +29,11 @@ public void OnClientPutInServer(){
 }
 public Action CMD_ResetProps(int client, int args){
 	ResetAllTankProps();
+	return Plugin_Handled;
+}
+
+public Action CMD_SaveProps(int client, int args){
+	SaveTankProps();
 	return Plugin_Handled;
 }
 void SaveTankProps()
@@ -49,8 +56,8 @@ void ResetAllTankProps(){
 	int iEntCount = GetMaxEntities();
 	for (int i = MaxClients; i < iEntCount; i++) {
 		if (IsTankProp(i)) {
-			// 保存铁的位置
-			TeleportEntity(i, g_HittableOrigin[i], g_HittableAngle[i], NULL_VECTOR);
+			// 重置保存数据位置
+			TeleportEntity(i, g_HittableOrigin[i], g_HittableAngle[i], {0.0, 0.0, 0.0});
 			//SetEntPropVector(i, Prop_Send, "m_vecOrigin", g_HittableOrigin[i]);
 			//SetEntPropVector(i, Prop_Send, "m_angRotation", g_HittableAngle[i]);
 			log.info("还原铁%i - pos: %.2f, %.2f, %.2f | ang %.2f, %.2f, %.2f", i,g_HittableOrigin[i][0],g_HittableOrigin[i][1],g_HittableOrigin[i][2],
