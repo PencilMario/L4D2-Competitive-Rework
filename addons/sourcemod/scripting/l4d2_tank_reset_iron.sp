@@ -6,7 +6,7 @@
 float g_HittableOrigin[MAX_HITTABLES][3];
 // 铁角度
 float g_HittableAngle[MAX_HITTABLES][3];
-int Hittables[100];
+bool g_IsSaved = false;
 bool g_bHittableControlExists;
 Logger log;
 
@@ -17,7 +17,13 @@ public void OnPluginStart(){
 	RegConsoleCmd("sm_resetprop", CMD_ResetProps);
 }    
 public void OnMapStart(){
-	SaveTankProps()
+	g_IsSaved = false;
+}
+public void OnClientPutInServer(){
+	if (!g_IsSaved){
+		SaveTankProps()
+		g_IsSaved = true;
+	}
 }
 public Action CMD_ResetProps(int client, int args){
 	ResetAllTankProps();
