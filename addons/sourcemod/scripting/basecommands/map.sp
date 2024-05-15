@@ -112,11 +112,11 @@ public Action Command_Map(int client, int args)
 	GetMapDisplayName(displayName, displayName, sizeof(displayName));
 
 	ShowActivity2(client, "[SM] ", "%t", "Changing map", displayName);
-	LogAction(client, -1, "\"%L\" changed map to \"%s\"", client, displayName);
+	LogAction(client, -1, "\"%L\" changed map to \"%s\" (input \"%s\")", client, displayName, map);
 
 	DataPack dp;
 	CreateDataTimer(3.0, Timer_ChangeMap, dp);
-	dp.WriteString(displayName);
+	dp.WriteString(map);
 
 	return Plugin_Handled;
 }
