@@ -383,7 +383,9 @@ public Action Command_Burn(int client, int args)
 	
 	if (args > 1)
 	{
-		if (!GetCmdArgFloatEx(2, seconds))
+		char time[20];
+		GetCmdArg(2, time, sizeof(time));
+		if (StringToFloatEx(time, seconds) == 0)
 		{
 			ReplyToCommand(client, "[SM] %t", "Invalid Amount");
 			return Plugin_Handled;
