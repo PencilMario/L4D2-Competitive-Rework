@@ -27,6 +27,12 @@ public void Event_TankSpawn(Event event, const char[] name, bool dontBroadcast)
 	g_fSpawnTime[tank] = GetGameTime();
 }
 
+// 使用l4d_tank_pass
+public void TP_OnTankPass(int old_tank, int new_tank){
+	g_fSpawnTime[old_tank] = -1;
+	g_fSpawnTime[new_tank] = GetGameTime();
+}
+
 public Action L4D_OnCThrowActivate(int ability)
 {
 	int abilityOwner = GetEntPropEnt(ability, Prop_Send, "m_owner");
