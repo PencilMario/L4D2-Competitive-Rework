@@ -1,6 +1,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
+#define MAX_CAL_TIME 6.5
 
 #include <sourcemod>
 #include <sdktools>
@@ -8,14 +9,24 @@
 #include <left4dhooks>
 
 int g_iTankRockOwner[MAXPLAYERS];
-
+int Sprite1;
 enum struct TankRock {
     float pos[3];
-    float ang[3];
+    float vec[3];
 }
 ArrayList g_iRockThrowQueue;
 TankRock g_iTankTrace[MAXPLAYERS][50];
-float g_fClientViewang[MaxClients][3];
+float g_fClientViewang[MAXPLAYERS][3];
+static const char validEntityName[][] =
+{
+	"prop_dynamic",
+	"prop_physics",
+	"prop_physics_multiplayer",
+	"func_rotating",
+	"infected",
+	"tank_rock",
+	"witch"
+};
 public Plugin myinfo = 
 {
 	name = "[L4D2] tank 计算石头轨迹",
@@ -30,12 +41,14 @@ public void OnPluginStart(){
 public void OnPluginEnd(){
     CloseHandle(g_iRockThrowQueue);
 }
+public void OnMapStart(){
+    Sprite1 = PrecacheModel("materials/sprites/laserbeam.vmt");   
+}
 public void L4D2_OnSelectTankAttack(int client, int &sequence){
     if (sequence>=48)
     g_iRockThrowQueue.Push(client);
 }
-
-public void OnEntityCreated(int Entity, char[] Classname)
+public void OnEntityCreated(int Entity, const char[] Classname)
 {
     if (!strcmp(Classname, "tank_rock")) return;
     int owner = g_iRockThrowQueue.Get(0);
@@ -43,7 +56,11 @@ public void OnEntityCreated(int Entity, char[] Classname)
         g_iRockThrowQueue.Erase(0);
     }
     g_iTankRockOwner[owner] = Entity;
-    // Hook石头 OnThrowing
+    SDKHook(Entity, SDKHook_Think, OnThrowing);
+}
+
+public void OnEntityDestroyed(int Entity, const char[] Classname){
+    return;
 }
 
 int GetWhoOwnedRock(int ientity){
@@ -55,24 +72,80 @@ int GetWhoOwnedRock(int ientity){
     return 0;
 }
 
-public MRESReturn OnThrowing(int pThis, DHookReturn hReturn){
-    int client = GetWhoOwnedRock(pThis);
-    if (!IsClientInGame(client)) return MRES_Ignored;
+public void OnThrowing(int entity){
+    int client = GetWhoOwnedRock(entity);
+    if (!IsClientInGame(client)) return;
     //获取当前玩家视线方向矢量
     GetClientEyeAngles(client, g_fClientViewang[client]);
     GetAngleVectors(g_fClientViewang[client], g_fClientViewang[client], NULL_VECTOR, NULL_VECTOR);
     //计算tank出手力度
     ResetVectorLength(g_fClientViewang[client], 800.0);
-    return MRES_Ignored;
+    // 开始绘制曲线
+    // 获取石头位置
+    TankRock thisRock, StartPos, EndPos;
+    //石头初始坐标
+    GetEntPropVector(entity, Prop_Send, "m_vecOrigin", thisRock.pos);
+    //石头初始速度
+    //GetEntPropVector(entity, Prop_Send, "m_vecVelocity", thisRock.vec);
+    GetClientAbsAngles(client, thisRock.vec);
+    PrintToConsoleAll("OnThrowing:GetClientAbsAngles %f, %f, %f | Rock %N:%i", thisRock.vec[0], thisRock.vec[1], thisRock.vec[2], client, entity);
+    ResetVectorLength(thisRock.vec, 800.0);
+    for (float i = 0.0; i+=0.1; i <= MAX_CAL_TIME){
+        // 计算下0.1秒的tank石头位置
+        StartPos = GetRockPos(thisRock, i);
+        EndPos = GetRockPos(thisRock, i+0.1);
+        // 向终点发出射线 预测是否可能碰撞
+        Handle trace = TR_TraceRayFilterEx(StartPos.pos, EndPos.pos, MASK_NPCSOLID_BRUSHONLY,RayType_EndPoint,traceRayFilter);
+        if (trace == null) break;
+        // 如果碰撞，射线终点即为石头命中点
+        if (TR_DidHit(trace)){
+            TR_GetEndPosition(EndPos.pos, trace);
+        }
+        delete trace;
+        // 绘制起点与终点连线
+        TE_SetupBeamPoints(StartPos.pos, EndPos.pos, Sprite1, 0, 0, 1, 0.1, 2.0, 2.0,  1, 1.5, {75, 75, 255, 255}, 10);
+    }
+    return;
 }
-TankRock GetRockPos(float startpos[3], float rockvel[3], float time){
-    TankRock result;
-    result.pos[0] = startpos[0] + rockvel[0] * time;
-    result.pos[1] = startpos[1] + rockvel[1] * time;
-    result.pos[2] = startpos[2] + rockvel[2] * time;
 
-    result.ang = rockvel;
-    result.ang[3] -= 800.0 * time;
+static bool traceRayFilter(int entity, int contentsMask, any data)
+{
+	// 射线撞击到自身或客户端实体，不允许穿过
+	if (entity == data || (entity >= 1 && entity <= MaxClients)) { return false; }
+	// 撞击到其他实体，检测类型
+	static char className[64];
+	GetEntityClassname(entity, className, sizeof(className));
+	if (checkRayImpactEntityValid(className)) { return false; }
+	// blocker 类型的，获取是否阻塞与阻塞类型
+	if (strcmp(className, "env_physics_blocker") == 0 || strcmp(className, "env_player_blocker") == 0)
+	{
+		if (!HasEntProp(entity, Prop_Send, "m_bBlocked")) { return false; }
+		if (GetEntProp(entity, Prop_Send, "m_bBlocked") != 1) { return true; }
+		static int blockType;
+		blockType = GetEntProp(entity, Prop_Send, "m_nBlockType");
+		return (blockType == BLOCK_TYPE_SURVIVORS || blockType == BLOCK_TYPE_PLAYER_INFECTED);
+	}
+	return true;
+}
+
+static bool checkRayImpactEntityValid(const char[] className)
+{
+	static int i;
+	for (i = 0; i < sizeof(validEntityName); i++)
+	{
+		if (strcmp(className, validEntityName[i]) == 0) { return false; }
+	}
+	return true;
+}
+// 获取石头
+TankRock GetRockPos(TankRock rock, float time){
+    TankRock result;
+    result.pos[0] = rock.pos[0] + rock.vec[0] * time;
+    result.pos[1] = rock.pos[1] + rock.vec[1] * time;
+    result.pos[2] = rock.pos[2] + rock.vec[2] * time;
+
+    result.vec = rock.vec;
+    result.vec[3] -= 300.0 * time; //垂直速度-300/s 估计值
     return result;
 }
 void ResetVectorLength(float vector[3], float targetlength){
