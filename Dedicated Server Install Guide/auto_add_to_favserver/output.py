@@ -1,16 +1,10 @@
 import json
 data = []
 
-data.append(("dx1.nekoyun.cn",34105))
-data.append(("dx1.nekoyun.cn",34106))
-data.append(("dx1.nekoyun.cn",34107))
-data.append(("dx1.nekoyun.cn",34108))
-data.append(("dx1.nekoyun.cn",34109))
-data.append(("dx1.nekoyun.cn",34110))
-data.append(("sq.xubw.cn",28013))
-data.append(("sq.xubw.cn",28014))
-data.append(("sq.xubw.cn",26001))
-data.append(("sq.xubw.cn",26000))
+data.append(("42.192.4.35",42300))
+data.append(("114.132.67.124",26210))
+data.append(("sp.0721play.icu",20721))
+data.append(("sp.0721play.icu",40721))
 
 
 with open('nb_servers.json', 'w', encoding = 'utf-8') as files:
