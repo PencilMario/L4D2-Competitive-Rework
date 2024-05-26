@@ -197,7 +197,9 @@ public Action Command_Gravity(int client, int args)
 	float amount = 1.0;
 	if (args > 1)
 	{
-		if (!GetCmdArgFloatEx(2, amount))
+		char arg2[20];
+		GetCmdArg(2, arg2, sizeof(arg2));
+		if (StringToFloatEx(arg2, amount) == 0)
 		{
 			ReplyToCommand(client, "[SM] %t", "Invalid Amount");
 			return Plugin_Handled;
