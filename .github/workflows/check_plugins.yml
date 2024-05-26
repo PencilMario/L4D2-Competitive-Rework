@@ -30,8 +30,8 @@ jobs:
         sm_version:
           #- "1.9"
           #- "1.10"
-          - "1.11"
-          #- "1.12"
+          #- "1.11"
+          - "1.12"
 
     steps:
       - uses: actions/checkout@v3
