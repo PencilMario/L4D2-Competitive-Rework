@@ -27,6 +27,7 @@
 
 ConVar g_hTranslateApi;
 ConVar g_hTranslateApiKey,g_hTranslateApiAuth;
+ConVar g_hTranslateSvLang
 
 Logger log;
 
@@ -39,7 +40,7 @@ public Plugin myinfo =
     url = "http://steamcommunity.com/id/franug"
 };
 
-char ServerLang[5];
+char ServerLang[5], templang[5];
 char ServerCompleteLang[32];
 
 bool g_translator[MAXPLAYERS + 1];
@@ -253,10 +254,11 @@ public void OnPluginStart()
     g_hTranslateApi = CreateConVar("sm_translator_api", "1", "SM Translator Api, 0=Disable, 1=Baidu, 2=DeepL api free 3=DeepL api pro");
     g_hTranslateApiKey = CreateConVar("sm_translator_apikey", "beLX1eoWGvtlzU0GGG542Tox", "SM Translator Apikey, for baidu api");
     g_hTranslateApiAuth = CreateConVar("sm_translator_apiauth", "znhKVCi8l1gN4V1tssD4TaIa9iwKs2Ek", "SM Translator Apikey, for baidu api and deepl (':fx' is not required)");
+    g_hTranslateSvLang = CreateConVar("sm_translator_server_lang", "chi", "服务器语言");
     AddCommandListener(Command_Say, "say");	
     AddCommandListener(Command_Say, "say_team");	
-    GetLanguageInfo(GetServerLanguage(), ServerLang, 3, ServerCompleteLang, 32);
-
+    g_hTranslateSvLang.GetString(templang, sizeof(templang));
+    GetLanguageInfo(GetLanguageByCode(templang), ServerLang, 3, ServerCompleteLang, 32);
     RegConsoleCmd("sm_translator", Command_Translator);
     
     for(int i = 1; i <= MaxClients; i++)
@@ -271,6 +273,7 @@ public void OnPluginStart()
     g_hTranslateApi.AddChangeHook(OnCvarChanged);
     g_hTranslateApiKey.AddChangeHook(OnCvarChanged);
     g_hTranslateApiAuth.AddChangeHook(OnCvarChanged);
+    g_hTranslateSvLang.AddChangeHook(OnCvarChanged);
 
 }
 
