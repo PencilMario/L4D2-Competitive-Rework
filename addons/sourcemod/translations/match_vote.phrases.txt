@@ -6,7 +6,7 @@
     }
     "Disabled"
     {
-        "en"    "Plugin is {red}Disabled{default}"
+        "en"    "Plugin is {red}Disabled{default} "
     }
     "NoConsole"
     {
