@@ -1,13 +1,17 @@
 #include <sourcemod>
 #include <sdktools>
 #include <sdkhooks>
-
+#include <left4dhooks>
 #define PL_VERSION "2.1"
 
 new Handle:hWeaponSwitchFwd;
 
 new Float:fLastMeleeSwing[MAXPLAYERS + 1];
+new Float:fLastSwitchToMelee[MAXPLAYERS + 1];
 new bool:bLate;
+new bool:bFastMeleed[MAXPLAYERS + 1];
+
+ConVar c_fasemelee_fatigue;
 
 public Plugin myinfo =
 {
@@ -34,6 +38,7 @@ public OnPluginStart()
 	}
 	HookEvent("weapon_fire", Event_WeaponFire);
 	CreateConVar("l4d2_fast_melee_fix_version", PL_VERSION, "Fast melee fix version");
+	c_fasemelee_fatigue = CreateConVar("l4d2_fast_melee_fatigue", "0", "1=速砍计入推, 没推时才阻止速砍, 0=阻止速砍");
 	if (bLate)
 	{
 		for (new i = 1; i <= MaxClients; i++)
@@ -66,7 +71,15 @@ Action:Event_WeaponFire(Handle:event, const String:name[], bool:dontBroadcast)
 		GetEventString(event, "weapon", sBuffer, sizeof(sBuffer));
 		if (StrEqual(sBuffer, "melee"))
 		{
-			fLastMeleeSwing[client] = GetGameTime();
+			fLastMeleeSwing[client] = GetGameTime(); // 上次近战
+			// 检测是否进行速砍了
+			if (c_fasemelee_fatigue.IntValue && (fLastSwitchToMelee[client] - fLastMeleeSwing[client]) < 0.92){
+				bFastMeleed[client] = true;
+				PrintHintText(client, "你正在进行速砍!\n你的速砍将视为一次推\n当你不能推时, 你将不能进行速砍!");
+				int id = L4D2_GetWeaponIdByWeaponName(sBuffer);
+				float time = GetEntPropFloat(client, Prop_Send, "m_flNextShoveTime") + L4D2_GetFloatMeleeAttribute(id, L4D2FMWA_RefireDelay);		
+				SetEntPropFloat(client, Prop_Send, "m_flNextPrimaryAttack", time);	
+				}
 		}
 	}
 }
@@ -79,8 +92,26 @@ void OnWeaponSwitched(client, weapon)
 		GetEntityClassname(weapon, sBuffer, sizeof(sBuffer));
 		if (StrEqual(sBuffer, "weapon_melee"))
 		{
-			new Float:fShouldbeNextAttack = fLastMeleeSwing[client] + 0.92;
-			new Float:fByServerNextAttack = GetGameTime() + 0.5;
+			fLastSwitchToMelee[client] = GetGameTime();// 上次切换到近战
+			new Float:fShouldbeNextAttack = fLastMeleeSwing[client];
+			
+			if (!c_fasemelee_fatigue.IntValue) {bFastMeleed[client] = false;fShouldbeNextAttack = fLastMeleeSwing[client] + 0.92;}
+			// 已经速砍过了
+			if (bFastMeleed[client])
+			{
+				// 右键是否在cd？
+				float time = GetEntPropFloat(client, Prop_Send, "m_flNextShoveTime")
+				if (time - GetGameTime() > 0){
+					//bFastMeleed[client];	
+				}else{
+					fShouldbeNextAttack = fLastMeleeSwing[client] + 0.92
+				}
+				bFastMeleed[client] = false;
+			}
+
+			
+			new Float:fByServerNextAttack = GetGameTime() + 0.4;
+			
 			SetEntPropFloat(weapon, Prop_Send, "m_flNextPrimaryAttack", (fShouldbeNextAttack > fByServerNextAttack) ? fShouldbeNextAttack : fByServerNextAttack);
 
 			Call_StartForward(hWeaponSwitchFwd);
