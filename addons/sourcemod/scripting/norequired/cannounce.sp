@@ -95,7 +95,7 @@ public OnPluginStart()
 	
 	CreateConVar("sm_cannounce_version", VERSION, "Connect announce replacement", FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
 
-	g_CvarConnectDisplayType = CreateConVar("sm_ca_connectdisplaytype", "1", "[1|0] if 1 then displays connect message after admin check and allows the {PLAYERTYPE} placeholder. If 0 displays connect message on client auth (earlier) and disables the {PLAYERTYPE} placeholder");
+	g_CvarConnectDisplayType = CreateConVar("sm_ca_connectdisplaytype", "0", "[1|0] if 1 then displays connect message after admin check and allows the {PLAYERTYPE} placeholder. If 0 displays connect message on client auth (earlier) and disables the {PLAYERTYPE} placeholder");
 	
 	BuildPath(Path_SM, g_fileset, 128, "data/cannounce_messages.txt");
 	BuildPath(Path_SM, g_filesettings, 128, "data/cannounce_settings.txt");
@@ -127,7 +127,7 @@ public OnPluginStart()
 	g_UseGeoIPCity = LibraryExists("GeoIPCity");
 	
 	//create config file if not exists
-	AutoExecConfig(true, "cannounce");
+	//AutoExecConfig(true, "cannounce");
 }
 
 public OnMapStart()
