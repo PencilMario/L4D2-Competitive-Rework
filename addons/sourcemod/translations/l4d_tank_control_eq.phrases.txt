@@ -1,42 +1,46 @@
 "Phrases"
 {
-	"Tag_Selecion"
+	"TagRage"
 	{
-		"en"		"{red}<{default}Tank Selection{red}>{default}"
+		"en"		"{red}<{default}Tank Rage{red}>"
 	}
-	"Tag_Rage"
+	"Refilled"
 	{
-		"en"		"{red}<{default}Tank Rage{red}>{default}"
+		"en"		"{default}({green}%N{default}'s) {olive}Rage Meter {red}Refilled"
+	}
+	"RefilledBot"
+	{
+		"en"		"{olive}Rage Meter {red}Refilled"
+	}
 
-	}
-	"YouBecomeTank"
+    "TagSelection"
 	{
-		"en"		"{green}You{default} will become the {red}Tank{default}!"
-		"chi"		"{green}你{default} 为本回合的 {red}Tank{default}!"
+		"en"		"{red}<{default}Tank Selection{red}>"
 	}
-	"BecomeTank"
+    "YouBecomeTank"
 	{
-		"en"		"{olive}%s{default} will become the {red}Tank{default}!"
-		"chi"		"{olive}%s{default} 为本回合的 {red}Tank{default}!"
+		"en"		"{green}You {default}will become the {red}Tank{default}!"
 	}
-	"UnableGiveTank"
+   "BecomeTank"
 	{
-		"en"		"[{olive}SM{default}] %s not on infected. Unable to give tank"
-		"chi"		"[{olive}SM{default}] %s 不在感染者队伍，无法设置Tank"
+		"en"		"{olive}%N {default}will become the {red}Tank!"
 	}
-	"Hit_RageMeterRefilled"
+
+    "TagControl"
+	{
+		"en"		"{green}[{olive}Tank Control{green}]"
+	}
+   "InvalidTarget"
+	{
+		"en"		"{default}Invalid Target. Unable to give tank"
+	}
+   "NoInfected"
+	{
+		"en"		"{olive}%N {default}is not on the infected team. Unable to give tank"
+	}
+
+    "HintText"
 	{
 		"en"		"Rage Meter Refilled"
-		"chi"		"一控结束"
-	}
-	"YouRageMeterRefilled"
-	{
-		"en"		"{olive}Rage Meter {red}Refilled{default}"
-		"chi"		"{olive}第一次控制权 {red}结束{default}"
-	}
-	"RageMeterRefilled"
-	{
-		"en"		"({green}%N{default}'s) {olive}Rage Meter {red}Refilled"
-		"chi"		"({green}%N{default}) {olive}第一次控制权 {red}结束"
 	}
 }
