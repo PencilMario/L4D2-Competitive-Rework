@@ -119,7 +119,16 @@ public Action Timer_GetClientExp(Handle timer, int iClient){
     Call_PushCell(res);
     Call_Finish();
     // global forward
-    log.debug("%N 的经验评分为 %i", iClient, res);
+    log.debug("[%N] Total: %i, gametime: %i, rankpoint: %i, shotgunkills: %i, smgkills:%i, tankrocks: %i, versuswin: %i, versustotal：%i", 
+        iClient, res, 
+        PlayerInfoData[iClient].gametime,
+        PlayerInfoData[iClient].rankpoint,
+        PlayerInfoData[iClient].shotgunkills,
+        PlayerInfoData[iClient].smgkills,
+        PlayerInfoData[iClient].tankrocks,
+        PlayerInfoData[iClient].versuswin,
+        PlayerInfoData[iClient].versustotal
+    );
     return Plugin_Stop;
 }
 
