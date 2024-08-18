@@ -8,7 +8,7 @@
 		}
 		"hyzonemod"
 		{
-			"name" "ZoneMod 2.8.9d(混野)"
+			"name" "Ciallo～(∠・ω< )⌒☆ Zone 2.8.9d"
 		}
 		"zonemod4K"
 		{
