@@ -12,6 +12,10 @@
 	{
 		"hostname"		"Chikko#3|30Tick"
 	}
+	"10014"
+	{
+		"hostname"		"毛绒绒养殖馆"
+	}
 	"27015"
 	{
 		"hostname"		"funny"
