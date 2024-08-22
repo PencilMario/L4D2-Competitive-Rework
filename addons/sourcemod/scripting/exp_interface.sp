@@ -28,7 +28,7 @@ Logger log;
 Handle g_hForward_OnGetExp;
 public void OnPluginStart(){
     log = new Logger("exp_interface", LoggerType_NewLogFile);
-    //log.IgnoreLevel = LogType_Debug;
+    log.IgnoreLevel = LogType_Info;
     if (log.FileSize > 1024*1024*5) log.DelLogFile();
     log.logfirst("exp interface log记录");
 
@@ -119,7 +119,7 @@ public Action Timer_GetClientExp(Handle timer, int iClient){
     Call_PushCell(res);
     Call_Finish();
     // global forward
-    log.debug("[%N] Total: %i, gametime: %i, rankpoint: %i, shotgunkills: %i, smgkills:%i, tankrocks: %i, versuswin: %i, versustotal：%i", 
+    log.info("[%N] Total: %i, gametime: %i, rankpoint: %i, shotgunkills: %i, smgkills:%i, tankrocks: %i, versuswin: %i, versustotal：%i", 
         iClient, res, 
         PlayerInfoData[iClient].gametime,
         PlayerInfoData[iClient].rankpoint,
