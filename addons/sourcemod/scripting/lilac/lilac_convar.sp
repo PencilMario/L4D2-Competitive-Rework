@@ -32,7 +32,8 @@ static char query_list[][] = {
 	"r_modelwireframedecal",
 	"z_gun_vertical_punch",
 	"r_flashlightfov",
-	"mat_fullbright"
+	"mat_fullbright",
+	"cl_max_shadow_renderable_dist"
 };
 
 static int query_index[MAXPLAYERS + 1];
@@ -124,9 +125,11 @@ public void query_reply(QueryCookie cookie, int client, ConVarQueryResult result
 		return;
 	else if (StrEqual("r_flashlightfov", cvarName, false)){
 		if(StringToFloat(cvarValue) == 53.0) return;}
+	else if (StrEqual("cl_max_shadow_renderable_dist", cvarName, false) && val == 3000)
+		return;
 	else if (val == 0)
 		return;
-
+		
 	if (lilac_forward_allow_cheat_detection(client, CHEAT_CONVAR) == false)
 		return;
 
