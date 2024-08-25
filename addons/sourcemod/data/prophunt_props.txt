@@ -1,0 +1,3619 @@
+"prophunt_props"
+{	
+	"0"
+	{
+		"model"		"models/deadbodies/bodies128_a.mdl"
+		"sname"		"尸体堆1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"1"
+	{
+		"model"		"models/deadbodies/bodies128_b.mdl"
+		"sname"		"尸体堆2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"2"
+	{
+		"model"		"models/deadbodies/dead_female_civilian_01.mdl"
+		"sname"		"女性尸体"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"3"
+	{
+		"model"		"models/deadbodies/dead_female_civilian_draped_01.mdl"
+		"sname"		"女性尸体(盖布)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"4"
+	{
+		"model"		"models/deadbodies/dead_female_civilian_draped_02.mdl"
+		"sname"		"女性尸体(盖布)2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"5"
+	{
+		"model"		"models/deadbodies/dead_male_civilian_01.mdl"
+		"sname"		"男性尸体"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"6"
+	{
+		"model"		"models/deadbodies/dead_male_civilian_02.mdl"
+		"sname"		"男性尸体2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"7"
+	{
+		"model"		"models/deadbodies/dead_male_civilian_draped_01.mdl"
+		"sname"		"男性尸体(盖布)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"8"
+	{
+		"model"		"models/props/cs_assault/forklift.mdl"
+		"sname"		"叉车"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+	}
+	"9"
+	{
+		"model"		"models/props/cs_assault/handtruck.mdl"
+		"sname"		"叉车前端"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"10"
+	{
+		"model"		"models/props/cs_assault/ladderaluminium128.mdl"
+		"sname"		"铝梯"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"63.00"
+	}
+	"11"
+	{
+		"model"		"models/props/cs_assault/pylon.mdl"
+		"sname"		"小圆柱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"12"
+	{
+		"model"		"models/props/cs_assault/washer_box.mdl"
+		"sname"		"大纸箱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"13"
+	{
+		"model"		"models/props/cs_assault/wirespout.mdl"
+		"sname"		"水管"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"14"
+	{
+		"model"		"models/props/cs_italy/it_mkt_table2.mdl"
+		"sname"		"长木桌"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"15"
+	{
+		"model"		"models/props/cs_militia/barstool01.mdl"
+		"sname"		"吧台椅"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"16"
+	{
+		"model"		"models/props/cs_militia/boxes_frontroom.mdl"
+		"sname"		"大型纸箱堆"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+	}
+	"17"
+	{
+		"model"		"models/props/cs_militia/boxes_garage_lower.mdl"
+		"sname"		"小型纸箱堆"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"18"
+	{
+		"model"		"models/props/cs_militia/fertilizer.mdl"
+		"sname"		"肥料堆"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"19"
+	{
+		"model"		"models/props/cs_militia/footlocker01_open.mdl"
+		"sname"		"床脚箱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"15.00"
+	}
+	"20"
+	{
+		"model"		"models/props/cs_militia/logpile2.mdl"
+		"sname"		"木柴堆"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"21"
+	{
+		"model"		"models/props/cs_militia/microwave01.mdl"
+		"sname"		"微波炉"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"22"
+	{
+		"model"		"models/props/cs_militia/newspaperstack01.mdl"
+		"sname"		"报纸堆"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"23"
+	{
+		"model"		"models/props/cs_militia/shelves_wood.mdl"
+		"sname"		"木架"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"24"
+	{
+		"model"		"models/props/cs_militia/stove01.mdl"
+		"sname"		"旧燃气炉"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"18.00"
+	}
+	"25"
+	{
+		"model"		"models/props/cs_militia/table_shed.mdl"
+		"sname"		"长木桌"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"26"
+	{
+		"model"		"models/props/cs_office/cardboard_box01.mdl"
+		"sname"		"纸盒"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.5"
+		"zaxisup"	"0.00"
+	}
+	"27"
+	{
+		"model"		"models/props/cs_office/cardboard_box02.mdl"
+		"sname"		"小纸盒"
+		"allowtp"	"0"
+		"allowfake"	"1"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"28"
+	{
+		"model"		"models/props/cs_office/chair_office.mdl"
+		"sname"		"办公椅"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"29"
+	{
+		"model"		"models/props/cs_office/computer_caseb.mdl"
+		"sname"		"电脑机箱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"30"
+	{
+		"model"		"models/props/cs_office/file_box.mdl"
+		"sname"		"文件盒"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"31"
+	{
+		"model"		"models/props/cs_office/file_cabinet1.mdl"
+		"sname"		"文件柜1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"32"
+	{
+		"model"		"models/props/cs_office/file_cabinet3.mdl"
+		"sname"		"文件柜3"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"33"
+	{
+		"model"		"models/props/cs_office/fire_extinguisher.mdl"
+		"sname"		"灭火器"
+		"allowtp"	"0"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"34"
+	{
+		"model"		"models/props/cs_office/microwave.mdl"
+		"sname"		"微波炉2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"35"
+	{
+		"model"		"models/props/cs_office/radio.mdl"
+		"sname"		"收音机"
+		"allowtp"	"0"
+		"allowfake"	"0"
+		"dmgrevise"	"1.5"
+		"zaxisup"	"0.00"
+	}
+	"36"
+	{
+		"model"		"models/props/cs_office/shelves_metal.mdl"
+		"sname"		"铁货架(空)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"37"
+	{
+		"model"		"models/props/cs_office/shelves_metal1.mdl"
+		"sname"		"铁货架(摆满)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"38"
+	{
+		"model"		"models/props/cs_office/shelves_metal2.mdl"
+		"sname"		"铁货架(零星)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"39"
+	{
+		"model"		"models/props/cs_office/trash_can.mdl"
+		"sname"		"小垃圾桶"
+		"allowtp"	"0"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"40"
+	{
+		"model"		"models/props/de_dust/du_antenna_b.mdl"
+		"sname"		"天线"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"42.00"
+	}
+	"41"
+	{
+		"model"		"models/props/de_inferno/handrailstairs01.mdl"
+		"sname"		"楼梯扶手"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.5"
+		"zaxisup"	"20.00"
+	}
+	"42"
+	{
+		"model"		"models/props/de_inferno/hay_bail_stack.mdl"
+		"sname"		"干草堆"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.6"
+		"zaxisup"	"0.00"
+	}
+	"43"
+	{
+		"model"		"models/props/de_inferno/tableantique.mdl"
+		"sname"		"小木桌"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"44"
+	{
+		"model"		"models/props/de_inferno/wood_fence.mdl"
+		"sname"		"木栅栏"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"45"
+	{
+		"model"		"models/props/de_inferno/wood_fence_end.mdl"
+		"sname"		"木柱子"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.5"
+		"zaxisup"	"0.00"
+	}
+	"46"
+	{
+		"model"		"models/props/de_nuke/chimneycluster01.mdl"
+		"sname"		"屋顶烟囱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"47"
+	{
+		"model"		"models/props/de_nuke/cinderblock_stack.mdl"
+		"sname"		"蜂窝煤堆"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"48"
+	{
+		"model"		"models/props/de_nuke/electricalbox01.mdl"
+		"sname"		"墙面电箱1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+	}
+	"49"
+	{
+		"model"		"models/props/de_nuke/electricalbox02.mdl"
+		"sname"		"墙面电箱2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"50"
+	{
+		"model"		"models/props/de_nuke/truck_nuke.mdl"
+		"sname"		"小货车"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"51"
+	{
+		"model"		"models/props/de_prodigy/concretebags.mdl"
+		"sname"		"水泥堆"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"52"
+	{
+		"model"		"models/props/de_prodigy/concretebags2.mdl"
+		"sname"		"水泥堆2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"53"
+	{
+		"model"		"models/props/de_prodigy/concretebags3.mdl"
+		"sname"		"水泥堆3"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"54"
+	{
+		"model"		"models/props/de_prodigy/pushcart.mdl"
+		"sname"		"推车"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"15.50"
+	}
+	"55"
+	{
+		"model"		"models/props/de_prodigy/tirestack3.mdl"
+		"sname"		"轮胎堆"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"56"
+	{
+		"model"		"models/props/de_prodigy/wood_pallet_01.mdl"
+		"sname"		"木架(横)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.5"
+		"zaxisup"	"0.00"
+	}
+	"57"
+	{
+		"model"		"models/props/de_train/de_train_horizontalcoolingtank.mdl"
+		"sname"		"大储藏罐"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"59.00"
+	}
+	"58"
+	{
+		"model"		"models/props/de_train/lockers001a.mdl"
+		"sname"		"储物柜"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"35.00"
+	}
+	"59"
+	{
+		"model"		"models/props/terror/ammo_stack.mdl"
+		"sname"		"子弹堆"
+		"allowtp"	"0"
+		"allowfake"	"1"
+		"dmgrevise"	"1.5"
+		"zaxisup"	"1.00"
+	}
+	"60"
+	{
+		"model"		"models/props/terror/hamradio.mdl"
+		"sname"		"无线电"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"61"
+	{
+		"model"		"models/props_buildings/bus_stop.mdl"
+		"sname"		"巴士停车场顶部"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"62"
+	{
+		"model"		"models/props_c17/hospital_cart01.mdl"
+		"sname"		"护士架"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"17.50"
+	}
+	"63"
+	{
+		"model"		"models/props_c17/lamppost03a_off.mdl"
+		"sname"		"路灯"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+	}
+	"64"
+	{
+		"model"		"models/props_c17/metalpot001a.mdl"
+		"sname"		"铁锅"
+		"allowtp"	"0"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"7.00"
+	}
+	"65"
+	{
+		"model"		"models/props_c17/pottery02a.mdl"
+		"sname"		"陶罐1"
+		"allowtp"	"0"
+		"allowfake"	"0"
+		"dmgrevise"	"1.5"
+		"zaxisup"	"0.00"
+	}
+	"66"
+	{
+		"model"		"models/props_c17/pottery04a.mdl"
+		"sname"		"陶罐2"
+		"allowtp"	"0"
+		"allowfake"	"0"
+		"dmgrevise"	"1.5"
+		"zaxisup"	"0.00"
+	}
+	"67"
+	{
+		"model"		"models/props_c17/pottery08a.mdl"
+		"sname"		"陶罐3"
+		"allowtp"	"0"
+		"allowfake"	"0"
+		"dmgrevise"	"1.4"
+		"zaxisup"	"0.00"
+	}
+	"68"
+	{
+		"model"		"models/props_c17/substation_transformer01a.mdl"
+		"sname"		"变电器"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.6"
+		"zaxisup"	"70.00"
+	}
+	"69"
+	{
+		"model"		"models/props_debris/burnt_building_chimney_01.mdl"
+		"sname"		"大烟囱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.6"
+		"zaxisup"	"0.00"
+	}
+	"70"
+	{
+		"model"		"models/props_debris/burnt_building_corner_01.mdl"
+		"sname"		"木屋框架1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"71"
+	{
+		"model"		"models/props_debris/burnt_building_corner_02.mdl"
+		"sname"		"木屋框架2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"72"
+	{
+		"model"		"models/props_debris/concrete_debris128pile001a.mdl"
+		"sname"		"碎石堆1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"5.00"
+	}
+	"73"
+	{
+		"model"		"models/props_debris/concrete_debris128pile001b.mdl"
+		"sname"		"碎石堆2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"5.00"
+	}
+	"74"
+	{
+		"model"		"models/props_debris/dead_cow.mdl"
+		"sname"		"牛尸体"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"75"
+	{
+		"model"		"models/props_debris/dead_cow_smallpile.mdl"
+		"sname"		"一堆牛尸体"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+	}
+	"76"
+	{
+		"model"		"models/props_debris/debris_brick01.mdl"
+		"sname"		"砖瓦堆"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"7.00"
+	}
+	"77"
+	{
+		"model"		"models/props_debris/mansion_structure.mdl"
+		"sname"		"工地框架"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"78"
+	{
+		"model"		"models/props_vehicles/cara_82hatchback.mdl"
+		"sname"		"车模2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"79"
+	{
+		"model"		"models/props_debris/tv_monitor01.mdl"
+		"sname"		"电视机1"
+		"allowtp"	"0"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"10.00"
+	}
+	"80"
+	{
+		"model"		"models/props_downtown/atm.mdl"
+		"sname"		"ATM机"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"81"
+	{
+		"model"		"models/props_downtown/bar.mdl"
+		"sname"		"吧台"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.6"
+		"zaxisup"	"0.00"
+	}
+	"82"
+	{
+		"model"		"models/props_downtown/bathroom_vanity01.mdl"
+		"sname"		"洗手台"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"83"
+	{
+		"model"		"models/props_downtown/bed_motel01.mdl"
+		"sname"		"旅馆床"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"84"
+	{
+		"model"		"models/props_downtown/bollards_ornate.mdl"
+		"sname"		"一排矮杆"
+		"allowtp"	"0"
+		"allowfake"	"1"
+		"dmgrevise"	"1.5"
+		"zaxisup"	"0.00"
+	}
+	"85"
+	{
+		"model"		"models/props_downtown/booth01.mdl"
+		"sname"		"餐用沙发椅"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"86"
+	{
+		"model"		"models/props_downtown/booth02.mdl"
+		"sname"		"餐用沙发椅(双边)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"87"
+	{
+		"model"		"models/props_downtown/booth_table.mdl"
+		"sname"		"餐用木桌"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"88"
+	{
+		"model"		"models/props_downtown/cigarettemachine.mdl"
+		"sname"		"香烟机"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"89"
+	{
+		"model"		"models/props_downtown/garden_gate.mdl"
+		"sname"		"花园大门"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"90"
+	{
+		"model"		"models/props_downtown/horse_statue.mdl"
+		"sname"		"马雕塑(含底座)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"91"
+	{
+		"model"		"models/props_downtown/ironing_board.mdl"
+		"sname"		"熨斗台"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"92"
+	{
+		"model"		"models/props_downtown/mini_fridge.mdl"
+		"sname"		"迷你冰箱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"93"
+	{
+		"model"		"models/props_fairgrounds/fairgrounds_flagpole01.mdl"
+		"sname"		"露天市场旗杆"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"94"
+	{
+		"model"		"models/props_downtown/pooltable.mdl"
+		"sname"		"台球桌"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"95"
+	{
+		"model"		"models/props_downtown/side_table.mdl"
+		"sname"		"床头柜"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"96"
+	{
+		"model"		"models/props_equipment/cargo_container01.mdl"
+		"sname"		"集装箱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"97"
+	{
+		"model"		"models/props_downtown/street_lamp01.mdl"
+		"sname"		"街灯"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"98"
+	{
+		"model"		"models/props_equipment/cooler.mdl"
+		"sname"		"饮料冷柜"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"99"
+	{
+		"model"		"models/props_equipment/firepipe01.mdl"
+		"sname"		"消防管道01"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"100"
+	{
+		"model"		"models/props_equipment/firepipe02.mdl"
+		"sname"		"消防管道02"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"101"
+	{
+		"model"		"models/props_equipment/fountain_drinks.mdl"
+		"sname"		"饮料机"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"102"
+	{
+		"model"		"models/props_equipment/gas_pump.mdl"
+		"sname"		"油泵"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"103"
+	{
+		"model"		"models/props_equipment/oxygentank01.mdl"
+		"sname"		"氧气罐"
+		"allowtp"	"0"
+		"allowfake"	"1"
+		"dmgrevise"	"1.5"
+		"zaxisup"	"0.00"
+	}
+	"104"
+	{
+		"model"		"models/props_equipment/phone_booth.mdl"
+		"sname"		"电话亭"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"105"
+	{
+		"model"		"models/props_equipment/security_desk1.mdl"
+		"sname"		"控制台"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"106"
+	{
+		"model"		"models/props_equipment/sleeping_bag1.mdl"
+		"sname"		"睡袋1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"107"
+	{
+		"model"		"models/props_equipment/sleeping_bag2.mdl"
+		"sname"		"睡袋2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"108"
+	{
+		"model"		"models/props_equipment/sleeping_bag1.mdl"
+		"sname"		"睡袋3"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"109"
+	{
+		"model"		"models/props_equipment/snack_machine.mdl"
+		"sname"		"零食售卖机"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"110"
+	{
+		"model"		"models/props_equipment/snack_machine2.mdl"
+		"sname"		"零食售卖机(无货)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"111"
+	{
+		"model"		"models/props_downtown/sign_post.mdl"
+		"sname"		"信号杆"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"112"
+	{
+		"model"		"models/props_equipment/turnstile01.mdl"
+		"sname"		"地铁闸门"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"113"
+	{
+		"model"		"models/props_exteriors/fence002.mdl"
+		"sname"		"木栅栏"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"114"
+	{
+		"model"		"models/props_exteriors/stairs_house_01.mdl"
+		"sname"		"楼梯1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"115"
+	{
+		"model"		"models/props_exteriors/wood_porchsteps_02.mdl"
+		"sname"		"小木楼梯"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"35.00"
+	}
+	"116"
+	{
+		"model"		"models/props_exteriors/wood_post001.mdl"
+		"sname"		"小木柱(白)"
+		"allowtp"	"0"
+		"allowfake"	"1"
+		"dmgrevise"	"1.5"
+		"zaxisup"	"0.00"
+	}
+	"117"
+	{
+		"model"		"models/props_fairgrounds/alligator.mdl"
+		"sname"		"鳄鱼玩具"
+		"allowtp"	"0"
+		"allowfake"	"0"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"118"
+	{
+		"model"		"models/props_fairgrounds/amp_plexi.mdl"
+		"sname"		"amp音箱(长)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"119"
+	{
+		"model"		"models/props_fairgrounds/amp_stack.mdl"
+		"sname"		"amp音箱(大)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"120"
+	{
+		"model"		"models/props_fairgrounds/amp_stack_small.mdl"
+		"sname"		"amp音箱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"121"
+	{
+		"model"		"models/props_fairgrounds/anvil_case_32.mdl"
+		"sname"		"小铁箱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"122"
+	{
+		"model"		"models/props_fairgrounds/anvil_case_64.mdl"
+		"sname"		"长铁箱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"123"
+	{
+		"model"		"models/props_fairgrounds/bass_amp.mdl"
+		"sname"		"amp音箱(bass)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"124"
+	{
+		"model"		"models/props_fairgrounds/bass_case.mdl"
+		"sname"		"应援手提箱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"125"
+	{
+		"model"		"models/props_fairgrounds/bass_monitor.mdl"
+		"sname"		"效果器"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"126"
+	{
+		"model"		"models/props_fairgrounds/bumpercar.mdl"
+		"sname"		"碰碰车"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"127"
+	{
+		"model"		"models/props_fairgrounds/bumpercar_pole.mdl"
+		"sname"		"碰碰车铁杆"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.5"
+		"zaxisup"	"0.00"
+	}
+	"128"
+	{
+		"model"		"models/props_fairgrounds/coaster_car01.mdl"
+		"sname"		"过山车"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"129"
+	{
+		"model"		"models/props_fairgrounds/elephant.mdl"
+		"sname"		"大象玩偶"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.5"
+		"zaxisup"	"0.00"
+	}
+	"130"
+	{
+		"model"		"models/props_fairgrounds/entrance_sign.mdl"
+		"sname"		"游乐场招牌"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"131"
+	{
+		"model"		"models/props_fairgrounds/foodcart.mdl"
+		"sname"		"餐车"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"132"
+	{
+		"model"		"models/props_fairgrounds/gallery_button.mdl"
+		"sname"		"画廊开关"
+		"allowtp"	"0"
+		"allowfake"	"0"
+		"dmgrevise"	"8.0"
+		"zaxisup"	"0.00"
+	}
+	"133"
+	{
+		"model"		"models/props_fairgrounds/giraffe.mdl"
+		"sname"		"长颈鹿玩偶"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"134"
+	{
+		"model"		"models/props_pipes/pipeset08d_128_001a.mdl"
+		"sname"		"铁管道(横向)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"135"
+	{
+		"model"		"models/props_fairgrounds/kiddyland_ridecar.mdl"
+		"sname"		"儿童游览车"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"136"
+	{
+		"model"		"models/props_fairgrounds/kiddyland_riderocket.mdl"
+		"sname"		"儿童火箭"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"137"
+	{
+		"model"		"models/props_fairgrounds/kiddyland_ridestructure.mdl"
+		"sname"		"旋转木马棚"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"-32.00"
+	}
+	"138"
+	{
+		"model"		"models/props_fairgrounds/kiddyland_ridetrain.mdl"
+		"sname"		"儿童火车"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"139"
+	{
+		"model"		"models/props_fairgrounds/metal_cart.mdl"
+		"sname"		"架起来的木板1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+	}
+	"140"
+	{
+		"model"		"models/props_fairgrounds/metal_cart2.mdl"
+		"sname"		"架起来的木板2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+	}
+	"141"
+	{
+		"model"		"models/props_fairgrounds/metal_cart3.mdl"
+		"sname"		"架起来的木板3"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+	}
+	"142"
+	{
+		"model"		"models/props_fairgrounds/mic_stand.mdl"
+		"sname"		"立式麦克风"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"143"
+	{
+		"model"		"models/props_fairgrounds/milk_bottle.mdl"
+		"sname"		"牛奶瓶"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"144"
+	{
+		"model"		"models/props_fairgrounds/monitor_speaker.mdl"
+		"sname"		"音箱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"145"
+	{
+		"model"		"models/props_fairgrounds/monorail_column_01.mdl"
+		"sname"		"四方柱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+	}
+	"146"
+	{
+		"model"		"models/props_urban/telephone_pole002.mdl"
+		"sname"		"电话线杆"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+	}
+	"147"
+	{
+		"model"		"models/props_fairgrounds/snake.mdl"
+		"sname"		"玩具蛇"
+		"allowtp"	"0"
+		"allowfake"	"0"
+		"dmgrevise"	"8.0"
+		"zaxisup"	"0.00"
+	}
+	"148"
+	{
+		"model"		"models/props_fairgrounds/ticketbooth_01.mdl"
+		"sname"		"售票亭"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"149"
+	{
+		"model"		"models/props_fairgrounds/toggle_switch.mdl"
+		"sname"		"小开关"
+		"allowtp"	"0"
+		"allowfake"	"0"
+		"dmgrevise"	"4.0"
+		"zaxisup"	"0.00"
+	}
+	"150"
+	{
+		"model"		"models/props_fairgrounds/tol_boarding_rail.mdl"
+		"sname"		"栏杆"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"151"
+	{
+		"model"		"models/props_fairgrounds/tol_sideroom_painting.mdl"
+		"sname"		"大壁画"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"152"
+	{
+		"model"		"models/props_fairgrounds/tol_sign.mdl"
+		"sname"		"情侣隧道招牌"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+	}
+	"153"
+	{
+		"model"		"models/props_fairgrounds/tol_sign002.mdl"
+		"sname"		"情侣隧道招牌2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"154"
+	{
+		"model"		"models/props_fairgrounds/track_column_01.mdl"
+		"sname"		"高圆柱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.6"
+		"zaxisup"	"0.00"
+	}
+	"155"
+	{
+		"model"		"models/props_fairgrounds/track_column_base.mdl"
+		"sname"		"矮圆柱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"156"
+	{
+		"model"		"models/props_fairgrounds/traffic_barrel.mdl"
+		"sname"		"雪糕筒"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"157"
+	{
+		"model"		"models/props_fairgrounds/trailermessageboard.mdl"
+		"sname"		"交通告示车"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"158"
+	{
+		"model"		"models/props_fairgrounds/walkway_structure.mdl"
+		"sname"		"人行道木架"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"159"
+	{
+		"model"		"models/props_foliage/fallentree01.mdl"
+		"sname"		"倒下的树"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+	}
+	"160"
+	{
+		"model"		"models/props_foliage/flower_barrel.mdl"
+		"sname"		"盆栽1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"161"
+	{
+		"model"		"models/props_foliage/mall_palm01.mdl"
+		"sname"		"椰子树"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"162"
+	{
+		"model"		"models/props_foliage/mall_palm01_medium.mdl"
+		"sname"		"椰子树(偏小)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"163"
+	{
+		"model"		"models/props_foliage/mall_palmplant02.mdl"
+		"sname"		"凤梨树"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"164"
+	{
+		"model"		"models/props_foliage/mall_pot_large01.mdl"
+		"sname"		"空花盆(小)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"165"
+	{
+		"model"		"models/props_foliage/mall_pot_large02.mdl"
+		"sname"		"空花盆(大)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"166"
+	{
+		"model"		"models/props_foliage/mall_pot_square01.mdl"
+		"sname"		"正方空花盆"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"167"
+	{
+		"model"		"models/props_foliage/mall_pot_square02.mdl"
+		"sname"		"正方空花盆(大)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"168"
+	{
+		"model"		"models/props_vehicles/floodlight_generator_pose01_static.mdl"
+		"sname"		"发电机(有灯)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+	}
+	"169"
+	{
+		"model"		"models/props_foliage/mall_pot_xlarge01.mdl"
+		"sname"		"圆形空花盆"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+	}
+	"170"
+	{
+		"model"		"models/props_vehicles/hmmwv.mdl"
+		"sname"		"悍马"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"171"
+	{
+		"model"		"models/props_foliage/mall_tree_large01.mdl"
+		"sname"		"树"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"172"
+	{
+		"model"		"models/props_foliage/mall_tree_medium01.mdl"
+		"sname"		"树2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"173"
+	{
+		"model"		"models/props_foliage/old_tree01.mdl"
+		"sname"		"枯萎的树"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.6"
+		"zaxisup"	"0.00"
+	}
+	"174"
+	{
+		"model"		"models/props_foliage/swamp_cluster01.mdl"
+		"sname"		"树石地形"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.4"
+		"zaxisup"	"0.00"
+	}
+	"175"
+	{
+		"model"		"models/props_foliage/swamp_cluster_water.mdl"
+		"sname"		"树石地形2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.4"
+		"zaxisup"	"0.00"
+	}
+	"176"
+	{
+		"model"		"models/props_foliage/swamp_cypress_broken01.mdl"
+		"sname"		"断掉的树"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+	}
+	"177"
+	{
+		"model"		"models/props_foliage/swamp_cypress_dry01.mdl"
+		"sname"		"枯木1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+	}
+	"178"
+	{
+		"model"		"models/props_foliage/swamp_cypress_dry02.mdl"
+		"sname"		"枯木2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+	}
+	"179"
+	{
+		"model"		"models/props_foliage/swamp_rock01.mdl"
+		"sname"		"石头堆1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.6"
+		"zaxisup"	"0.00"
+	}
+	"180"
+	{
+		"model"		"models/props_foliage/swamp_rock02.mdl"
+		"sname"		"石头堆2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.6"
+		"zaxisup"	"0.00"
+	}
+	"181"
+	{
+		"model"		"models/props_foliage/urban_balcony_planter01.mdl"
+		"sname"		"盆栽1"
+		"allowtp"	"0"
+		"allowfake"	"1"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"182"
+	{
+		"model"		"models/props_foliage/urban_balcony_planter02.mdl"
+		"sname"		"盆栽2"
+		"allowtp"	"0"
+		"allowfake"	"1"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"183"
+	{
+		"model"		"models/props_fortifications/barricade001_128_reference.mdl"
+		"sname"		"铁网(双)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+	}
+	"184"
+	{
+		"model"		"models/props_fortifications/barricade001_64_reference.mdl"
+		"sname"		"铁网(单)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"185"
+	{
+		"model"		"models/props_fortifications/barricade_gate001_64_reference.mdl"
+		"sname"		"铁网(单)(无三脚架)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"186"
+	{
+		"model"		"models/props_fortifications/orange_cone001_reference.mdl"
+		"sname"		"路障"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"187"
+	{
+		"model"		"models/props_fortifications/police_barrier001_128_reference.mdl"
+		"sname"		"警用栅栏"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"188"
+	{
+		"model"		"models/props_fortifications/traffic_barrier001.mdl"
+		"sname"		"交通栏杆"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"189"
+	{
+		"model"		"models/props_furniture/bathtub1.mdl"
+		"sname"		"浴缸"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"190"
+	{
+		"model"		"models/props_furniture/cafe_barstool1.mdl"
+		"sname"		"咖啡椅"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"191"
+	{
+		"model"		"models/props_furniture/fireplace2.mdl"
+		"sname"		"壁炉"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"192"
+	{
+		"model"		"models/props_furniture/hotel_chair.mdl"
+		"sname"		"酒店椅"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"193"
+	{
+		"model"		"models/props_furniture/it_mkt_table2.mdl"
+		"sname"		"木桌"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"194"
+	{
+		"model"		"models/props_furniture/kitchen_cabinet1.mdl"
+		"sname"		"壁橱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"195"
+	{
+		"model"		"models/props_furniture/kitchen_countertop1.mdl"
+		"sname"		"壁橱(矮)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"196"
+	{
+		"model"		"models/props_furniture/piano.mdl"
+		"sname"		"钢琴"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"197"
+	{
+		"model"		"models/props_furniture/shelf1.mdl"
+		"sname"		"书柜"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"43.00"
+	}
+	"198"
+	{
+		"model"		"models/props_highway/billboard_01.mdl"
+		"sname"		"广告牌框架"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.6"
+		"zaxisup"	"0.00"
+	}
+	"199"
+	{
+		"model"		"models/props_highway/plywood_01.mdl"
+		"sname"		"木板(横向)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"200"
+	{
+		"model"		"models/props_interiors/airportdeparturerampcontrol01.mdl"
+		"sname"		"站台开关"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"201"
+	{
+		"model"		"models/props_interiors/baby_crib.mdl"
+		"sname"		"嘤儿床"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"202"
+	{
+		"model"		"models/props_interiors/bbq_grill.mdl"
+		"sname"		"烧烤炉"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"203"
+	{
+		"model"		"models/props_interiors/bed.mdl"
+		"sname"		"床"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"204"
+	{
+		"model"		"models/props_interiors/bed_houseboat.mdl"
+		"sname"		"床(无床架)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"205"
+	{
+		"model"		"models/props_interiors/bookcasehutch01.mdl"
+		"sname"		"柜子"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"206"
+	{
+		"model"		"models/props_interiors/books01.mdl"
+		"sname"		"书本堆1"
+		"allowtp"	"0"
+		"allowfake"	"0"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"207"
+	{
+		"model"		"models/props_interiors/books02.mdl"
+		"sname"		"书本堆2"
+		"allowtp"	"0"
+		"allowfake"	"1"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"208"
+	{
+		"model"		"models/props_interiors/bottles_shelf.mdl"
+		"sname"		"一排瓶子"
+		"allowtp"	"0"
+		"allowfake"	"1"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"209"
+	{
+		"model"		"models/props_interiors/bucket_tools02.mdl"
+		"sname"		"散落的工具"
+		"allowtp"	"0"
+		"allowfake"	"1"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"210"
+	{
+		"model"		"models/props_interiors/cashregister01.mdl"
+		"sname"		"收银机"
+		"allowtp"	"0"
+		"allowfake"	"1"
+		"dmgrevise"	"1.5"
+		"zaxisup"	"0.00"
+	}
+	"211"
+	{
+		"model"		"models/props_interiors/ceda_easel01.mdl"
+		"sname"		"CEDA告示牌1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"212"
+	{
+		"model"		"models/props_interiors/chairlobby01.mdl"
+		"sname"		"厅用沙发"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"213"
+	{
+		"model"		"models/props_interiors/chair_thonet.mdl"
+		"sname"		"小圆凳"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.5"
+		"zaxisup"	"0.00"
+	}
+	"214"
+	{
+		"model"		"models/props_interiors/clawfoot_tub.mdl"
+		"sname"		"浴缸"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"215"
+	{
+		"model"		"models/props_interiors/coffee_maker.mdl"
+		"sname"		"咖啡机"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"216"
+	{
+		"model"		"models/props_interiors/coffee_table_oval.mdl"
+		"sname"		"咖啡桌(圆)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"217"
+	{
+		"model"		"models/props_interiors/coffee_table_rectangular.mdl"
+		"sname"		"咖啡桌(方)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"218"
+	{
+		"model"		"models/props_interiors/computer_keyboard.mdl"
+		"sname"		"键盘"
+		"allowtp"	"0"
+		"allowfake"	"0"
+		"dmgrevise"	"4.0"
+		"zaxisup"	"0.00"
+	}
+	"219"
+	{
+		"model"		"models/props_interiors/copymachine01.mdl"
+		"sname"		"复印机"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"220"
+	{
+		"model"		"models/props_interiors/couch.mdl"
+		"sname"		"长条沙发"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+	}
+	"221"
+	{
+		"model"		"models/props_interiors/desk_metal.mdl"
+		"sname"		"金属桌"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"222"
+	{
+		"model"		"models/props_interiors/dining_table_round.mdl"
+		"sname"		"晚餐桌(圆)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"223"
+	{
+		"model"		"models/props_interiors/dinning_table_oval.mdl"
+		"sname"		"晚餐桌(椭圆)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"224"
+	{
+		"model"		"models/props_interiors/dresser_short.mdl"
+		"sname"		"矮衣柜"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.9"
+		"zaxisup"	"0.00"
+	}
+	"225"
+	{
+		"model"		"models/props_interiors/dresser_tall.mdl"
+		"sname"		"高衣柜"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"226"
+	{
+		"model"		"models/props_interiors/dryer.mdl"
+		"sname"		"烘干机"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"27.00"
+	}
+	"227"
+	{
+		"model"		"models/props_interiors/entertainment_unit.mdl"
+		"sname"		"电视柜"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"228"
+	{
+		"model"		"models/props_interiors/file_cabinet1_group.mdl"
+		"sname"		"文件柜(大)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+	}
+	"229"
+	{
+		"model"		"models/props_interiors/fridge_mini.mdl"
+		"sname"		"迷你冰箱2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"230"
+	{
+		"model"		"models/props_interiors/gun_cabinet.mdl"
+		"sname"		"枪柜"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"231"
+	{
+		"model"		"models/props_interiors/hotel_cart.mdl"
+		"sname"		"清洁车"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"232"
+	{
+		"model"		"models/props_interiors/lamp_floor.mdl"
+		"sname"		"高脚座灯"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"233"
+	{
+		"model"		"models/props_interiors/lamp_table01.mdl"
+		"sname"		"矮脚座灯1"
+		"allowtp"	"0"
+		"allowfake"	"1"
+		"dmgrevise"	"1.5"
+		"zaxisup"	"0.00"
+	}
+	"234"
+	{
+		"model"		"models/props_interiors/lamp_table02.mdl"
+		"sname"		"矮脚座灯2"
+		"allowtp"	"0"
+		"allowfake"	"1"
+		"dmgrevise"	"1.5"
+		"zaxisup"	"0.00"
+	}
+	"235"
+	{
+		"model"		"models/props_interiors/makeshift_stove_battery.mdl"
+		"sname"		"电热装置"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"3.0"
+		"zaxisup"	"0.00"
+	}
+	"236"
+	{
+		"model"		"models/props_interiors/paper_towel_dispenser.mdl"
+		"sname"		"取纸器"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"237"
+	{
+		"model"		"models/props_interiors/pedestal_sink.mdl"
+		"sname"		"洗手台2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"238"
+	{
+		"model"		"models/props_interiors/phone.mdl"
+		"sname"		"电话机"
+		"allowtp"	"0"
+		"allowfake"	"0"
+		"dmgrevise"	"4.0"
+		"zaxisup"	"0.00"
+	}
+	"239"
+	{
+		"model"		"models/props_interiors/printer.mdl"
+		"sname"		"打印机"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"240"
+	{
+		"model"		"models/props_interiors/sawhorse.mdl"
+		"sname"		"锯木架"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"241"
+	{
+		"model"		"models/props_interiors/sink_industrial01.mdl"
+		"sname"		"洗碗台"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"242"
+	{
+		"model"		"models/props_interiors/sofa01.mdl"
+		"sname"		"皮沙发"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"243"
+	{
+		"model"		"models/props_interiors/sofa_chair01.mdl"
+		"sname"		"沙发椅"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"244"
+	{
+		"model"		"models/props_interiors/stair_metal_01.mdl"
+		"sname"		"铁楼梯"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.6"
+		"zaxisup"	"0.00"
+	}
+	"245"
+	{
+		"model"		"models/props_interiors/stove02.mdl"
+		"sname"		"烤炉"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"246"
+	{
+		"model"		"models/props_interiors/table_bedside.mdl"
+		"sname"		"床头柜2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"247"
+	{
+		"model"		"models/props_interiors/table_cafeteria.mdl"
+		"sname"		"餐厅餐桌"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"248"
+	{
+		"model"		"models/props_interiors/teddy_bear.mdl"
+		"sname"		"泰迪熊玩具"
+		"allowtp"	"0"
+		"allowfake"	"1"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"249"
+	{
+		"model"		"models/props_interiors/toaster.mdl"
+		"sname"		"面包机"
+		"allowtp"	"0"
+		"allowfake"	"1"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}	
+	"250"
+	{
+		"model"		"models/props_interiors/toilet.mdl"
+		"sname"		"马桶1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"251"
+	{
+		"model"		"models/props_interiors/toilet_elongated.mdl"
+		"sname"		"马桶2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"252"
+	{
+		"model"		"models/props_interiors/trashcan01.mdl"
+		"sname"		"圆柱垃圾箱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"253"
+	{
+		"model"		"models/props_interiors/trashcankitchen01.mdl"
+		"sname"		"圆顶垃圾箱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"254"
+	{
+		"model"		"models/props_interiors/tv.mdl"
+		"sname"		"电视机"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"255"
+	{
+		"model"		"models/props_interiors/vcr.mdl"
+		"sname"		"vcr碟机"
+		"allowtp"	"0"
+		"allowfake"	"1"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"256"
+	{
+		"model"		"models/props_interiors/washer.mdl"
+		"sname"		"洗衣机"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"257"
+	{
+		"model"		"models/props_interiors/waterbottle.mdl"
+		"sname"		"饮水机桶"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"258"
+	{
+		"model"		"models/props_interiors/waterheater.mdl"
+		"sname"		"圆柱热水器"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"259"
+	{
+		"model"		"models/props_interiors/water_cooler.mdl"
+		"sname"		"饮水机"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"260"
+	{
+		"model"		"models/props_junk/barrel_fire.mdl"
+		"sname"		"燃烧桶(无火)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"261"
+	{
+		"model"		"models/props_junk/dumpster_2.mdl"
+		"sname"		"白色垃圾箱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"262"
+	{
+		"model"		"models/props_junk/petfoodbag01.mdl"
+		"sname"		"狗粮袋1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"263"
+	{
+		"model"		"models/props_junk/pooh_bucket_01.mdl"
+		"sname"		"临时马桶"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"264"
+	{
+		"model"		"models/props_junk/torchoven_01.mdl"
+		"sname"		"野炊套装"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"265"
+	{
+		"model"		"models/props_junk/trashcluster01a.mdl"
+		"sname"		"垃圾堆1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"266"
+	{
+		"model"		"models/props_junk/trashcluster01b.mdl"
+		"sname"		"垃圾堆2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"267"
+	{
+		"model"		"models/props_junk/trashcluster01b_corner.mdl"
+		"sname"		"垃圾堆2(小)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"268"
+	{
+		"model"		"models/props_junk/trashcluster01a_corner.mdl"
+		"sname"		"垃圾堆1(小)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"269"
+	{
+		"model"		"models/props_junk/wheebarrow01a.mdl"
+		"sname"		"斗车"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"18.00"
+	}
+	"270"
+	{
+		"model"		"models/props_mall/column_01.mdl"
+		"sname"		"柱子1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.6"
+		"zaxisup"	"0.00"
+	}
+	"271"
+	{
+		"model"		"models/props_mall/column_02.mdl"
+		"sname"		"柱子2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.6"
+		"zaxisup"	"0.00"
+	}
+	"272"
+	{
+		"model"		"models/props_mall/column_03.mdl"
+		"sname"		"柱子3"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.6"
+		"zaxisup"	"0.00"
+	}
+	"273"
+	{
+		"model"		"models/props_mall/column_04.mdl"
+		"sname"		"柱子4"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.6"
+		"zaxisup"	"0.00"
+	}
+	"274"
+	{
+		"model"		"models/props_mall/column_05.mdl"
+		"sname"		"柱子4"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.6"
+		"zaxisup"	"0.00"
+	}
+	"275"
+	{
+		"model"		"models/props_mall/mall_bench.mdl"
+		"sname"		"长椅1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"276"
+	{
+		"model"		"models/props_mall/mall_column_large.mdl"
+		"sname"		"粗圆柱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+	}
+	"277"
+	{
+		"model"		"models/props_mall/mall_counter_corner.mdl"
+		"sname"		"柜台拐角"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"278"
+	{
+		"model"		"models/props_mall/mall_counter_entrance.mdl"
+		"sname"		"柜台"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"279"
+	{
+		"model"		"models/props_mall/mall_counter_entrance_02.mdl"
+		"sname"		"柜台2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"280"
+	{
+		"model"		"models/props_mall/mall_counter_long.mdl"
+		"sname"		"柜台(长)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"281"
+	{
+		"model"		"models/props_mall/mall_counter_short.mdl"
+		"sname"		"柜台(短)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"282"
+	{
+		"model"		"models/props_mall/mall_directory.mdl"
+		"sname"		"地图展示台"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"283"
+	{
+		"model"		"models/props_mall/mall_display_03.mdl"
+		"sname"		"展示栏3"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"284"
+	{
+		"model"		"models/props_mall/mall_display_04.mdl"
+		"sname"		"展示台4"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"285"
+	{
+		"model"		"models/props_mall/mall_display_04.mdl"
+		"sname"		"展示台5"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"286"
+	{
+		"model"		"models/props_mall/mall_display_06.mdl"
+		"sname"		"展示架6"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"287"
+	{
+		"model"		"models/props_mall/mall_display_07.mdl"
+		"sname"		"展示柜7"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"288"
+	{
+		"model"		"models/props_mall/mall_display_12.mdl"
+		"sname"		"展示柜12"
+		"allowtp"	""
+		"allowfake"	""
+		"dmgrevise"	""
+		"zaxisup"	"0.00"
+	}
+	"289"
+	{
+		"model"		"models/props_mall/mall_escalator2.mdl"
+		"sname"		"电动扶梯"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"290"
+	{
+		"model"		"models/props_mall/mall_kiosk.mdl"
+		"sname"		"商场售货亭1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"291"
+	{
+		"model"		"models/props_mall/mall_kioskb.mdl"
+		"sname"		"商场售货亭2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"292"
+	{
+		"model"		"models/props_mall/mall_kioskc.mdl"
+		"sname"		"商场售货亭3"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"293"
+	{
+		"model"		"models/props_mall/mall_mannequin_base.mdl"
+		"sname"		"假人(下身)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.5"
+		"zaxisup"	"0.00"
+	}
+	"294"
+	{
+		"model"		"models/props_mall/mall_shopliftscanner.mdl"
+		"sname"		"防盗扫描器"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"295"
+	{
+		"model"		"models/props_mall/mall_register.mdl"
+		"sname"		"登记台"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"296"
+	{
+		"model"		"models/props_mill/boiler_01.mdl"
+		"sname"		"大水塔"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"297"
+	{
+		"model"		"models/props_mill/brickwall_broken01.mdl"
+		"sname"		"破损的砖头柱1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"298"
+	{
+		"model"		"models/props_mill/brickwall_broken01_b.mdl"
+		"sname"		"破损的砖头柱2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"299"
+	{
+		"model"		"models/props_mill/canopy_support_01.mdl"
+		"sname"		"两条细柱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"300"
+	{
+		"model"		"models/props_mill/column_01.mdl"
+		"sname"		"工字梁"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"301"
+	{
+		"model"		"models/props_mill/tank_large01.mdl"
+		"sname"		"大水塔2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"302"
+	{
+		"model"		"models/props_mill/tank_medium01.mdl"
+		"sname"		"水塔1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.6"
+		"zaxisup"	"0.00"
+	}
+	"303"
+	{
+		"model"		"models/props_mill/tank_medium02.mdl"
+		"sname"		"水塔2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.6"
+		"zaxisup"	"0.00"
+	}
+	"304"
+	{
+		"model"		"models/props_misc/gazebo.mdl"
+		"sname"		"塑料凉棚"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"305"
+	{
+		"model"		"models/props_misc/bodybag_01/bodybag_01.mdl"
+		"sname"		"装尸袋1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"306"
+	{
+		"model"		"models/props_misc/bodybag_02/bodybag_02.mdl"
+		"sname"		"装尸袋2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"307"
+	{
+		"model"		"models/props_misc/bodybag_03/bodybag_03.mdl"
+		"sname"		"装尸袋3"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.3"
+		"zaxisup"	"0.00"
+	}
+	"308"
+	{
+		"model"		"models/props_office/vending_machine01.mdl"
+		"sname"		"自动售货机"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"309"
+	{
+		"model"		"models/props_pipes/hotel_pipe001.mdl"
+		"sname"		"旅馆管道1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"310"
+	{
+		"model"		"models/props_pipes/hotel_pipe002.mdl"
+		"sname"		"旅馆管道2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"311"
+	{
+		"model"		"models/props_pipes/hotel_pipe003.mdl"
+		"sname"		"旅馆管道3"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"312"
+	{
+		"model"		"models/props_pipes/hotel_pipe003.mdl"
+		"sname"		"旅馆管道3"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"313"
+	{
+		"model"		"models/props_pipes/hotel_pipe004.mdl"
+		"sname"		"旅馆管道4"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"314"
+	{
+		"model"		"models/props_plants/claypot03.mdl"
+		"sname"		"盆栽3"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"315"
+	{
+		"model"		"models/props_rooftop/acunit2.mdl"
+		"sname"		"空调外机"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"316"
+	{
+		"model"		"models/props_rooftop/acvent01.mdl"
+		"sname"		"大型外机1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.6"
+		"zaxisup"	"0.00"
+	}
+	"317"
+	{
+		"model"		"models/props_rooftop/acvent03.mdl"
+		"sname"		"大型外机3"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.6"
+		"zaxisup"	"0.00"
+	}
+	"318"
+	{
+		"model"		"models/props_rooftop/acvent04.mdl"
+		"sname"		"大型外机4"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.6"
+		"zaxisup"	"0.00"
+	}
+	"319"
+	{
+		"model"		"models/props_rooftop/antenna02.mdl"
+		"sname"		"屋顶天线2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"320"
+	{
+		"model"		"models/props_rooftop/antenna01.mdl"
+		"sname"		"屋顶天线1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"321"
+	{
+		"model"		"models/props_street/awning_department_store.mdl"
+		"sname"		"遮阳棚"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+	}
+	"322"
+	{
+		"model"		"models/props_street/firehydrant.mdl"
+		"sname"		"消防栓"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"323"
+	{
+		"model"		"models/props_street/mail_dropbox.mdl"
+		"sname"		"邮箱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"324"
+	{
+		"model"		"models/props_street/newspaper_dispensers.mdl"
+		"sname"		"报纸邮箱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"325"
+	{
+		"model"		"models/props_street/rent_sign.mdl"
+		"sname"		"招牌1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"326"
+	{
+		"model"		"models/props_street/rent_sign2.mdl"
+		"sname"		"招牌2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"327"
+	{
+		"model"		"models/props_street/roadsidereflector01.mdl"
+		"sname"		"路旁反射器"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.5"
+		"zaxisup"	"0.00"
+	}
+	"328"
+	{
+		"model"		"models/props_street/stopsign01.mdl"
+		"sname"		"Stop牌"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.5"
+		"zaxisup"	"0.00"
+	}
+	"329"
+	{
+		"model"		"models/props_street/trafficlight01.mdl"
+		"sname"		"交通信号灯"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"330"
+	{
+		"model"		"models/props_street/trashbin01.mdl"
+		"sname"		"垃圾桶"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"331"
+	{
+		"model"		"models/props_street/warehouse_vent_pipe01.mdl"
+		"sname"		"烟囱管1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"332"
+	{
+		"model"		"models/props_street/warehouse_vent_pipe03.mdl"
+		"sname"		"烟囱管3"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"333"
+	{
+		"model"		"models/props_swamp/ferry.mdl"
+		"sname"		"大木棚"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"334"
+	{
+		"model"		"models/props_swamp/winch.mdl"
+		"sname"		"盘线机"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"335"
+	{
+		"model"		"models/props_unique/atm01.mdl"
+		"sname"		"ATM机2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"336"
+	{
+		"model"		"models/props_unique/mopbucket01.mdl"
+		"sname"		"拖把桶"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"337"
+	{
+		"model"		"models/props_unique/wheelchair01.mdl"
+		"sname"		"轮椅"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"338"
+	{
+		"model"		"models/props_unique/wooden_barricade.mdl"
+		"sname"		"木制障碍"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+	}
+	"339"
+	{
+		"model"		"models/props_unique/airport/line_post.mdl"
+		"sname"		"隔离桩"
+		"allowtp"	"0"
+		"allowfake"	"1"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"340"
+	{
+		"model"		"models/props_unique/airport/luggage1.mdl"
+		"sname"		"行李箱1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"341"
+	{
+		"model"		"models/props_unique/airport/luggage2.mdl"
+		"sname"		"行李箱2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"342"
+	{
+		"model"		"models/props_unique/airport/luggage3.mdl"
+		"sname"		"行李箱3"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"343"
+	{
+		"model"		"models/props_unique/airport/luggage_pile1.mdl"
+		"sname"		"行李堆"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"344"
+	{
+		"model"		"models/props_unique/airport/phone_booth_airport.mdl"
+		"sname"		"机场电话亭"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"345"
+	{
+		"model"		"models/props_unique/hospital/hospital_bed.mdl"
+		"sname"		"病床"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"346"
+	{
+		"model"		"models/props_unique/hospital/iv_pole.mdl"
+		"sname"		"输液架"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"347"
+	{
+		"model"		"models/props_unique/small_town/swimming_buoy001b.mdl"
+		"sname"		"浮标"
+		"allowtp"	"0"
+		"allowfake"	"0"
+		"dmgrevise"	"4.0"
+		"zaxisup"	"0.00"
+	}
+	"348"
+	{
+		"model"		"models/props_unique/spawn_apartment/coffeeammo.mdl"
+		"sname"		"子弹桶"
+		"allowtp"	"0"
+		"allowfake"	"0"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"349"
+	{
+		"model"		"models/props_unique/spawn_apartment/lantern.mdl"
+		"sname"		"提灯"
+		"allowtp"	"0"
+		"allowfake"	"1"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"350"
+	{
+		"model"		"models/props_urban/ashtray_stand001.mdl"
+		"sname"		"烟灰缸柱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"351"
+	{
+		"model"		"models/props_urban/bench001.mdl"
+		"sname"		"公园长椅1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"352"
+	{
+		"model"		"models/props_urban/bench002.mdl"
+		"sname"		"公园长椅2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"353"
+	{
+		"model"		"models/props_urban/big_wheel001.mdl"
+		"sname"		"儿童玩具车"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.5"
+		"zaxisup"	"0.00"
+	}
+	"354"
+	{
+		"model"		"models/props_urban/carport_01.mdl"
+		"sname"		"双通道棚"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"355"
+	{
+		"model"		"models/props_urban/chimney006.mdl"
+		"sname"		"烟囱06"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"356"
+	{
+		"model"		"models/props_urban/chimney005.mdl"
+		"sname"		"烟囱05"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"357"
+	{
+		"model"		"models/props_urban/chimney007.mdl"
+		"sname"		"烟囱07"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"358"
+	{
+		"model"		"models/props_urban/diving_board001.mdl"
+		"sname"		"跳水台01"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"359"
+	{
+		"model"		"models/props_urban/dumpster001.mdl"
+		"sname"		"火车车厢"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"360"
+	{
+		"model"		"models/props_urban/gas_meter.mdl"
+		"sname"		"油表"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"361"
+	{
+		"model"		"models/props_urban/gas_pump001.mdl"
+		"sname"		"油泵"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"362"
+	{
+		"model"		"models/props_urban/hotel_stairs002.mdl"
+		"sname"		"旅馆楼梯"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"363"
+	{
+		"model"		"models/props_urban/ice_machine001.mdl"
+		"sname"		"制冰机"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"364"
+	{
+		"model"		"models/props_urban/life_ring001.mdl"
+		"sname"		"救生圈"
+		"allowtp"	"0"
+		"allowfake"	"0"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"365"
+	{
+		"model"		"models/props_urban/oil_drum001.mdl"
+		"sname"		"圆柱油桶"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"366"
+	{
+		"model"		"models/props_urban/outhouse001.mdl"
+		"sname"		"撤锁1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"367"
+	{
+		"model"		"models/props_urban/outhouse001.mdl"
+		"sname"		"撤锁2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"368"
+	{
+		"model"		"models/props_urban/parkinglot_light001.mdl"
+		"sname"		"停车场路灯"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.8"
+		"zaxisup"	"0.00"
+	}
+	"369"
+	{
+		"model"		"models/props_urban/plastic_bucket001.mdl"
+		"sname"		"空桶"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.5"
+		"zaxisup"	"0.00"
+	}
+	"370"
+	{
+		"model"		"models/props_urban/plastic_chair001.mdl"
+		"sname"		"抛瓦椅"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"371"
+	{
+		"model"		"models/props_urban/plastic_basin001.mdl"
+		"sname"		"空桶01"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"372"
+	{
+		"model"		"models/props_urban/plastic_basin002.mdl"
+		"sname"		"塑料盆"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"373"
+	{
+		"model"		"models/props_urban/plastic_flamingo001.mdl"
+		"sname"		"鸵鸟"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"374"
+	{
+		"model"		"models/props_urban/plastic_icechest001.mdl"
+		"sname"		"便携冰箱"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	
+	"375"
+	{
+		"model"		"models/props_urban/plastic_water_jug001.mdl"
+		"sname"		"小塑料桶"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"2.0"
+		"zaxisup"	"0.00"
+	}
+	"376"
+	{
+		"model"		"models/props_urban/shopping_cart001.mdl"
+		"sname"		"购物车"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+	"377"
+	{
+		"model"		"models/props_urban/stoop001_64.mdl"
+		"sname"		"台阶1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"378"
+	{
+		"model"		"models/props_urban/stoop001_64_32.mdl"
+		"sname"		"台阶2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"379"
+	{
+		"model"		"models/props_urban/stoop001_96.mdl"
+		"sname"		"台阶3"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+	}
+	"380"
+	{
+		"model"		"models/props_vehicles/airport_fuel_truck.mdl"
+		"sname"		"油罐车"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"381"
+	{
+		"model"		"models/props_vehicles/ambulance.mdl"
+		"sname"		"救护车"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"382"
+	{
+		"model"		"models/props_vehicles/army_truck.mdl"
+		"sname"		"军用卡车"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"383"
+	{
+		"model"		"models/props_vehicles/bus01_2.mdl"
+		"sname"		"长巴士"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"384"
+	{
+		"model"		"models/props_vehicles/church_bus01.mdl"
+		"sname"		"校车"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"385"
+	{
+		"model"		"models/props_vehicles/helicopter_news_downed.mdl"
+		"sname"		"直升机(倒下)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"386"
+	{
+		"model"		"models/props_vehicles/police_car_city.mdl"
+		"sname"		"警车1"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"387"
+	{
+		"model"		"models/props_vehicles/police_car_rural.mdl"
+		"sname"		"警车2"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"388"
+	{
+		"model"		"models/props_vehicles/radio_generator.mdl"
+		"sname"		"发电机(无线电)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.6"
+		"zaxisup"	"0.00"
+	}
+	"389"
+	{
+		"model"		"models/props_vehicles/van.mdl"
+		"sname"		"面包车"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"390"
+	{
+		"model"		"models/props_vehicles/train_flatcar.mdl"
+		"sname"		"火车底座"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"391"
+	{
+		"model"		"models/props_vehicles/train_box_open.mdl"
+		"sname"		"火车车厢(开门)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+	}
+	"392"
+	{
+		"model"		"models/props_foliage/mall_pot_xlarge02.mdl"
+		"sname"		"圆形空花盆(超大)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.6"
+		"zaxisup"	"0.00"
+
+	}
+	"393"
+	{
+		"model"		"models/props_vehicles/floodlight_generator_nolight_static.mdl"
+		"sname"		"发电机(仅底座)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+	}
+	"394"
+	{
+		"model"		"models/props_foliage/mall_pot_squarexl01.mdl"
+		"sname"		"正方空花盆(超大)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+
+	}
+	"395"
+	{
+		"model"		"models/props_vehicles/floodlight_generator_pose02_static.mdl"
+		"sname"		"发电机(高灯)"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.7"
+		"zaxisup"	"0.00"
+	}
+	"396"
+	{
+		"model"		"models/props_fairgrounds/mortar_rack.mdl"
+		"sname"		"烟花筒"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.2"
+		"zaxisup"	"0.00"
+
+	}
+	"397"
+	{
+		"model"		"models/props_fairgrounds/gnome_closet.mdl"
+		"sname"		"侏儒存放柜"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+
+	}
+	"398"
+	{
+		"model"		"models/props_equipment/surgicaltray_01.mdl"
+		"sname"		"手术器具"
+		"allowtp"	"0"
+		"allowfake"	"0"
+		"dmgrevise"	"4.0"
+		"zaxisup"	"0.00"
+
+	}
+	"399"
+	{
+		"model"		"models/props_downtown/parade_float.mdl"
+		"sname"		"游行花车"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"0.5"
+		"zaxisup"	"0.00"
+
+	}
+	"400"
+	{
+		"model"		"models/props_debris/paintbucket01.mdl"
+		"sname"		"油漆桶"
+		"allowtp"	"1"
+		"allowfake"	"1"
+		"dmgrevise"	"1.0"
+		"zaxisup"	"0.00"
+	}
+}

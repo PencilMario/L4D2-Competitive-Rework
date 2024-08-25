@@ -140,4 +140,11 @@
 			"name" "1v1 ZoneHunters"
 		}
 	}
+	"Other"
+	{
+		"hideseek"
+		{
+			"name"	"躲猫猫"
+		}
+	}
 }
