@@ -62,8 +62,9 @@ public Action Timer_HuntScoreMain(Handle timer){
 	// 确认模式
 	if (GetPHRoundState() == 3){
 		// 输出stat
-		int mvp, hidemvp, runmvp = 0;
+		int mvp, hidemvp, runmvp, minmvp = 0;
 		int mvpmax, hidemvpmax, runmvpmax = 0;
+		int min = 99999;
 		for (int i = 1; i <= MaxClients; i++){
 			if (!IsClientInGame(i)) continue;
 			if (PlayersData[i].roundscore > mvpmax){
@@ -74,6 +75,11 @@ public Action Timer_HuntScoreMain(Handle timer){
 				hidemvp = i;
 				hidemvpmax = PlayersData[i].alivetime;
 			}
+			else if(PlayersData[i].alivetime < min && PlayersData[i].alivetime > 0)
+			{
+				minmvp = i;
+				min = PlayersData[i].alivetime;
+			}
 			if (PlayersData[i].close_tank_time > runmvpmax){
 				runmvp = i;
 				runmvpmax = PlayersData[i].close_tank_time;
@@ -83,6 +89,7 @@ public Action Timer_HuntScoreMain(Handle timer){
 		CPrintToChatAll("[{blue}MVP{default}] {green}%N {blue}(%i分)", mvp, mvpmax);
 		CPrintToChatAll("[{blue}躲藏MVP{default}] {green}%N {blue}(%i秒)", hidemvp, hidemvpmax);
 		CPrintToChatAll("[{blue}溜克MVP{default}] {green}%N {blue}(%i秒)", runmvp, runmvpmax);
+		CPrintToChatAll("[{blue}躲猫猫速通{default}] {green}%N {blue}(%i秒)", minmvp, min);
 		return Plugin_Stop;
 	}
 	else if(GetPHRoundState() != 2) return Plugin_Stop;
