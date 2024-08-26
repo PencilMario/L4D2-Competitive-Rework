@@ -11,7 +11,9 @@
 #include <prophunt_single>
 
 #define TIMER_INTERVAL 1.0
-
+#define LEFT4FRAMEWORK_GAMEDATA "left4dhooks.l4d2"
+#define SECTION_NAME "CTerrorGameRules::SetCampaignScores"
+Handle hSetCampaignScores;
 enum struct PlayerData{
     int roundscore;
 	int alivetime;
@@ -23,11 +25,11 @@ enum struct PlayerData{
 
 	void AliveAddscore(int scores){
 		this.roundscore += scores;
-		this.alivetime += TIMER_INTERVAL;
+		this.alivetime += RoundToNearest(TIMER_INTERVAL);
 	}
 	void CloseTankAddscore(int scores){
 		this.roundscore += scores;
-		this.close_tank_time += TIMER_INTERVAL;
+		this.close_tank_time += RoundToNearest(TIMER_INTERVAL);
 	}
 }
 
@@ -40,7 +42,9 @@ public Plugin myinfo =
 	version		= "0.0.0",
 	url			= "null"
 };
-
+public void OnPluginStart(){
+	LoadSDK();
+}
 void ClearPlayersData(int client){
 	PlayersData[client].roundscore = 0;
 	PlayersData[client].alivetime = 0;
@@ -88,6 +92,7 @@ public Action Timer_HuntScoreMain(Handle timer){
 	int alive_score = 1;
 	int tank_close_score = 1;
 	int SurvivorTeamIndex = GameRules_GetProp("m_bAreTeamsFlipped");
+	int InfectedTeamIndex = SurvivorTeamIndex ? 0 : 1;
 	for(int i = 1; i <= MaxClients; i++){
 		if(IsClientInGame(i) && IsPlayerAlive(i) && GetClientTeam(i)==L4D2Team_Survivor){
 			PlayersData[i].AliveAddscore(alive_score);
@@ -113,12 +118,49 @@ public Action Timer_HuntScoreMain(Handle timer){
 			loop_total_score += tank_count * tank_close_score;
 		}
 	}
-	L4D2Direct_SetVSCampaignScore(SurvivorTeamIndex, L4D2Direct_GetVSCampaignScore(SurvivorTeamIndex) + loop_total_score);
+
+	SetScores(L4D2Direct_GetVSCampaignScore(SurvivorTeamIndex) + loop_total_score, L4D2Direct_GetVSCampaignScore(InfectedTeamIndex));
 	return Plugin_Continue;
 }
 
+void LoadSDK()
+{
+	Handle conf = LoadGameConfigFile(LEFT4FRAMEWORK_GAMEDATA);
+	if (conf == INVALID_HANDLE) {
+		SetFailState("Could not load gamedata/%s.txt", LEFT4FRAMEWORK_GAMEDATA);
+	}
+
+	StartPrepSDKCall(SDKCall_GameRules);
+	if (!PrepSDKCall_SetFromConf(conf, SDKConf_Signature, SECTION_NAME)) {
+		SetFailState("Function '" ... SECTION_NAME ... "' not found.");
+	}
+	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+	hSetCampaignScores = EndPrepSDKCall();
+	if (hSetCampaignScores == INVALID_HANDLE) {
+		SetFailState("Function '" ... SECTION_NAME ... "' found, but something went wrong.");
+	}
+	
+	delete conf;
+}
+
+void SetScores(const int survScore, const int infectScore)
+{
+	//Determine which teams are which
+	bool bFlipped = !!GameRules_GetProp("m_bAreTeamsFlipped");
+	int SurvivorTeamIndex = bFlipped ? 1 : 0;
+	int InfectedTeamIndex = bFlipped ? 0 : 1;
+	
+	//Set the scores
+	SDKCall(hSetCampaignScores,
+				(bFlipped) ? infectScore : survScore,
+				(bFlipped) ? survScore : infectScore); //visible scores
+	L4D2Direct_SetVSCampaignScore(SurvivorTeamIndex, survScore); //real scores
+	L4D2Direct_SetVSCampaignScore(InfectedTeamIndex, infectScore);
+}
 public void OnCreateRealProp_Post(int client, int entity){
 	PlayersData[client].real_model_index = entity;
+	GetEntPropVector(entity, Prop_Send, "m_vecOrigin", PlayersData[client].real_model_pos);
 }
 
 public void OnEntityDestroyed(int entity){
