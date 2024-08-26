@@ -114,7 +114,7 @@ public Action Timer_HuntScoreMain(Handle timer){
 			}
 			// tank坐标及对比
 			for (int j = 1; j <= MaxClients; j++){
-				if (IsClientInGame(j) && IsPlayerAlive(j) && L4D2_GetPlayerZombieClass(j) == L4D2Infected_Tank){
+				if (IsClientInGame(j) && IsPlayerAlive(j) && GetClientTeam(j) == L4D2Team_Infected && L4D2_GetPlayerZombieClass(j) == L4D2Infected_Tank){
 					GetClientEyePosition(j, tankpos);
 					if (GetVectorDistance(survpos, tankpos) <= 1500.0) {
 						tank_count++;
