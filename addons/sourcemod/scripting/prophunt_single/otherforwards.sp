@@ -55,6 +55,10 @@ void Handle_Commons(int entity)
 	{
 		AcceptEntityInput(entity, "Kill");
 	}
+	else if(StrEqual(classname,"survivor_death_model"))
+	{
+		AcceptEntityInput(entity,"Kill");
+	}
 }
 
 public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3], float angles[3], int& weapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
@@ -271,11 +275,21 @@ Action Touch_Player(int entity, int other)
 		SetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity", other);
 		CreateTimer(1.0, RemoveOwnerEntity, entity, TIMER_FLAG_NO_MAPCHANGE);
 	}
+	else if (g_iRoundState == 1 && IsValidClientIndex(other) && GetClientTeam(entity) == 3)
+	{
+		SetEntProp(entity, Prop_Send, "m_CollisionGroup", 1);
+		CreateTimer(10.0, ResetEntitySolidType, entity, TIMER_FLAG_NO_MAPCHANGE);
+	}
 	return Plugin_Continue;
 }
 
 Action RemoveOwnerEntity(Handle Timer, int client)
 {
 	SetEntPropEnt(client, Prop_Send, "m_hOwnerEntity", -1);
+	return Plugin_Stop;
+}
+Action ResetEntitySolidType(Handle Timer, int client)
+{
+	SetEntProp(client, Prop_Send, "m_CollisionGroup", 5);
 	return Plugin_Stop;
 }

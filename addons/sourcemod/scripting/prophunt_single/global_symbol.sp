@@ -12,6 +12,7 @@ int		  g_iVomitjar[MAXPLAYERS + 1];				   //生还者发射胆汁的次数
 float	  g_fLockOrigin[MAXPLAYERS + 1][3];			   //生还者锁定视角前的坐标，用于传送其生成的实体。
 float	  g_fLockAngle[MAXPLAYERS + 1][3];			   //生还者锁定视角前的角度，用于传送其生成的实体。
 ArrayList g_hFakeProps[MAXPLAYERS + 1];				   //储存假身的集合
+ArrayList g_hSelectList[MAXPLAYERS + 1];			   //储存生还的选择菜单
 ///////////////
 //用于坦克菜单//
 ///////////////
@@ -21,7 +22,7 @@ ArrayList g_hNavList;						 //储存用于传送的Navs
 ///////////////
 //生还坦克共用//
 ///////////////
-int		  g_iSkillCD[MAXPLAYERS + 1];		   //客户端使用技能的cd。
+int		  g_iSkillCD[MAXPLAYERS + 1];	 //客户端使用技能的cd。
 ///////////////
 //用于回合设置//
 ///////////////

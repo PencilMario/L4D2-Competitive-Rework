@@ -58,14 +58,9 @@ int PropMenuHandler(Menu menu, MenuAction action, int iClient, int param2)
 				}
 				case 6:
 				{
-					if (g_iPropDownCount[iClient] == 0)
+					if (g_iRoundState != 1 && g_iRoundState != 2)
 					{
-						CPrintToChat(iClient, "{green}因刷新次数为0, 你已不能更换模型。");
-						SurvivorPropMenu(iClient);
-					}
-					if (g_iRoundState != 1)
-					{
-						CPrintToChat(iClient, "{green}非躲藏阶段, 不允许更换模型。");
+						CPrintToChat(iClient, "{green}回合尚未开始, 不允许更换模型。");
 						SurvivorPropMenu(iClient);
 					}
 					else if (g_bLockCamera[iClient])
@@ -359,7 +354,7 @@ int TpToFakePropMenuHandler(Menu menu, MenuAction action, int iClient, int param
 				int entity = StringToInt(info);
 				if (!IsValidEdict(entity))
 				{
-					PrintHintText(iClient, "假身被摧毁了, 传送失败!");
+					CPrintToChat(iClient, "{green}假身被摧毁了, 传送失败!");
 					TpToFakeProp(iClient);
 					return 0;
 				}
@@ -396,40 +391,40 @@ int TpToFakePropMenuHandler(Menu menu, MenuAction action, int iClient, int param
 
 void SelectModel(int client)
 {
-	g_iPropDownCount[client]--;
-	if (g_iPropDownCount[client] < 0)
+	if (g_hSelectList[client].Length == 0 && g_iPropDownCount[client] == 0)
 	{
+		CPrintToChat(client, "{green}你的刷新次数已用完。");
 		return;
 	}
-	ArrayList al   = new ArrayList(sizeof(ModelInfo));
-	Menu	  menu = new Menu(SelectModelMenuHandler);
-	menu.SetTitle("模型选单~你还有 %d 次刷新机会", g_iPropDownCount[client]);
-	/*
-	for (int i = 0; i < sizeof(g_sModelsPath); i++)
+	if (g_hSelectList[client].Length == 0)
 	{
-		menu.AddItem(g_sModelsPath[i], g_sModelsName[i]);
-	}
-	*/
-	int i = 0;
-	do
-	{
-		int index = GetRandomInt(0, g_hModelList.Length - 1);
-		if (al.FindValue(index) == -1)
+		int i = 0;
+		do
 		{
-			al.Push(index);
-			i++;
+			int index = GetRandomInt(0, g_hModelList.Length - 1);
+			if (g_hSelectList[client].FindValue(index) == -1)
+			{
+				g_hSelectList[client].Push(index);
+				i++;
+			}
 		}
+		while (i < 6);
+		g_iPropDownCount[client]--;
 	}
-	while (i < 6);
-	for (int j = 0; j < al.Length; j++)
+	Menu menu = new Menu(SelectModelMenuHandler);
+	menu.SetTitle("模型选单~你还有 %d 次刷新机会", g_iPropDownCount[client]);
+	for (int j = 0; j < g_hSelectList[client].Length; j++)
 	{
 		ModelInfo MI;
-		g_hModelList.GetArray(al.Get(j), MI);
+		g_hModelList.GetArray(g_hSelectList[client].Get(j), MI);
 		char info[32];
 		Format(info, sizeof(info), "%d", MI.modelnum);
 		menu.AddItem(info, MI.sname);
 	}
-	menu.AddItem("-1", "刷新选单");
+	if (g_iPropDownCount[client] > 0)
+	{
+		menu.AddItem("-1", "刷新选单");
+	}
 	menu.ExitBackButton = true;
 	menu.Display(client, MENU_TIME_FOREVER);
 }
@@ -459,12 +454,8 @@ int SelectModelMenuHandler(Menu menu, MenuAction action, int iClient, int param1
 				int iModelNum = StringToInt(sModelNum);
 				if (iModelNum == -1)
 				{
+					g_hSelectList[iClient].Clear();
 					SelectModel(iClient);
-					return 0;
-				}
-				if (g_iRoundState != 1)
-				{
-					CPrintToChat(iClient, "{green}躲藏阶段已结束, 不允许更换模型。");
 					return 0;
 				}
 				ModelInfo MI;
@@ -474,6 +465,7 @@ int SelectModelMenuHandler(Menu menu, MenuAction action, int iClient, int param1
 				SetEntPropFloat(iClient, Prop_Send, "m_TimeForceExternalView", 99999.4);
 				SetEntityModel(iClient, MI.model);
 				OutPutModelInfo(iClient);
+				g_hSelectList[iClient].Clear();
 				SurvivorPropMenu(iClient);
 			}
 		}
@@ -482,15 +474,11 @@ int SelectModelMenuHandler(Menu menu, MenuAction action, int iClient, int param1
 }
 void OutPutModelInfo(int client)
 {
-	char	  sinfo[512];
 	ModelInfo MI;
 	g_hModelList.GetArray(g_iPropNum[client], MI);
-	Format(sinfo, sizeof(sinfo), "{default}你已选择模型: {green}%s%s%s\n{default}该模型的伤害修正倍率为:{blue} %.2f",
-		   MI.sname,
-		   MI.allowtp ? "\n{blue}该模型允许飞雷神传送。" : "\n{red}该模型不能飞雷神传送。",
-		   MI.allowfake ? "\n{blue}该模型允许创造假身。" : "\n{red}该模型不能创造假身。",
-		   MI.dmgrevise);
-	CPrintToChat(client, sinfo);
+	CPrintToChat(client, "{default}你已选择模型:{green} %s\n{default}该模型的伤害修正倍率为:{blue} %.2f", MI.sname, MI.dmgrevise);
+	CPrintToChat(client, "%s", MI.allowtp ? "{blue}该模型允许飞雷神传送。" : "{red}该模型不能飞雷神传送。");
+	CPrintToChat(client, "%s", MI.allowfake ? "{blue}该模型允许创造假身。" : "{red}该模型不能创造假身。");
 }
 
 Action Timer_SurvivorSkillCD(Handle timer, int client)

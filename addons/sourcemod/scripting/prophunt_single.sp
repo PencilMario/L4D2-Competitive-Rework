@@ -30,7 +30,7 @@ public Plugin myinfo =
 	name		= "L4D2 Prop Hunt",
 	author		= "Nepkey",
 	description = "躲猫猫玩法 - bug反馈请私信b站",
-	version		= "1.0-release",
+	version		= "1.01-release",
 	url			= "null"
 };
 
@@ -48,6 +48,7 @@ public void OnPluginStart()
 	for (int i = 0; i <= MAXPLAYERS; i++)
 	{
 		g_hFakeProps[i] = new ArrayList();
+		g_hSelectList[i] = new ArrayList();
 	}
 	g_hHideTime		 = CreateConVar("l4d2_prophunt_hidetime", "90", "躲藏阶段持续时间");
 	g_hSeekTime		 = CreateConVar("l4d2_prophunt_seektime", "420", "寻找阶段持续时间");
@@ -55,7 +56,7 @@ public void OnPluginStart()
 	g_hBasicDmg		 = CreateConVar("l4d2_prophunt_tankdmg", "25", "克的基础伤害");
 	g_hGunDmg		 = CreateConVar("l4d2_prophunt_gundmg", "7", "持枪特感的基础伤害");
 	g_hAutoSetConvar = CreateConVar("l4d2_prophunt_autocvar", "1", "插件是否自行更改cvar");
-
+	
 	// debug
 	// RegAdminCmd("sm_dir", cmd_dir, ADMFLAG_KICK);
 	// RegAdminCmd("sm_dir2", cmd_dir2, ADMFLAG_KICK);
@@ -75,7 +76,7 @@ public void LoadPropInfos()
 	g_hModelList = new ArrayList(sizeof(ModelInfo));
 	propinfos	 = InitializeKV(PropsFile, "prophunt_props");
 	propinfos.GotoFirstSubKey();
-	
+
 	ModelInfo MI;
 	do
 	{
@@ -126,6 +127,7 @@ public void OnReadyStage_Post()
 		g_iTankAbility[i]	  = 0;
 		g_iCreateFakeProps[i] = 3;
 		g_hFakeProps[i].Clear();
+		g_hSelectList[i].Clear();
 	}
 }
 
@@ -314,6 +316,11 @@ int JGMenuHandler(Menu menu, MenuAction action, int iClient, int param2)
 }
 
 /*
+Action cmd_dir(int client, int args)
+{
+	//CreateTimer(2.5, Timer_Repeats, client, TIMER_REPEAT);
+}
+
 Action cmd_dir2(int client, int args)
 {
 	ModelInfo MI;
@@ -332,11 +339,6 @@ Action cmd_dir2(int client, int args)
 		PrintToServer("-----模型输出信息输出结束-----");
 	}
 
-}
-
-Action cmd_dir(int client, int args)
-{
-	CreateTimer(2.5, Timer_Repeats, client, TIMER_REPEAT);
 }
 
 Action Timer_Repeats(Handle timer, int client)

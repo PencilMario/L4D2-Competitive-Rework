@@ -137,8 +137,9 @@ void SurvivorDetect(int client, float targetdistance)
 			DataPack dp = new DataPack();
 			dp.WriteCell(client);
 			dp.WriteCell(player);
-			dp.WriteFloat(GetGameTime() + 5.0);
+			dp.WriteFloat(GetGameTime() + 10.0);
 			CreateTimer(1.0, Sustain_DetectSurvivor, dp, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
+			CPrintToChat(player, "{green}[!]你正在被{red} %N {green}探测", client);
 			hasdetected = true;
 			break;
 		}

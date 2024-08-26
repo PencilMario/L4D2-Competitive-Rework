@@ -380,7 +380,7 @@ Action CreateProp(int entity, PHPropType phtype)
 			SDKHook(iProp, SDKHook_OnTakeDamage, OnFakePropTakeDamage);
 			g_hFakeProps[entity].Push(iProp);
 			g_iCreateFakeProps[entity]--;
-			CPrintToChat(entity, "{green}成功创建的假身id为: {blue}%d  {green}剩余创建次数: {blue}%d", iProp, g_iCreateFakeProps[entity]);
+			CPrintToChat(entity, "{green}成功创建, 假身id为: {blue}%d  {green}剩余创建次数: {blue}%d", iProp, g_iCreateFakeProps[entity]);
 			Call_StartForward(g_hOnCreateFakeProp_Post);
 			Call_PushCell(entity);
 			Call_PushCell(iProp);
@@ -443,12 +443,12 @@ Action OnFakePropTakeDamage(int victim, int& attacker, int& inflictor, float& da
 	}
 	if (IsClientInGame(iParent))
 	{
-		PrintHintText(iParent, "你创造的假身(id %d)已被 %N 摧毁。", victim, attacker);
-		PrintHintText(attacker, "你摧毁了 %N 的一个假身。", iParent);
+		CPrintToChat(iParent, "{green}你创造的假身(id %d)已被{red} %N {green}摧毁。", victim, attacker);
+		CPrintToChat(attacker, "{green}你摧毁了{blue} %N {green}的一个假身。", iParent);
 	}
 	else
 	{
-		PrintHintText(attacker, "你摧毁了一个未知来源的假身。");
+		CPrintToChat(attacker, "{green}你摧毁了一个未知来源的假身。");
 	}
 	int health = GetClientHealth(attacker);
 	SetEntityHealth(attacker, health + 1000);
