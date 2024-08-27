@@ -6,7 +6,8 @@
 	}
 	"Refilled"
 	{
-		"en"		"{default}({green}%N{default}'s) {olive}Rage Meter {red}Refilled"
+		"#format"	"{1:N}"
+		"en"		"{default}({green}{1}{default}'s) {olive}Rage Meter {red}Refilled"
 	}
 	"RefilledBot"
 	{
@@ -23,7 +24,8 @@
 	}
    "BecomeTank"
 	{
-		"en"		"{olive}%N {default}will become the {red}Tank!"
+		"#format"	"{1:N}"
+		"en"		"{olive}{1} {default}will become the {red}Tank!"
 	}
 
     "TagControl"
@@ -36,7 +38,8 @@
 	}
    "NoInfected"
 	{
-		"en"		"{olive}%N {default}is not on the infected team. Unable to give tank"
+		"#format"	"{1:N}"
+		"en"		"{olive}{1} {default}is not on the infected team. Unable to give tank"
 	}
 
     "HintText"
