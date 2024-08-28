@@ -140,13 +140,17 @@ public OnEntityCreated(Entity, const String:Classname[])
     return;
 }
 
-void TE_SendToInf()
+stock void TE_SendToInf(float delay=0.0)
 {
-    for (int i = 1; i <= MaxClients; i++)
-    {
-        if (IsClientInGame(i) && !IsSurvivor(i) && !IsFakeClient(i)){
-            TE_SendToClient(i);
-        }
-    }
+	int total = 0;
+	int[] clients = new int[MaxClients];
+	for (int i=1; i<=MaxClients; i++)
+	{
+		if (IsClientInGame(i) && !IsSurvivor(i) && !IsFakeClient(i))
+		{
+			clients[total++] = i;
+		}
+	}
+	TE_Send(clients, total, delay);
 }
 
