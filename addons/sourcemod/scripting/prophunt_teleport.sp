@@ -29,6 +29,9 @@ public void OnPluginStart(){
 }
 
 public void OnHidingStage_Post(){
+	for(int i = 1; i <= MaxClients; i++){
+		f_ClientLastUsed[i] = -1000.0;
+	}
 	for (int i = 1; i <= MaxClients; i++){
 		if (IsClientInGame(i) && GetClientTeam(i) == L4D2Team_Survivor){
 			CPrintToChat(i, "{blue} 你可以使用指令 {green}!phtp <进度>{blue} 来传送到指定进度!");
@@ -40,7 +43,7 @@ public void OnHidingStage_Post(){
 
 public void OnSeekingStage_Post(){
 	for (int i = 1; i <= MaxClients; i++){
-		if (IsClientInGame(i) && GetClientTeam(i) == L4D2Team_Survivor){
+		if (IsClientInGame(i) && GetClientTeam(i) == L4D2Team_Infected){
 			CPrintToChat(i, "{blue} 你可以使用指令 {green}!phtp <进度>{blue} 来传送到指定进度!");
 			CPrintToChat(i, "{blue} 示例: {green}!phtp 50{blue}");
 			CPrintToChat(i, "{blue} 这将会传送你到大约50%进度的位置, CD为%.0f秒, 如果你知道大概位置的话会很有用...", COOLDOWN_TIME_INF);
@@ -54,16 +57,16 @@ public Action CMD_PHTeleport(int client, int args){
 		return Plugin_Handled;
 	}
 	float targetper = L4D2Util_IntToPercentFloat(GetCmdArgInt(1), 100);
-
+	float cooldowntime = GetGameTime() - f_ClientLastUsed[client];
 	if (IsPlayerAlive(client)){
 		if (GetClientTeam(client) == L4D2Team_Survivor){
 			if (GetPHRoundState() != 1){
 				CReplyToCommand(client, "{blue}只有在躲藏阶段才能传送!");
 				return Plugin_Handled;
 			}
-			else if(GetGameTime() - f_ClientLastUsed[client] < COOLDOWN_TIME_SUR)
+			else if(cooldowntime < COOLDOWN_TIME_SUR)
 			{
-				CReplyToCommand(client, "{blue}你的需要等待 %.0f秒后才能传送", GetGameTime() - f_ClientLastUsed[client]);
+				CReplyToCommand(client, "{blue}你需要等待 %.0f 秒后才能传送", COOLDOWN_TIME_SUR - cooldowntime);
 				return Plugin_Handled;
 			}
 		}
@@ -73,9 +76,9 @@ public Action CMD_PHTeleport(int client, int args){
 				CReplyToCommand(client, "{blue}只有在搜寻阶段才能传送!");
 				return Plugin_Handled;
 			}
-			else if(GetGameTime() - f_ClientLastUsed[client] < COOLDOWN_TIME_INF)
+			else if(cooldowntime < COOLDOWN_TIME_INF)
 			{
-				CReplyToCommand(client, "{blue}你的需要等待 %.0f秒后才能传送", GetGameTime() - f_ClientLastUsed[client]);
+				CReplyToCommand(client, "{blue}你需要等待 %.0f 秒后才能传送", COOLDOWN_TIME_INF - cooldowntime);
 				return Plugin_Handled;
 			}
 		}
@@ -87,11 +90,6 @@ public Action CMD_PHTeleport(int client, int args){
 	return Plugin_Handled;
 }
 
-public void OnReadyStage_Post(){
-	for(int i = 1; i <= MaxClients; i++){
-		f_ClientLastUsed[i] = 0.0;
-	}
-}
 
 /**
  * 获取TP位置并传送,感谢l4d_predict_tank_glow
