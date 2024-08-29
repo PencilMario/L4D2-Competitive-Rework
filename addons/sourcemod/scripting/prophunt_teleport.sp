@@ -20,7 +20,7 @@ public Plugin myinfo =
 	name		= "L4D2 Prop Hunt",
 	author		= "Sir.P",
 	description = "躲猫猫玩法 - 传送至指定进度",
-	version		= "0.0.0",
+	version		= "0.1.0",
 	url			= "null"
 };
 public void OnPluginStart(){
@@ -36,7 +36,7 @@ public void OnHidingStage_Post(){
 		if (IsClientInGame(i) && GetClientTeam(i) == L4D2Team_Survivor){
 			CPrintToChat(i, "{blue} 你可以使用指令 {green}!phtp <进度>{blue} 来传送到指定进度!");
 			CPrintToChat(i, "{blue} 示例: {green}!phtp 50{blue}");
-			CPrintToChat(i, "{blue} 这将会传送你到大约50%进度的位置, 但该指令只能在躲藏阶段使用, 且CD为%.0f秒", COOLDOWN_TIME_SUR);
+			CPrintToChat(i, "{blue} 这将会传送你到大约50%路程的位置, 但该指令只能在躲藏阶段使用, 且CD为%.0f秒", COOLDOWN_TIME_SUR);
 		}
 	}
 }
@@ -46,7 +46,7 @@ public void OnSeekingStage_Post(){
 		if (IsClientInGame(i) && GetClientTeam(i) == L4D2Team_Infected){
 			CPrintToChat(i, "{blue} 你可以使用指令 {green}!phtp <进度>{blue} 来传送到指定进度!");
 			CPrintToChat(i, "{blue} 示例: {green}!phtp 50{blue}");
-			CPrintToChat(i, "{blue} 这将会传送你到大约50%进度的位置, CD为%.0f秒, 如果你知道大概位置的话会很有用...", COOLDOWN_TIME_INF);
+			CPrintToChat(i, "{blue} 这将会传送你到大约50%路程的位置, CD为%.0f秒, 如果你知道大概位置的话会很有用...", COOLDOWN_TIME_INF);
 		}
 	}
 }
@@ -56,7 +56,7 @@ public Action CMD_PHTeleport(int client, int args){
 		ReplyToCommand(client, "[SM] Usage: sm_phtp <percent>\npercent: 0-100");
 		return Plugin_Handled;
 	}
-	float targetper = L4D2Util_IntToPercentFloat(GetCmdArgInt(1), 100);
+	float targetper = L4D2Util_IntToPercentFloat(GetCmdArgInt(1), 100) / 100.0;
 	float cooldowntime = GetGameTime() - f_ClientLastUsed[client];
 	if (IsPlayerAlive(client)){
 		if (GetClientTeam(client) == L4D2Team_Survivor){
@@ -82,10 +82,9 @@ public Action CMD_PHTeleport(int client, int args){
 				return Plugin_Handled;
 			}
 		}
-		float vpos[3], vAng[3];
-		ProcessTeleport(client, vpos, vAng, targetper);
+		ProcessTeleport(client, targetper);
 		f_ClientLastUsed[client] = GetGameTime();
-		CReplyToCommand(client, "{blue}已经传送!");
+		CReplyToCommand(client, "{blue}已经传送至 {green}%.0f{blue}%!", targetper * 100.0);
 	}
 	return Plugin_Handled;
 }
@@ -94,8 +93,12 @@ public Action CMD_PHTeleport(int client, int args){
 /**
  * 获取TP位置并传送,感谢l4d_predict_tank_glow
  */
-void ProcessTeleport(int client, float vPos[3], float vAng[3], float Target)
+void ProcessTeleport(int client, float Target)
 {
+	if (Target <= 0.12){
+		Target = 0.12
+	}
+	float vPos[3], vAng[3];
     // 从 -12% 反方向获取位置
     for (float p = Target; p > 0.0; p -= 0.01)
     {

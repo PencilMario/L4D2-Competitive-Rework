@@ -58,10 +58,7 @@ public void OnSeekingStage_Post(){
 	}
 	CreateTimer(TIMER_INTERVAL, Timer_HuntScoreMain, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 }
-public Action Timer_HuntScoreMain(Handle timer){
-	// 确认模式
-	if (GetPHRoundState() == 3){
-		// 输出stat
+public Action Timer_HuntScorePrint(Handle timer){
 		int mvp, hidemvp, runmvp, minmvp = 0;
 		int mvpmax, hidemvpmax, runmvpmax = 0;
 		int min = 99999;
@@ -88,8 +85,22 @@ public Action Timer_HuntScoreMain(Handle timer){
 		CPrintToChatAll("[{blue}Hide and Seek{default}] 生还者得分:");
 		CPrintToChatAll("[{blue}MVP{default}] {green}%N {blue}(%i分)", mvp, mvpmax);
 		CPrintToChatAll("[{blue}躲藏MVP{default}] {green}%N {blue}(%i秒)", hidemvp, hidemvpmax);
-		CPrintToChatAll("[{blue}溜克MVP{default}] {green}%N {blue}(%i秒)", runmvp, runmvpmax);
+		CPrintToChatAll("[{blue}溜克MVP{default}] {green}%N {blue}(%i分)", runmvp, runmvpmax);
 		CPrintToChatAll("[{blue}躲猫猫速通{default}] {green}%N {blue}(%i秒)", minmvp, min);
+		for (int i = 1; i <= MaxClients; i++){
+			if (IsClientInGame(i) && GetClientTeam(i)==L4D2Team_Survivor){
+				CPrintToChatAll("[{blue}你的表现{default}] %i分 (生存%is / 溜克%i分)", PlayersData[i].roundscore, PlayersData[i].alivetime, PlayersData[i].close_tank_time);
+			}
+		}
+		
+
+}
+
+public Action Timer_HuntScoreMain(Handle timer){
+	// 确认模式
+	if (GetPHRoundState() == 3){
+		// 输出stat
+		CreateTimer(3.5, Timer_HuntScorePrint)
 		return Plugin_Stop;
 	}
 	else if(GetPHRoundState() != 2) return Plugin_Stop;
