@@ -4,8 +4,6 @@ void TankMenu(int client)
 	menu.SetTitle("躲猫猫 - Tank面板");
 	menu.AddItem("0", "- 随机传送至一名生还附近 -");
 	menu.AddItem("1", "- 探测1500码内的生还者 -");
-	menu.AddItem("2", "-    变身为持枪特感    -");
-	menu.AddItem("2", "-    切换至拳砖模式    -");
 	menu.ExitBackButton = true;
 	menu.Display(client, MENU_TIME_FOREVER);
 }
@@ -35,10 +33,6 @@ int TankMenuHandler(Menu menu, MenuAction action, int iClient, int param2)
 					RamdomTeleport(iClient);
 				case 1:
 					SurvivorDetect(iClient, 1500.0);
-				case 2:
-					SwitchGunMode(iClient);
-				case 3:
-					SwitchPunchMode(iClient);
 			}
 		}
 	}
@@ -52,6 +46,10 @@ void GetSurvivorsToArray(ArrayList al)
 	{
 		if (IsClientInGame(i) && GetClientTeam(i) == 2 && IsPlayerAlive(i))
 		{
+			if (g_iDetectProtectCD[i] > 0)
+			{
+				continue;
+			}
 			if (!g_bLockCamera[i])
 			{
 				al.Push(i);
@@ -89,7 +87,7 @@ void RamdomTeleport(int client)
 	{
 		CPrintToChat(client, "{green}传送完成。", index);
 		TeleportEntity(client, tppos, NULL_VECTOR, NULL_VECTOR);
-		g_iSkillCD[client] = 20;
+		g_iSkillCD[client] = g_hTankTPCD.IntValue;
 		CreateTimer(1.0, Timer_TankSkillCD, client, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
 	}
 	delete al;
@@ -101,11 +99,6 @@ void SurvivorDetect(int client, float targetdistance)
 	if (g_iSkillCD[client] > 0)
 	{
 		CPrintToChat(client, "{green}技能冷却中, 请在{blue} %d {green}秒后再使用技能。", g_iSkillCD[client]);
-		return;
-	}
-	if (g_iTankType[client] != 0)
-	{
-		CPrintToChat(client, "{green}你的当前形态不允许使用探测技能。");
 		return;
 	}
 	ArrayList al = new ArrayList();
@@ -132,14 +125,28 @@ void SurvivorDetect(int client, float targetdistance)
 		GetEntPropVector(index, Prop_Data, "m_vecAbsOrigin", survivorPos);
 		GetEntPropVector(client, Prop_Data, "m_vecAbsOrigin", tankPos);
 		float distance = GetVectorDistance(survivorPos, tankPos);
-		if (distance < targetdistance)
+		if (distance < targetdistance && g_iDetectProtectCD[player] <= 0)
 		{
+			/*
 			DataPack dp = new DataPack();
 			dp.WriteCell(client);
 			dp.WriteCell(player);
-			dp.WriteFloat(GetGameTime() + 10.0);
+			dp.WriteFloat(GetGameTime() + g_hTankDetectcount.IntValue + 1.0);
 			CreateTimer(1.0, Sustain_DetectSurvivor, dp, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
-			CPrintToChat(player, "{green}[!]你正在被{red} %N {green}探测", client);
+			*/
+			if (!g_bLockCamera[player])
+			{
+				CPrintToChat(client, "{green}探测到目标{blue} %N {green}距离你{blue} %d {green}码。", player, RoundFloat(distance));
+			}
+			else
+			{
+				CPrintToChat(client, "{green}探测到目标{blue} %N {green}留下的实体距离你{blue} %d {green}码。", player, RoundFloat(distance));
+			}			
+			CPrintToChat(player, "{green}[!]你已被{red} %N {green}探测, 启动 %d 秒的探测保护。", client, g_hDetectProtectCD.IntValue);
+			CPrintToChat(client, "{green}[!]你已探测到{blue} %N {green}, 其已启动 %d 秒的探测保护。", player, g_hDetectProtectCD.IntValue);
+			//这条函数在生还的面板里。
+			g_iDetectProtectCD[player] = g_hDetectProtectCD.IntValue;
+			CreateTimer(1.0, Timer_ProtectCD, player, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
 			hasdetected = true;
 			break;
 		}
@@ -148,7 +155,7 @@ void SurvivorDetect(int client, float targetdistance)
 	{
 		CPrintToChat(client, "{green}没有找到生还, 请前往其他区域探测。");
 	}
-	g_iSkillCD[client] = 30;
+	g_iSkillCD[client] = g_hTankDetectCD.IntValue;
 	CreateTimer(1.0, Timer_TankSkillCD, client, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
 	delete al;
 	return;
@@ -164,55 +171,17 @@ Action Timer_TankSkillCD(Handle timer, int client)
 	return Plugin_Stop;
 }
 
-void SwitchGunMode(int client)
+void GiveGun(int client)
 {
-	if (GetClientTeam(client) != 3 || g_iTankType[client] == 1)
-	{
-		return;
-	}
-	if (g_iSkillCD[client] > 0)
-	{
-		CPrintToChat(client, "{green}技能冷却中, 请在{blue} %d {green}秒后再使用技能。", g_iSkillCD[client]);
-		return;
-	}
-	int oldW = GetPlayerWeaponSlot(client, 0);
-	int newW = CreateEntityByName("weapon_smg_silenced");
+	int newW = CreateEntityByName("weapon_smg");
 	DispatchSpawn(newW);
-	if (oldW != -1 && newW != -1)
+	if (newW != -1)
 	{
-		RemovePlayerItem(client, oldW);
 		EquipPlayerWeapon(client, newW);
-		g_iTankAbility[client] = GetEntPropEnt(client, Prop_Send, "m_customAbility");
 		SetEntPropEnt(client, Prop_Send, "m_customAbility", -1);
-		PrecacheModel("models/survivors/tank_namvet.mdl");
+		PrecacheModel("models/survivors/tank_namvet.mdl", true);
 		SetEntityModel(client, "models/survivors/tank_namvet.mdl");
 		CheatCommand(client, "give ammo");
-		g_iTankType[client] = 1;
-		g_iSkillCD[client]	= 1;
-		CreateTimer(1.0, Timer_TankSkillCD, client, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
-	}
-}
-
-void SwitchPunchMode(int client)
-{
-	if (GetClientTeam(client) != 3 || g_iTankType[client] == 0)
-	{
-		return;
-	}
-	if (g_iSkillCD[client] > 0)
-	{
-		CPrintToChat(client, "{green}技能冷却中, 请在{blue} %d {green}秒后再使用技能。", g_iSkillCD[client]);
-		return;
-	}
-	int oldW = GetPlayerWeaponSlot(client, 0);
-	if (oldW != -1)
-	{
-		RemovePlayerItem(client, oldW);
-		CheatCommand(client, "give tank_claw");
-		SetEntPropEnt(client, Prop_Send, "m_customAbility", g_iTankAbility[client]);
-		SetEntityModel(client, "models/infected/hulk.mdl");
-		g_iTankType[client] = 0;
-		g_iSkillCD[client]	= 1;
 		CreateTimer(1.0, Timer_TankSkillCD, client, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
 	}
 }
@@ -224,7 +193,7 @@ Action Sustain_DetectSurvivor(Handle timer, DataPack dp)
 	int	  target = dp.ReadCell();
 	float time	 = dp.ReadFloat() - GetGameTime();
 	int	  entity;
-	if (!IsPlayerAlive(target))
+	if (!IsClientInGame(target) || !IsClientInGame(tank) || !IsPlayerAlive(target))
 	{
 		return Plugin_Stop;
 	}
