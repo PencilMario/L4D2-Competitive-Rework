@@ -72,7 +72,7 @@ public Action Timer_HuntScorePrint(Handle timer){
 				hidemvp = i;
 				hidemvpmax = PlayersData[i].alivetime;
 			}
-			else if(PlayersData[i].alivetime < min && PlayersData[i].alivetime > 0)
+			if(PlayersData[i].alivetime < min && PlayersData[i].alivetime > 0)
 			{
 				minmvp = i;
 				min = PlayersData[i].alivetime;
@@ -89,18 +89,18 @@ public Action Timer_HuntScorePrint(Handle timer){
 		CPrintToChatAll("[{blue}躲猫猫速通{default}] {green}%N {blue}(%i秒)", minmvp, min);
 		for (int i = 1; i <= MaxClients; i++){
 			if (IsClientInGame(i) && GetClientTeam(i)==L4D2Team_Survivor){
-				CPrintToChatAll("[{blue}你的表现{default}] %i分 (生存%is / 溜克%i分)", PlayersData[i].roundscore, PlayersData[i].alivetime, PlayersData[i].close_tank_time);
+				CPrintToChat(i, "[{blue}你的表现{default}] {blue}%i{default}分 (生存{green}%i{default}s / 溜克{green}%i{default}分)", PlayersData[i].roundscore, PlayersData[i].alivetime, PlayersData[i].close_tank_time);
 			}
 		}
 		
-
+	return Plugin_Stop;
 }
 
 public Action Timer_HuntScoreMain(Handle timer){
 	// 确认模式
 	if (GetPHRoundState() == 3){
 		// 输出stat
-		CreateTimer(3.5, Timer_HuntScorePrint)
+		CreateTimer(3.5, Timer_HuntScorePrint);
 		return Plugin_Stop;
 	}
 	else if(GetPHRoundState() != 2) return Plugin_Stop;
