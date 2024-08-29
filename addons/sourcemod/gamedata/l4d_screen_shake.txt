@@ -1,0 +1,92 @@
+"Games"
+{
+	"left4dead"
+	{
+		"Offsets"
+		{
+			"CTerrorPlayer::OnFootstep_Offset"
+			{
+				"windows"	"76"
+				"linux"		"150"
+			}
+			"CTerrorPlayer::OnFootstep_Match"
+			{
+				"windows"	"5"
+				"linux"		"5"
+			}
+		}
+
+		"Addresses"
+		{
+			"CTerrorPlayer::OnFootstep"
+			{
+				"windows"
+				{
+					"signature"	"CTerrorPlayer::OnFootstep"
+				}
+				"linux"
+				{
+					"signature"	"CTerrorPlayer::OnFootstep"
+				}
+			}
+		}
+
+		"Signatures"
+		{
+			/* CTerrorPlayer::OnFootstep(CTerrorPlayer *this, const Vector *, bool, bool, bool, bool) */
+			"CTerrorPlayer::OnFootstep"
+			{
+				"library"		"server"
+				"linux"			"@_ZN13CTerrorPlayer10OnFootstepERK6Vectorbbbb"
+				"windows"		"\x83\x2A\x2A\xA1\x2A\x2A\x2A\x2A\xD9\x2A\x2A\x53\x33\x2A\xD9"
+				/* 83 ? ? A1 ? ? ? ? D9 ? ? 53 33 ? D9 */
+				/* Search "Survivor.%s" XRef to VTable, count to target function */
+			}
+		}
+	}
+
+	"left4dead2"
+	{
+		"Offsets"
+		{
+			"CTerrorPlayer::OnFootstep_Offset"
+			{
+				"windows"	"40"
+				"linux"		"125"
+			}
+			"CTerrorPlayer::OnFootstep_Match"
+			{
+				"windows"	"8"
+				"linux"		"8"
+			}
+		}
+
+		"Addresses"
+		{
+			"CTerrorPlayer::OnFootstep"
+			{
+				"windows"
+				{
+					"signature"	"CTerrorPlayer::OnFootstep"
+				}
+				"linux"
+				{
+					"signature"	"CTerrorPlayer::OnFootstep"
+				}
+			}
+		}
+
+		"Signatures"
+		{
+			/* CTerrorPlayer::OnFootstep(CBaseEntity *, int, int, int) */
+			"CTerrorPlayer::OnFootstep"
+			{
+				"library"		"server"
+				"linux"			"@_ZN13CTerrorPlayer10OnFootstepERK6Vectorbb"
+				"windows"		"\x55\x8B\x2A\x83\x2A\x2A\x53\x56\x8B\x2A\xE8\x2A\x2A\x2A\x2A\x33\x2A\x83\x2A\x2A\x0F\x85"
+				/* 55 8B ? 83 ? ? 53 56 8B ? E8 ? ? ? ? 33 ? 83 ? ? 0F 85 */
+				/* Search "Survivor.%s" XRef to VTable, count to target function */
+			}
+		}
+	}
+}
