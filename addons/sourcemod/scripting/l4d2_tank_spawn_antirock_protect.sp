@@ -29,7 +29,7 @@ void Event_TankSpawn(Event event, const char[] name, bool dontBroadcast)
 
 // 使用l4d_tank_pass
 public void TP_OnTankPass(int old_tank, int new_tank){
-	g_fSpawnTime[old_tank] = -1;
+	g_fSpawnTime[old_tank] = 0.0;
 	g_fSpawnTime[new_tank] = GetGameTime();
 }
 
