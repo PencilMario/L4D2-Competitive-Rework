@@ -20,7 +20,6 @@
 #include "prophunt_single\UI.sp"
 
 #include "NepKeyValues.sp"
-#include "simplevote.sp"
 #define PropsFile "data/prophunt_props.txt"
 
 KeyValues propinfos;
@@ -31,7 +30,7 @@ public Plugin myinfo =
 	name		= "L4D2 Prop Hunt",
 	author		= "Nepkey",
 	description = "躲猫猫玩法 - bug反馈请私信b站",
-	version		= "1.03-release",
+	version		= "1.01-release",
 	url			= "null"
 };
 
@@ -44,35 +43,23 @@ public void OnPluginStart()
 
 	RegConsoleCmd("sm_prop", CMD_Prop);
 	RegConsoleCmd("sm_jg", CMD_JG);
-	RegConsoleCmd("sm_v28", CMD_VoteMode);
 
 	g_hNavList = new ArrayList();
 	for (int i = 0; i <= MAXPLAYERS; i++)
 	{
-		g_hFakeProps[i]	 = new ArrayList();
+		g_hFakeProps[i] = new ArrayList();
 		g_hSelectList[i] = new ArrayList();
 	}
-	g_hHideTime		   = CreateConVar("l4d2_prophunt_hidetime", "90", "躲藏阶段持续时间");
-	g_hSeekTime		   = CreateConVar("l4d2_prophunt_seektime", "440", "寻找阶段持续时间");
-	g_hRandomTime	   = CreateConVar("l4d2_prophunt_randomtime", "140", "寻找阶段剩余多少秒时随机二变, 设置为0则禁用");
-	g_hBasicDmg		   = CreateConVar("l4d2_prophunt_tankdmg", "25", "克的基础伤害");
-	g_hGunDmg		   = CreateConVar("l4d2_prophunt_gundmg", "7", "持枪特感的基础伤害");
-	g_hFlashCount	   = CreateConVar("l4d2_prophunt_flashcount", "3", "生还每回合闪光弹的数量");
-	g_hVomitjarCount   = CreateConVar("l4d2_prophunt_vomitjarcount", "3", "生还每回合胆汁的数量");
-	g_hTankDetectCD	   = CreateConVar("l4d2_prophunt_detectcd", "30", "克探测技能的CD");
-	g_hTankDetectcount = CreateConVar("l4d2_prophunt_detectcount", "5", "克一次探测报告多少次位置");
-	g_hTankTPCD		   = CreateConVar("l4d2_prophunt_tanktpcd", "20", "克传送技能的CD");
-	g_hSurvivorTPCD	   = CreateConVar("l4d2_prophunt_survivortpcd", "120", "生还飞雷神技能的CD");
-	g_hFakePropCount   = CreateConVar("l4d2_prophunt_fakepropcount", "3", "生还能放的假身数量");
-	g_hPropDownCount   = CreateConVar("l4d2_prophunt_loadpropcount", "3", "生还刷新模型选单列表的次数");
-	g_hDetectProtectCD = CreateConVar("l4d2_prophunt_detectdedprotect", "60", "生还被探测的保护时间");
-	g_hAllowInWater	   = CreateConVar("l4d2_prophunt_allowinwater", "0", "是否允许生还在水里锁定视角");
-	g_hGlowInWater	   = CreateConVar("l4d2_prophunt_glowinwater", "1", "水里的未锁定视角的生还是否会被克看到其紫色光圈");
-	g_hAutoSetConvar   = CreateConVar("l4d2_prophunt_autocvar", "1", "插件是否自行更改cvar");
-	g_hAutoJG		   = CreateConVar("l4d2_prophunt_autojg", "1", "插件是否在下一章节自动将旁观扔进队伍里");
-	g_hSurvivorLimit   = CreateConVar("l4d2_prophunt_survivorlimit", "14", "允许的最大生还数量");
-	g_hTankLimit	   = CreateConVar("l4d2_prophunt_tanklimit", "14", "允许的最大特感数量");
-	g_hDifferenceMax   = CreateConVar("l4d2_prophunt_teamdiffmax", "2", "允许队伍相差的人数, 达到此数值时阻止玩家进入人数较多的队伍(请勿设置为0)");
+	g_hHideTime		 = CreateConVar("l4d2_prophunt_hidetime", "90", "躲藏阶段持续时间");
+	g_hSeekTime		 = CreateConVar("l4d2_prophunt_seektime", "420", "寻找阶段持续时间");
+	g_hRandomTime	 = CreateConVar("l4d2_prophunt_randomtime", "120", "寻找阶段剩余多少秒时随机二变, 设置为0则禁用");
+	g_hBasicDmg		 = CreateConVar("l4d2_prophunt_tankdmg", "25", "克的基础伤害");
+	g_hGunDmg		 = CreateConVar("l4d2_prophunt_gundmg", "7", "持枪特感的基础伤害");
+	g_hAutoSetConvar = CreateConVar("l4d2_prophunt_autocvar", "1", "插件是否自行更改cvar");
+	
+	// debug
+	// RegAdminCmd("sm_dir", cmd_dir, ADMFLAG_KICK);
+	// RegAdminCmd("sm_dir2", cmd_dir2, ADMFLAG_KICK);
 }
 
 public void OnPluginEnd()
@@ -119,9 +106,7 @@ public void OnMapStart()
 	AddFileToDownloadsTable("models/survivors/tank_namvet.phy");
 	AddFileToDownloadsTable("models/survivors/tank_namvet.vvd");
 	AddFileToDownloadsTable("models/survivors/tank_namvet.dx90.vtx");
-	PrecacheModel("models/survivors/tank_namvet.mdl", true);
 
-	g_bMultiMode ? ServerCommand("exec prophunt/prophun_14hunman.cfg") : ServerCommand("exec prophunt/prophun_28hunman.cfg");
 	g_iRoundState = 0;
 	Call_StartForward(g_hOnReadyStage_Post);
 	Call_Finish();
@@ -133,15 +118,14 @@ public void OnReadyStage_Post()
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		g_bLockCamera[i]	  = false;
-		g_iPropDownCount[i]	  = g_hPropDownCount.IntValue + 1;
+		g_iPropDownCount[i]	  = 4;
 		g_iPropNum[i]		  = -1;
 		g_iSkillCD[i]		  = 0;
-		g_iDetectProtectCD[i] = 0;
-		g_iVomitjar[i]		  = g_hVomitjarCount.IntValue;
-		g_iPipeBomb[i]		  = g_hFlashCount.IntValue;
-		g_iCreateFakeProps[i] = g_hFakePropCount.IntValue;
-		g_iOwnProp[i]		  = -1;
-		g_iGlowEntity[i]	  = -1;
+		g_iVomitjar[i]		  = 3;
+		g_iPipeBomb[i]		  = 3;
+		g_iTankType[i]		  = 0;
+		g_iTankAbility[i]	  = 0;
+		g_iCreateFakeProps[i] = 3;
 		g_hFakeProps[i].Clear();
 		g_hSelectList[i].Clear();
 	}
@@ -219,13 +203,7 @@ Action Timer_SeekingTimeCountDown(Handle timer)
 	}
 	if (g_hRandomTime.IntValue != 0 && g_iSeekTime == g_hRandomTime.IntValue && g_iRoundState == 2)
 	{
-		if (g_hInterrupt_UI != INVALID_HANDLE)
-		{
-			KillTimer(g_hInterrupt_UI);
-			g_hInterrupt_UI = INVALID_HANDLE;
-		}
-		SetSIAngleLock(SetSI_Lock);
-		g_hInterrupt_UI = CreateTimer(1.0, Timer_Freeze_UI, GetGameTime() + 20.0, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
+		delete g_hInterrupt_UI;
 		RandomModelAll();
 	}
 	if (g_iSeekTime < 1)
@@ -239,7 +217,6 @@ Action Timer_SeekingTimeCountDown(Handle timer)
 	g_iSeekTime--;
 	return Plugin_Continue;
 }
-
 Action Timer_KillAll(Handle Timer)
 {
 	if (g_iRoundState != 3)
@@ -287,10 +264,6 @@ Action CMD_JG(int client, int args)
 		CPrintToChat(client, "{olive}此功能只允许在服务器人数大于 {blue}8 {olive}时使用。");
 		return Plugin_Handled;
 	}
-	if (GetClientTeam(client) != 1)
-	{
-		ChangeClientTeam(client, 1);
-	}
 	Menu menu = new Menu(JGMenuHandler);
 	menu.SetTitle("加入到哪边?");
 	menu.AddItem("0", "- 生还者队伍 -");
@@ -314,48 +287,26 @@ int JGMenuHandler(Menu menu, MenuAction action, int iClient, int param2)
 			{
 				case 0:
 				{
-					if (PlayerStatistics(2, false) > g_hSurvivorLimit.IntValue)
+					ChangeClientTeam(iClient, 2);
+					if (g_iRoundState == 0 || g_iRoundState == 1)
 					{
-						CPrintToChat(iClient, "{green}目标队伍人数已达上限, 请加入特感队伍。");
-					}
-					else if (PlayerStatistics(2, false) >= PlayerStatistics(3, false) + g_hDifferenceMax.IntValue)
-					{
-						CPrintToChat(iClient, "{green}双方人数差达到 %d, 请加入特感队伍。", g_hDifferenceMax.IntValue);
-					}
-					else
-					{
-						ChangeClientTeam(iClient, 2);
-						if (g_iRoundState == 0 || g_iRoundState == 1)
-						{
-							L4D_RespawnPlayer(iClient);
-						}
+						L4D_RespawnPlayer(iClient);
 					}
 				}
 				case 1:
 				{
-					if (PlayerStatistics(3, false) > g_hTankLimit.IntValue)
+					ChangeClientTeam(iClient, 3);
+					if (g_iRoundState == 1)
 					{
-						CPrintToChat(iClient, "{green}目标队伍人数已达上限, 请加入生还队伍。");
-					}
-					else if (PlayerStatistics(3, false) >= PlayerStatistics(2, false) + g_hDifferenceMax.IntValue)
-					{
-						CPrintToChat(iClient, "{green}双方人数差达到 %d, 请加入生还队伍。", g_hDifferenceMax.IntValue);
-					}
-					else
-					{
-						ChangeClientTeam(iClient, 3);
-						if (g_iRoundState == 1)
-						{
-							float pos[3];
-							L4D_GetRandomPZSpawnPosition(iClient, 8, 100, pos);
-							TeleportEntity(iClient, pos);
-							CheatCommand(iClient, "z_spawn_old tank");
-							float eyeAngles[3];
-							GetClientEyeAngles(iClient, eyeAngles);
-							eyeAngles[0] = 89.00;
-							TeleportEntity(iClient, NULL_VECTOR, eyeAngles, NULL_VECTOR);
-							SetEntityFlags(iClient, FL_CLIENT | FL_FROZEN);
-						}
+						float pos[3];
+						L4D_GetRandomPZSpawnPosition(iClient, 8, 100, pos);
+						TeleportEntity(iClient, pos);
+						CheatCommand(iClient, "z_spawn_old tank");
+						float eyeAngles[3];
+						GetClientEyeAngles(iClient, eyeAngles);
+						eyeAngles[0] = 89.00;
+						TeleportEntity(iClient, NULL_VECTOR, eyeAngles, NULL_VECTOR);
+						SetEntityFlags(iClient, FL_CLIENT | FL_FROZEN);
 					}
 				}
 			}
@@ -364,30 +315,58 @@ int JGMenuHandler(Menu menu, MenuAction action, int iClient, int param2)
 	return 0;
 }
 
-Action CMD_VoteMode(int client, int args)
+/*
+Action cmd_dir(int client, int args)
 {
-	if (!g_bMultiMode)
-	{
-		s_CallVote(client, "将游戏数据设置为28人规格?", VoteMode);
-	}
-	else
-	{
-		s_CallVote(client, "将游戏数据设置为14人规格?", VoteMode);
-	}
+	//CreateTimer(2.5, Timer_Repeats, client, TIMER_REPEAT);
 }
-void VoteMode(Handle vote, int num_votes, int num_clients, const int[][] client_info, int num_items, const int[][] item_info)
+
+Action cmd_dir2(int client, int args)
 {
-	if (IsVotePass(vote, num_votes, num_clients, client_info, num_items, item_info))
+	ModelInfo MI;
+	PrintToChatAll("有效模型数量：%d", g_hModelList.Length);
+
+	for (int i = 0; i < g_hModelList.Length; i++)
 	{
-		g_bMultiMode ? ServerCommand("exec prophunt_14hunman.cfg") : ServerCommand("exec prophunt_28hunman.cfg");
-		g_bMultiMode = !g_bMultiMode;
-		if(g_iRoundState == 0)
+		g_hModelList.GetArray(i, MI);
+		PrintToServer("模型序号：%d", MI.modelnum);
+		PrintToServer("模型路径：%s", MI.model);
+		PrintToServer("模型名称：%s", MI.sname);
+		if (MI.allowtp) PrintToServer("允许传送");
+		if (MI.allowtp) PrintToServer("允许假身");
+		PrintToServer("伤害修正：%.2f", MI.dmgrevise);
+		PrintToServer("z轴修正：%.2f", MI.zaxisup);
+		PrintToServer("-----模型输出信息输出结束-----");
+	}
+
+}
+
+Action Timer_Repeats(Handle timer, int client)
+{
+	int args = 0;
+	if (args < 1)
+	{
+		if (g_iPropNum[client] < g_hModelList.Length)
 		{
-			CPrintToChatAll("{green}已切换到对应规格的设置。");
+			g_iPropNum[client]++;
 		}
 		else
 		{
-			CPrintToChatAll("{green}已切换到对应规格的设置, 下回合生效。");
+			g_iPropNum[client] = g_hModelList.Length - 1;
+			return Plugin_Stop;
 		}
 	}
+	char modelpath[128];
+	char modelname[64];
+	GetPropInfo(client, 1, modelpath, sizeof(modelpath));
+	GetPropInfo(client, 2, modelname, sizeof(modelname));
+	PrecacheModel(modelpath, true);
+	SetEntPropFloat(client, Prop_Send, "m_TimeForceExternalView", 99999.4);
+	SetEntityModel(client, modelpath);
+
+	PrintToChat(client, "模型序号:%d,模型路径:%s,模型名称:%s", GetPropInfo(client, 0, "", 0), modelpath, modelname);
+	PrintToChat(client, "%s,%s", GetPropInfo(client, 4, "", 0) ? "允许传送" : "不允许传送", GetPropInfo(client, 5, "", 0) ? "允许假身" : "不允许假身");
+	PrintToChat(client, "伤害修正:%.2f,z轴修正:%.2f", GetPropInfo(client, 5, "", 0), GetPropInfo(client, 6, "", 0));
+	return Plugin_Continue;
 }
+*/

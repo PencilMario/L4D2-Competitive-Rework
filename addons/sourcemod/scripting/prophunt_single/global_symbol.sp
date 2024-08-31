@@ -1,23 +1,23 @@
 ///////////////
 //用于生还菜单//
 ///////////////
-bool	  g_bLockCamera[MAXPLAYERS + 1];				  //生还者是否锁定视角
-bool	  g_bFlashing[MAXPLAYERS + 1];					  //克是否正处于吃闪状态。
-int		  g_iOwnProp[MAXPLAYERS + 1];					  //生还者锁定视角后其对应的实体id。
-int		  g_iPropNum[MAXPLAYERS + 1] = { -1, ... };		  //生还者选择的模型序号
-int		  g_iPropDownCount[MAXPLAYERS + 1];				  //生还者重选模型的次数。
-int		  g_iCreateFakeProps[MAXPLAYERS + 1];			  //生还者创造假身的次数
-int		  g_iPipeBomb[MAXPLAYERS + 1];					  //生还者发射闪光弹的次数
-int		  g_iVomitjar[MAXPLAYERS + 1];					  //生还者发射胆汁的次数
-int		  g_iGlowEntity[MAXPLAYERS + 1] = { -1, ... };	  //发光实体
-int		  g_iDetectProtectCD[MAXPLAYERS + 1];			  // 探测保护时长
-float	  g_fLockOrigin[MAXPLAYERS + 1][3];				  //生还者锁定视角前的坐标，用于传送其生成的实体。
-float	  g_fLockAngle[MAXPLAYERS + 1][3];				  //生还者锁定视角前的角度，用于传送其生成的实体。
-ArrayList g_hFakeProps[MAXPLAYERS + 1];					  //储存假身的集合
-ArrayList g_hSelectList[MAXPLAYERS + 1];				  //储存生还的选择菜单
+bool	  g_bLockCamera[MAXPLAYERS + 1];			   //生还者是否锁定视角
+bool	  g_bFlashing[MAXPLAYERS + 1];				   //克是否正处于吃闪状态。
+int		  g_iOwnProp[MAXPLAYERS + 1];				   //生还者锁定视角后其对应的实体id。
+int		  g_iPropNum[MAXPLAYERS + 1] = { -1, ... };	   //生还者选择的模型序号
+int		  g_iPropDownCount[MAXPLAYERS + 1];			   //生还者重选模型的次数。
+int		  g_iCreateFakeProps[MAXPLAYERS + 1];		   //生还者创造假身的次数
+int		  g_iPipeBomb[MAXPLAYERS + 1];				   //生还者发射闪光弹的次数
+int		  g_iVomitjar[MAXPLAYERS + 1];				   //生还者发射胆汁的次数
+float	  g_fLockOrigin[MAXPLAYERS + 1][3];			   //生还者锁定视角前的坐标，用于传送其生成的实体。
+float	  g_fLockAngle[MAXPLAYERS + 1][3];			   //生还者锁定视角前的角度，用于传送其生成的实体。
+ArrayList g_hFakeProps[MAXPLAYERS + 1];				   //储存假身的集合
+ArrayList g_hSelectList[MAXPLAYERS + 1];			   //储存生还的选择菜单
 ///////////////
 //用于坦克菜单//
 ///////////////
+int		  g_iTankType[MAXPLAYERS + 1];		 // Tank类型
+int		  g_iTankAbility[MAXPLAYERS + 1];	 //拳头能力的实体id
 ArrayList g_hNavList;						 //储存用于传送的Navs
 ///////////////
 //生还坦克共用//
@@ -26,31 +26,15 @@ int		  g_iSkillCD[MAXPLAYERS + 1];	 //客户端使用技能的cd。
 ///////////////
 //用于回合设置//
 ///////////////
-int		  g_iHideTime;		   //躲藏阶段持续时间
-int		  g_iSeekTime;		   //寻找阶段持续时间
-int		  g_iWinnerTeam;	   //谁赢了
-int		  g_iRoundState;	   //游戏状态。此变量不应该直接使用，而是用SetRoundState()和GetRoundState()来改变和获取回合状态。
-bool	  g_bMultiMode;		   //是否为多人模式
-ConVar	  g_hHideTime;		   //躲藏阶段持续时间(ConVar)。
-ConVar	  g_hSeekTime;		   //寻找阶段持续时间(ConVar)。
-ConVar	  g_hRandomTime;	   //寻找阶段剩余多少秒时随机二变, 设置为0则禁用
-ConVar	  g_hBasicDmg;		   //克的基础伤害
-ConVar	  g_hGunDmg;		   //持枪特感的基础伤害
-ConVar	  g_hAutoJG;		   //换图时是否自动将旁观扔进队伍里
-ConVar	  g_hSurvivorLimit;	   //生还队伍的人数上限
-ConVar	  g_hTankLimit;		   //特感队伍的人数上限
-ConVar	  g_hDifferenceMax;	   //允许队伍相差人数最大为多少
-ConVar	  g_hFlashCount;
-ConVar	  g_hVomitjarCount;
-ConVar	  g_hTankDetectCD;
-ConVar	  g_hTankDetectcount;
-ConVar	  g_hTankTPCD;
-ConVar	  g_hDetectProtectCD;
-ConVar	  g_hAllowInWater;
-ConVar	  g_hGlowInWater;
-ConVar	  g_hSurvivorTPCD;
-ConVar	  g_hFakePropCount;
-ConVar	  g_hPropDownCount;
+int		  g_iHideTime;		//躲藏阶段持续时间
+int		  g_iSeekTime;		//寻找阶段持续时间
+int		  g_iWinnerTeam;	//谁赢了
+int		  g_iRoundState;	//游戏状态。此变量不应该直接使用，而是用SetRoundState()和GetRoundState()来改变和获取回合状态。
+ConVar	  g_hHideTime;		//躲藏阶段持续时间(ConVar)。
+ConVar	  g_hSeekTime;		//寻找阶段持续时间(ConVar)。
+ConVar	  g_hRandomTime;	//寻找阶段剩余多少秒时随机二变, 设置为0则禁用
+ConVar	  g_hBasicDmg;		//克的基础伤害
+ConVar	  g_hGunDmg;		//持枪特感的基础伤害
 ///////////////
 //用于Helper //
 ///////////////
@@ -65,8 +49,7 @@ enum PHPropType
 {
 	Prop_Own = 0,	 //真身
 	Prop_Fake,		 //假身
-	Prop_Other,		 //地图上的其他物件
-	Prop_Glow		 //发光体
+	Prop_Other		 //地图上的其他物件
 };
 enum
 {

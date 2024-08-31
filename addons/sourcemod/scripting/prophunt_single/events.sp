@@ -3,7 +3,7 @@ void HookTheEvents()
 	HookEvent("round_start", Event_RoundStart);
 	HookEvent("player_left_start_area", Event_PlayerLeftStartArea);
 	HookEvent("player_death", Event_PlayerDeath);
-	HookEvent("player_team", Event_ChangeTeam, EventHookMode_Pre);
+	HookEvent("player_team", Event_ChangeTeam);
 	HookEvent("weapon_fire", Event_WeaponFire);
 	HookEvent("player_bot_replace", OnTankGoneAi);
 	HookEvent("round_end", Event_RoundEnd);
@@ -35,11 +35,9 @@ Action Event_PlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 
 public void Event_WeaponFire(Handle event, const char[] name, bool dontBroadcast)
 {
-	int	 userId = GetEventInt(event, "userid");
-	int	 user	= GetClientOfUserId(userId);
-	char weaponname[128];
-	GetEventString(event, "weapon", weaponname, sizeof(weaponname));
-	if (GetClientTeam(user) == 3 && StrContains(weaponname, "smg") != -1)
+	int userId = GetEventInt(event, "userid");
+	int user   = GetClientOfUserId(userId);
+	if (GetClientTeam(user) == 3 && g_iTankType[user] == 1)
 	{
 		SDKHooks_TakeDamage(user, user, user, 30.0);
 	}
@@ -50,35 +48,7 @@ public void Event_ChangeTeam(Handle event, const char[] name, bool dontBroadcast
 	int userId			= GetEventInt(event, "userid");
 	int user			= GetClientOfUserId(userId);
 	g_bLockCamera[user] = false;
-	if (GetEventBool(event, "isbot") && PlayerStatistics(2, false) >= 4)
-	{
-		PrintToServer("生还人数达到4人, 踢出换队产生的该bot");
-		KickClient(user, "u r a bot");
-	}
-	if (IsFakeClient(user))
-	{
-		return;
-	}
-	if (g_hFakeProps[user].Length > 0)
-	{
-		for (int i = 0; i < g_hFakeProps[user].Length; i++)
-		{
-			int index = g_hFakeProps[user].Get(i);
-			if (IsValidEdict(index))
-			{
-				AcceptEntityInput(index, "Kill");
-			}
-		}
-	}
-	if (IsValidEdict(g_iOwnProp[user]))
-	{
-		AcceptEntityInput(g_iOwnProp[user], "Kill");
-	}
-	if (IsValidEdict(g_iGlowEntity[user]))
-	{
-		AcceptEntityInput(g_iGlowEntity[user], "Kill");
-	}
-	// CreateTimer(0.2, Delay_KillAIs, _, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(0.2, Delay_KillAIs, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public void Event_RoundEnd(Handle event, const char[] name, bool dontBroadcast)

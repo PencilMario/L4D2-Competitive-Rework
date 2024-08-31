@@ -1,5 +1,5 @@
 //用于插入二变倒计时的ui
-Handle g_hInterrupt_UI = INVALID_HANDLE;
+Handle g_hInterrupt_UI;
 //用于准备阶段在聊天内显示提示，而避免与readyup冲突
 Handle g_hTipsInChat;
 
@@ -7,8 +7,8 @@ Action Timer_Interrupt_UI(Handle timer)
 {
 	if (g_iRoundState != 2)
 	{
-		KillTimer(g_hInterrupt_UI);
-		g_hInterrupt_UI = INVALID_HANDLE;
+		delete g_hInterrupt_UI;
+		return Plugin_Stop;
 	}
 	char info[100];
 	Format(info, 100, "二变倒计时：%d 秒", g_iSeekTime - g_hRandomTime.IntValue);
@@ -16,28 +16,9 @@ Action Timer_Interrupt_UI(Handle timer)
 	return Plugin_Continue;
 }
 
-Action Timer_Freeze_UI(Handle timer, float unfreezetime)
-{
-	if (g_iRoundState != 2)
-	{
-		KillTimer(g_hInterrupt_UI);
-		g_hInterrupt_UI = INVALID_HANDLE;
-	}
-	char info[100];
-	Format(info, 100, "特感将在%d秒后恢复行动", RoundFloat(unfreezetime - GetGameTime()));
-	PrintHintTextToAll(info);
-	if (unfreezetime <= GetGameTime())
-	{
-		SetSIAngleLock(SetSI_Unlock);
-		KillTimer(g_hInterrupt_UI);
-		g_hInterrupt_UI = INVALID_HANDLE;
-	}
-	return Plugin_Continue;
-}
-
 Action Timer_Repeat_UI(Handle timer)
 {
-	if (g_hInterrupt_UI != INVALID_HANDLE)
+	if (g_hInterrupt_UI != null)
 	{
 		return Plugin_Continue;
 	}
@@ -75,7 +56,6 @@ Action Timer_TipsInChat(Handle timer)
 	{
 		CPrintToChatAll("{green}按下R键或输入!prop可以打开面板。");
 		CPrintToChatAll("{green}服务器大于8人时使用!jg并选择阵营也可加入游戏。");
-		CPrintToChatAll("{green}当前为%s人配置, 可用!v28投票切换。", g_bMultiMode ? "28" : "14");
 	}
 	return Plugin_Continue;
 }

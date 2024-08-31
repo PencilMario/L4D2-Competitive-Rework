@@ -109,10 +109,6 @@ void LockAngle(bool showmenu, int iClient)
 	{
 		CPrintToChat(iClient, "{green}不允许在空中锁定视角。");
 	}
-	else if (IsClientInWater(iClient) && !g_hAllowInWater.BoolValue)
-	{
-		CPrintToChat(iClient, "{green}不允许在水中锁定视角。");
-	}
 	else
 	{
 		LockSelf(iClient);
@@ -144,15 +140,11 @@ void LockSelf(int client)
 		CPrintToChat(client, "{green}已固定模型并修正碰撞箱, 启用自由观看。");
 		SetEntityModel(client, "");
 		g_bLockCamera[client] = true;
-		if (IsValidEntity(g_iGlowEntity[client]))
-		{
-			AcceptEntityInput(g_iGlowEntity[client], "Kill");
-		}
 	}
 	else
 	{
 		char sModel[128];
-		GetPropInfo(client, 1, sModel, sizeof(sModel));
+		GetEntPropString(g_iOwnProp[client], Prop_Data, "m_ModelName", sModel, sizeof(sModel));
 		SetEntityModel(client, sModel);
 		SetEntityMoveType(client, MOVETYPE_WALK);
 		SetEntityRenderMode(client, RENDER_TRANSALPHA);
@@ -182,12 +174,6 @@ void LockSelf(int client)
 				}
 			}
 		}
-
-		if (IsValidEntity(g_iGlowEntity[client]))
-		{
-			AcceptEntityInput(g_iGlowEntity[client], "Kill");
-		}
-		CreatePropGlow(client);
 		CPrintToChat(client, "{green}已恢复自由移动。");
 	}
 }
@@ -391,7 +377,7 @@ int TpToFakePropMenuHandler(Menu menu, MenuAction action, int iClient, int param
 				}
 				PrintHintText(iClient, "传送完成。");
 				SurvivorPropMenu(iClient);
-				g_iSkillCD[iClient] = g_hSurvivorTPCD.IntValue;
+				g_iSkillCD[iClient] = 120;
 				CreateTimer(1.0, Timer_SurvivorSkillCD, iClient, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
 
 				Call_StartForward(g_hOnTPFakeProp_Post);
@@ -479,11 +465,6 @@ int SelectModelMenuHandler(Menu menu, MenuAction action, int iClient, int param1
 				SetEntPropFloat(iClient, Prop_Send, "m_TimeForceExternalView", 99999.4);
 				SetEntityModel(iClient, MI.model);
 				OutPutModelInfo(iClient);
-				if (IsValidEntity(g_iGlowEntity[iClient]))
-				{
-					AcceptEntityInput(g_iGlowEntity[iClient], "Kill");
-				}
-				CreatePropGlow(iClient);
 				g_hSelectList[iClient].Clear();
 				SurvivorPropMenu(iClient);
 			}
@@ -495,11 +476,9 @@ void OutPutModelInfo(int client)
 {
 	ModelInfo MI;
 	g_hModelList.GetArray(g_iPropNum[client], MI);
-	CPrintToChat(client, "{default}你已选择模型:{green} %s {default}伤害修正为:{blue} %.2f", MI.sname, MI.dmgrevise);
+	CPrintToChat(client, "{default}你已选择模型:{green} %s\n{default}该模型的伤害修正倍率为:{blue} %.2f", MI.sname, MI.dmgrevise);
 	CPrintToChat(client, "%s", MI.allowtp ? "{blue}该模型允许飞雷神传送。" : "{red}该模型不能飞雷神传送。");
 	CPrintToChat(client, "%s", MI.allowfake ? "{blue}该模型允许创造假身。" : "{red}该模型不能创造假身。");
-	CPrintToChat(client, "{green}紫色光圈为实时模型角度, 用于快速确定方向\n按下右键可以把摄像机的x轴设置为0(便于模型的其余轴与光圈对齐))");
-	CPrintToChat(client, "%s", g_hGlowInWater.BoolValue ? "{blue}已禁用水中暴露紫圈。" : "{red}若你处于水中, 该紫圈会暴露给1500码内的克。。");
 }
 
 Action Timer_SurvivorSkillCD(Handle timer, int client)
@@ -507,16 +486,6 @@ Action Timer_SurvivorSkillCD(Handle timer, int client)
 	if (g_iSkillCD[client] > 0)
 	{
 		g_iSkillCD[client]--;
-		return Plugin_Continue;
-	}
-	return Plugin_Stop;
-}
-
-Action Timer_ProtectCD(Handle timer, int client)
-{
-	if (g_iDetectProtectCD[client] > 0)
-	{
-		g_iDetectProtectCD[client]--;
 		return Plugin_Continue;
 	}
 	return Plugin_Stop;

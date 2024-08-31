@@ -111,8 +111,6 @@ void SpawnTanks()
 		if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == 3 && IsGhost(i))
 		{
 			CheatCommand(i, "z_spawn_old tank");
-			GiveGun(i);
-			CPrintToChat(i, "{green}回合内可以用1、Q和滚轮切换武器类别。");
 		}
 	}
 }
@@ -256,7 +254,7 @@ void GetAllNavAreas(ArrayList aList)
 	L4D_GetAllNavAreas(aList);
 }
 
-int PlayerStatistics(int teamnum, bool onlyalive)
+int PlayerStatistics(int teamnum, bool onlyisalive)
 {
 	int iCount;
 	for (int i = 1; i <= MaxClients; i++)
@@ -265,7 +263,7 @@ int PlayerStatistics(int teamnum, bool onlyalive)
 		{
 			if (IsClientInGame(i) && !IsFakeClient(i))
 			{
-				if (onlyalive)
+				if (onlyisalive)
 				{
 					if (IsPlayerAlive(i) && GetEntProp(i, Prop_Send, "m_isGhost") != 1)
 					{
@@ -282,7 +280,7 @@ int PlayerStatistics(int teamnum, bool onlyalive)
 		{
 			if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == teamnum)
 			{
-				if (onlyalive)
+				if (onlyisalive)
 				{
 					if (IsPlayerAlive(i) && GetEntProp(i, Prop_Send, "m_isGhost") != 1)
 					{
@@ -306,15 +304,7 @@ Action CreateProp(int entity, PHPropType phtype)
 	float  fOrigin[3];
 	int	   iProp;
 	Action result;
-	if (phtype == Prop_Own || phtype == Prop_Fake)
-	{
-		GetPropInfo(entity, 1, sModel, sizeof(sModel));
-	}
-	else
-	{
-		GetEntPropString(entity, Prop_Data, "m_ModelName", sModel, sizeof(sModel));
-	}
-	PrecacheModel(sModel, true);
+	GetEntPropString(entity, Prop_Data, "m_ModelName", sModel, sizeof(sModel));
 	iProp = CreateEntityByName("prop_dynamic_override");
 
 	if (!IsValidEntity(iProp))
@@ -358,8 +348,8 @@ Action CreateProp(int entity, PHPropType phtype)
 	if (phtype != Prop_Other)
 	{
 		SetEntPropEnt(iProp, Prop_Send, "m_hOwnerEntity", entity);
-		SetEntityFlags(iProp, FL_CLIENT | FL_ATCONTROLS);
 	}
+	SetEntityFlags(iProp, FL_CLIENT | FL_ATCONTROLS);
 	if (phtype == Prop_Other)
 	{
 		TeleportEntity(iProp, fOrigin, fAngles, NULL_VECTOR);
@@ -562,11 +552,6 @@ void RandomModel(int client)
 	SetEntPropFloat(client, Prop_Send, "m_TimeForceExternalView", 99999.4);
 	SetEntityModel(client, sModelPath);
 	OutPutModelInfo(client);
-	if (IsValidEntity(g_iGlowEntity[client]))
-	{
-		AcceptEntityInput(g_iGlowEntity[client], "Kill");
-	}
-	CreatePropGlow(client);
 }
 
 void DeathCheck(int entity)
@@ -577,66 +562,4 @@ void DeathCheck(int entity)
 		SDKUnhook(entity, SDKHook_OnTakeDamage, OnRealPropTakeDamage);
 		AcceptEntityInput(entity, "Kill");
 	}
-}
-
-void CreatePropGlow(int iTarget)
-{
-	int iEntity = CreateEntityByName("prop_dynamic_override");
-	if (iEntity == -1)
-	{
-		return;
-	}
-
-	float vOrigin[3];
-	float vAngles[3];
-	GetEntPropVector(iTarget, Prop_Send, "m_vecOrigin", vOrigin);
-	GetEntPropVector(iTarget, Prop_Data, "m_angRotation", vAngles);
-
-	char sModelName[PLATFORM_MAX_PATH];
-	GetPropInfo(iTarget, 1, sModelName, sizeof(sModelName));
-	PrecacheModel(sModelName, true);
-	SetEntityModel(iEntity, sModelName);
-	DispatchSpawn(iEntity);
-
-	SetEntProp(iEntity, Prop_Send, "m_CollisionGroup", 0);
-	SetEntProp(iEntity, Prop_Send, "m_nSolidType", 0);
-	SetEntProp(iEntity, Prop_Send, "m_nGlowRange", 1500);
-	SetEntProp(iEntity, Prop_Send, "m_nGlowRangeMin", 0);
-	SetEntProp(iEntity, Prop_Send, "m_iGlowType", 2);
-	SetEntProp(iEntity, Prop_Send, "m_glowColorOverride", 8388736);
-	AcceptEntityInput(iEntity, "StartGlowing");
-	SetEntityRenderMode(iEntity, RENDER_NONE);
-	SetEntityRenderColor(iEntity, 0, 0, 0, 0);
-
-	TeleportEntity(iEntity, vOrigin, vAngles, NULL_VECTOR);
-	SetVariantString("!activator");
-	AcceptEntityInput(iEntity, "SetParent", iTarget);
-
-	SetEntPropEnt(iEntity, Prop_Send, "m_hOwnerEntity", iTarget);
-	g_iGlowEntity[iTarget] = iEntity;
-	SDKHook(iEntity, SDKHook_SetTransmit, OnTransmit);
-}
-
-public Action OnTransmit(int iEntity, int iClient)
-{
-	if (!IsValidEdict(iEntity))
-	{
-		SDKUnhook(iEntity, SDKHook_SetTransmit, OnTransmit);
-		return Plugin_Handled;
-	}
-	int iParent = GetEntPropEnt(iEntity, Prop_Send, "m_hOwnerEntity");
-	if (iParent > 0 && GetClientTeam(iParent) == 2)
-	{
-		return Plugin_Continue;
-	}
-	if (iParent > 0 && IsClientInWater(iParent) && GetClientTeam(iClient) == 3 && g_hGlowInWater.BoolValue)
-	{
-		return Plugin_Continue;
-	}
-	return Plugin_Handled;
-}
-
-bool IsClientInWater(int client)
-{
-	return GetEntityFlags(client) & FL_INWATER ? true : false;
 }
