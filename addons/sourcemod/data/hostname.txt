@@ -54,7 +54,7 @@
 	}	
 	"30721"
 	{
-		"hostname"		"HANA 爱你"
+		"hostname"		"[躲猫猫]HANA suki"
 	}
 	"35710"
 	{
