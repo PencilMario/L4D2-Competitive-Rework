@@ -9,7 +9,6 @@ void SurvivorPropMenu(int client)
 	menu.AddItem("4", "-      创造假身     -");
 	menu.AddItem("5", "-   发动飞雷神之术  -");
 	menu.AddItem("6", "-      模型选单     -");
-
 	menu.ExitBackButton = true;
 	menu.Display(client, MENU_TIME_FOREVER);
 }
@@ -35,7 +34,6 @@ int PropMenuHandler(Menu menu, MenuAction action, int iClient, int param2)
 					SwitchPerson(iClient);
 					SurvivorPropMenu(iClient);
 				}
-
 				case 1:
 				{
 					LockAngle(true, iClient);
@@ -109,6 +107,10 @@ void LockAngle(bool showmenu, int iClient)
 	{
 		CPrintToChat(iClient, "{green}不允许在空中锁定视角。");
 	}
+	else if (IsClientInWater(iClient) && !g_hAllowInWater.BoolValue)
+	{
+		CPrintToChat(iClient, "{green}不允许在水中锁定视角。");
+	}
 	else
 	{
 		LockSelf(iClient);
@@ -140,11 +142,16 @@ void LockSelf(int client)
 		CPrintToChat(client, "{green}已固定模型并修正碰撞箱, 启用自由观看。");
 		SetEntityModel(client, "");
 		g_bLockCamera[client] = true;
+		if (IsValidEntity(g_iGlowEntity[client]))
+		{
+			AcceptEntityInput(g_iGlowEntity[client], "Kill");
+		}
+		PropProTect(client);
 	}
 	else
 	{
 		char sModel[128];
-		GetEntPropString(g_iOwnProp[client], Prop_Data, "m_ModelName", sModel, sizeof(sModel));
+		GetPropInfo(client, 1, sModel, sizeof(sModel));
 		SetEntityModel(client, sModel);
 		SetEntityMoveType(client, MOVETYPE_WALK);
 		SetEntityRenderMode(client, RENDER_TRANSALPHA);
@@ -174,6 +181,12 @@ void LockSelf(int client)
 				}
 			}
 		}
+
+		if (IsValidEntity(g_iGlowEntity[client]))
+		{
+			AcceptEntityInput(g_iGlowEntity[client], "Kill");
+		}
+		CreatePropGlow(client);
 		CPrintToChat(client, "{green}已恢复自由移动。");
 	}
 }
@@ -377,7 +390,7 @@ int TpToFakePropMenuHandler(Menu menu, MenuAction action, int iClient, int param
 				}
 				PrintHintText(iClient, "传送完成。");
 				SurvivorPropMenu(iClient);
-				g_iSkillCD[iClient] = 120;
+				g_iSkillCD[iClient] = g_hSurvivorTPCD.IntValue;
 				CreateTimer(1.0, Timer_SurvivorSkillCD, iClient, TIMER_FLAG_NO_MAPCHANGE | TIMER_REPEAT);
 
 				Call_StartForward(g_hOnTPFakeProp_Post);
@@ -465,6 +478,11 @@ int SelectModelMenuHandler(Menu menu, MenuAction action, int iClient, int param1
 				SetEntPropFloat(iClient, Prop_Send, "m_TimeForceExternalView", 99999.4);
 				SetEntityModel(iClient, MI.model);
 				OutPutModelInfo(iClient);
+				if (IsValidEntity(g_iGlowEntity[iClient]))
+				{
+					AcceptEntityInput(g_iGlowEntity[iClient], "Kill");
+				}
+				CreatePropGlow(iClient);
 				g_hSelectList[iClient].Clear();
 				SurvivorPropMenu(iClient);
 			}
@@ -476,9 +494,11 @@ void OutPutModelInfo(int client)
 {
 	ModelInfo MI;
 	g_hModelList.GetArray(g_iPropNum[client], MI);
-	CPrintToChat(client, "{default}你已选择模型:{green} %s\n{default}该模型的伤害修正倍率为:{blue} %.2f", MI.sname, MI.dmgrevise);
+	CPrintToChat(client, "{default}你已选择模型:{green} %s {default}伤害修正为:{blue} %.2f", MI.sname, MI.dmgrevise);
 	CPrintToChat(client, "%s", MI.allowtp ? "{blue}该模型允许飞雷神传送。" : "{red}该模型不能飞雷神传送。");
 	CPrintToChat(client, "%s", MI.allowfake ? "{blue}该模型允许创造假身。" : "{red}该模型不能创造假身。");
+	CPrintToChat(client, "{green}紫色光圈为实时模型角度, 用于快速确定方向\n按下右键可以把摄像机的x轴设置为0(便于模型的其余轴与光圈对齐))");
+	CPrintToChat(client, "%s", g_hGlowInWater.BoolValue ? "{red}若你处于水中, 该紫圈会暴露给1500码内的克。" : "{blue}已禁用水中暴露紫圈。");
 }
 
 Action Timer_SurvivorSkillCD(Handle timer, int client)
@@ -489,4 +509,59 @@ Action Timer_SurvivorSkillCD(Handle timer, int client)
 		return Plugin_Continue;
 	}
 	return Plugin_Stop;
+}
+
+Action Timer_ProtectCD(Handle timer, int client)
+{
+	if (g_iDetectProtectCD[client] > 0)
+	{
+		g_iDetectProtectCD[client]--;
+		return Plugin_Continue;
+	}
+	CPrintToChat(client, "{green}[!]你的探测保护已解除。");
+	return Plugin_Stop;
+}
+
+void PropProTect(int client)
+{
+	if (g_iRoundState == 0 || g_iRoundState == 3)
+	{
+		return;
+	}
+	if (!IsClientInGame(client) || GetClientTeam(client) != 2 || !IsPlayerAlive(client) || !g_bLockCamera[client])
+	{
+		if (IsValidEdict(g_iOwnProp[client]))
+		{
+			AcceptEntityInput(g_iOwnProp[client], "Kill");
+		}
+		return;
+	}
+	if (!IsValidEdict(g_iOwnProp[client]))
+	{
+		char sModel[128];
+		GetPropInfo(client, 1, sModel, sizeof(sModel));
+		int iProp = CreateEntityByName("prop_dynamic_override");
+		if (!IsValidEntity(iProp))
+		{
+			return;
+		}
+		DispatchKeyValue(iProp, "model", sModel);
+		DispatchKeyValue(iProp, "disableshadows", "1");
+		SetEntProp(iProp, Prop_Data, "m_nSolidType", 6);
+		DispatchSpawn(iProp);
+
+		SetEntPropEnt(iProp, Prop_Send, "m_hOwnerEntity", client);
+		SetEntityFlags(iProp, FL_CLIENT | FL_ATCONTROLS);
+
+		float fix_origin[3];
+		fix_origin[0] = g_fLockOrigin[client][0];
+		fix_origin[1] = g_fLockOrigin[client][1];
+		float zaxisup = GetPropInfo(client, 6, "", 0);
+		fix_origin[2] = g_fLockOrigin[client][2] + zaxisup;
+		TeleportEntity(iProp, fix_origin, g_fLockAngle[client], NULL_VECTOR);
+
+		SDKHook(iProp, SDKHook_OnTakeDamage, OnRealPropTakeDamage);
+		g_iOwnProp[client] = iProp;
+	}
+	RequestFrame(PropProTect, client);
 }

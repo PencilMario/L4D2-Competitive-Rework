@@ -1,8 +1,12 @@
-
-
 public Action L4D_OnMaterializeFromGhostPre(int client)
 {
 	CPrintToChat(client, "{green}[!]此模式不允许主动复活普通特感。");
+	return Plugin_Handled;
+}
+
+public Action L4D_OnTryOfferingTankBot(int tank_index, bool &enterStasis)
+{
+	ForcePlayerSuicide(tank_index);
 	return Plugin_Handled;
 }
 
@@ -55,9 +59,9 @@ void Handle_Commons(int entity)
 	{
 		AcceptEntityInput(entity, "Kill");
 	}
-	else if(StrEqual(classname,"survivor_death_model"))
+	else if (StrEqual(classname, "survivor_death_model"))
 	{
-		AcceptEntityInput(entity,"Kill");
+		AcceptEntityInput(entity, "Kill");
 	}
 }
 
@@ -74,8 +78,23 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 			TankMenu(client);
 		}
 	}
+	else if (buttons & IN_ATTACK2 && !(g_iLastButton[client] & IN_ATTACK2))
+	{
+		if (GetClientTeam(client) == 2 && !g_bLockCamera[client] && (g_iRoundState == 1 || g_iRoundState == 2))
+		{
+			float f_Ang[3];
+			GetClientAbsAngles(client, f_Ang);
+			f_Ang[0] = 0.00;
+			TeleportEntity(client, NULL_VECTOR, f_Ang);
+		}
+	}
 	g_iLastButton[client] = buttons;
 	return Plugin_Changed;
+}
+
+public void OnClientConnected(int client)
+{
+	CreateTimer(5.0, Timer_Delay_AutoJG, client, TIMER_REPEAT);
 }
 
 public void OnClientPutInServer(int client)
@@ -83,13 +102,41 @@ public void OnClientPutInServer(int client)
 	SDKHook(client, SDKHook_WeaponCanUse, Hook_WeaponCanUse);
 	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 	SDKHook(client, SDKHook_StartTouch, Touch_Player);
-	if (g_iRoundState == 2 || g_iRoundState == 3)
+	SDKHook(client, SDKHook_WeaponSwitchPost, OnWeaponSwitchPost);
+}
+
+Action Timer_Delay_AutoJG(Handle timer, int client)
+{
+	if (!IsClientInGame(client))
 	{
-		if (!IsFakeClient(client))
-		{
-			ChangeClientTeam(client, 1);
-		}
+		return Plugin_Continue;
 	}
+	if (IsFakeClient(client))
+	{
+		return Plugin_Stop;
+	}
+	else if (!g_hAutoJG.BoolValue)
+	{
+		ChangeClientTeam(client, 1);
+	}
+	else if (g_iRoundState == 2 || g_iRoundState == 3)
+	{
+		ChangeClientTeam(client, 1);
+	}
+	else if (PlayerStatistics(2, false) >= PlayerStatistics(3, false) && PlayerStatistics(2, false) < g_hSurvivorLimit.IntValue)
+	{
+		ChangeClientTeam(client, 3);
+	}
+	else if (PlayerStatistics(3, false) > PlayerStatistics(2, false) && PlayerStatistics(3, false) < g_hTankLimit.IntValue)
+	{
+		ChangeClientTeam(client, 2);
+		L4D_RespawnPlayer(client);
+	}
+	else
+	{
+		ChangeClientTeam(client, 1);
+	}
+	return Plugin_Stop;
 }
 
 public void OnClientDisconnect(int client)
@@ -97,6 +144,7 @@ public void OnClientDisconnect(int client)
 	SDKUnhook(client, SDKHook_WeaponCanUse, Hook_WeaponCanUse);
 	SDKUnhook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 	SDKUnhook(client, SDKHook_StartTouch, Touch_Player);
+	SDKUnhook(client, SDKHook_WeaponSwitchPost, OnWeaponSwitchPost);
 }
 
 public Action Hook_WeaponCanUse(int client, int weapon)
@@ -265,6 +313,29 @@ void Flashing(int client)
 		GetClientEyeAngles(client, fEyes);
 		fEyes[0] = 0.00;
 		TeleportEntity(client, NULL_VECTOR, fEyes, NULL_VECTOR);
+	}
+}
+
+void OnWeaponSwitchPost(int client, int weapon)
+{
+	if (!IsClientInGame(client) || GetClientTeam(client) != 3)
+	{
+		return;
+	}
+	MoveType flag = GetEntityMoveType(client);
+	if (flag == MOVETYPE_LADDER)
+	{
+		return;
+	}
+	char weaponname[128];
+	GetEntityClassname(weapon, weaponname, sizeof(weaponname));
+	if (StrContains(weaponname, "smg") != -1)
+	{
+		SetEntityModel(client, "models/survivors/tank_namvet.mdl");
+	}
+	else
+	{
+		SetEntityModel(client, "models/infected/hulk.mdl");
 	}
 }
 

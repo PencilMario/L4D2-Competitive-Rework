@@ -16,7 +16,7 @@ void SetupNativeNForwards()
 	g_hOnTPFakeProp_Post	 = new GlobalForward("OnTPFakeProp_Post", ET_Ignore, Param_Cell, Param_Cell);
 	g_hOnLaunchBombs_Pre	 = new GlobalForward("OnLaunchBombs_Pre", ET_Single, Param_Cell);
 	g_hOnLaunchBombs_Post	 = new GlobalForward("OnLaunchBombs_Post", ET_Ignore, Param_Cell);
-
+	
 	RegPluginLibrary("prophunt_single");
 }
 
