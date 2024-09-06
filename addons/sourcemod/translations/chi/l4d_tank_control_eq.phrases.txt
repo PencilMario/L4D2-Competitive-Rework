@@ -10,11 +10,12 @@
 	}
 	"YouBecomeTank"
 	{
-		"chi"		"{green}You{default} 将会成为 {red}Tank{default}!"
+		"chi"		"{green}你{default} 将会成为 {red}Tank{default}!"
 	}
 	"BecomeTank"
 	{
-		"chi"		"{olive}%s{default} 将会成为 {red}Tank{default}!"
+		"#format"	"{1:N}"
+		"chi"		"{olive}{1}{default} 将会成为 {red}Tank{default}!"
 	}
 	"UnableGiveTank"
 	{
