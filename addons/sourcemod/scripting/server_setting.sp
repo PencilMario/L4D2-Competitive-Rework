@@ -152,12 +152,13 @@ Action CmdMenuTest(int client, int args)
 }
 
 public void ExtraMenu_OnSelect(int client, int menu_id, int option, int value){
+    PrintToConsoleAll("ExtraMenu_OnSelect client:%i menu_id:%i option:%i value:%i", client, menu_id, option, value);
     if (menu_id != g_Extramenu._index) return;
     if (option == g_RemoveLobby) {
         ServerCommand("sm_unreserve;sm_cvar sv_force_unreserved 1; sm_cvar sv_tags hidden; sm_cvar sv_steamgroup 0");
     }
-    else if (option == g_skipsteamcheck) {
-        ServerCommand("sm_cvar sv_steam_bypass %i", value);
+/*     else if (option == g_skipsteamcheck) {
+        ServerCommand("sm_cvar   %i", value);
     }
     else if (option == g_playnumber){
         ServerCommand("sm_cvar sv_maxplayers %i", value);
@@ -165,7 +166,7 @@ public void ExtraMenu_OnSelect(int client, int menu_id, int option, int value){
     else if (option == g_infrespawn){
         ServerCommand("sm_cvar z_respawn_interval %i", value);
     }
-    else if (option == g_Tankrespawnarea){
+ */    else if (option == g_Tankrespawnarea){
         ServerCommand("sm_ftank %i", value);
     }
     else if (option == g_reset_tank_iron){
