@@ -101,7 +101,7 @@ GlobalForward g_hFWD_ExtraMenu_OnSelect;
 // ====================================================================================================
 //					MENU STRUCT
 // ====================================================================================================
-#define MAX_DATA 11	// Maximum number of "ROW_*" data to store
+//#define MAX_DATA 11	// Maximum number of "ROW_*" data to store
 
 enum
 {
@@ -115,7 +115,8 @@ enum
 	ROW_OPTIONS,	// ArrayList of options for the "MENU_SELECT_LIST" type
 	ROW_OPS_LEN,	// Number of options for the "MENU_SELECT_LIST" type
 	ROW_CLOSE,		// Close menu after use
-	ROW_CVARNAME     // Cvar name
+	ROW_CVARNAME,     // Cvar name
+	MAX_DATA
 }
 
 enum struct MenuData 
@@ -180,7 +181,7 @@ enum struct MenuData
 	}
 
 	// Add Entry
-	int AddEntry(const char[] entry, EXTRA_MENU_TYPE type, bool close, int default_value, any add_value, any add_min, any add_max, const char[] convar, int convarlen)
+	int AddEntry(const char[] entry, EXTRA_MENU_TYPE type, bool close, int default_value, any add_value, any add_min, any add_max, const char[] convar = "")
 	{
 		this.MenuList.PushString(entry);
 
@@ -193,7 +194,7 @@ enum struct MenuData
 		this.RowsData.Set(index, 0, ROW_OPTIONS);
 		this.RowsData.Set(index, 0, ROW_OPS_LEN);
 		this.RowsData.Set(index, close, ROW_CLOSE);
-		this.RowsData.SetString(index, convar, convarlen, ROW_CVARNAME);
+		this.RowsData.SetString(index, convar, ROW_CVARNAME);
 
 		// Store indexes of selectable entries, for using in the forward
 		if( type != MENU_ENTRY )
@@ -402,11 +403,10 @@ int Native_AddEntry(Handle plugin, int numParams)
 		int add_max = GetNativeCell(8);
 
 		GetNativeStringLength(9, maxlength);
-		char[] cvar = new char[maxlength+1];
-		GetNativeString(9, cvar, maxlength);
-		int convarlen = GetNativeCell(10);
+		char[] cvar = new char[maxlength];
+		GetNativeString(9, entry, maxlength);
 
-		int value = data.AddEntry(entry, type, close, default_value, add_value, add_min, add_max, cvar, convarlen);
+		int value = data.AddEntry(entry, type, close, default_value, add_value, add_min, add_max, cvar);
 
 		g_AllMenus.SetArray(sKey, data, sizeof(data));
 		return value;
@@ -636,7 +636,7 @@ void DisplayExtraMenu(int client, int menu_id)
 			{
 				// Get menu row type and string
 				data.MenuList.GetString(i, sTemp, sizeof(sTemp));
-				PrintToConsoleAll("data.MenuList.GetString(i, sTemp, sizeof(sTemp)) -> %s", sTemp);
+
 				// Translation
 				if( data.Translation[0] )
 				{
@@ -645,15 +645,6 @@ void DisplayExtraMenu(int client, int menu_id)
 						Format(sTemp, sizeof(sTemp), "%T", sTemp, client);
 					}
 				}
-				PrintToConsoleAll("data.RowsData.Get(i, ROW_TYPE) -> %i", data.RowsData.Get(i, ROW_TYPE));
-				PrintToConsoleAll("MENU_ENTRY -> %i", MENU_ENTRY);
-				PrintToConsoleAll("MENU_SELECT_ONLY -> %i", MENU_SELECT_ONLY);
-				PrintToConsoleAll("MENU_SELECT_ONOFF -> %i", MENU_SELECT_ONOFF);
-				PrintToConsoleAll("MENU_SELECT_LIST -> %i", MENU_SELECT_LIST);
-				PrintToConsoleAll("MENU_SELECT_ADD -> %i", MENU_SELECT_ADD);
-				PrintToConsoleAll("MENU_SELECT_CVARONOFF -> %i", MENU_SELECT_CVARONOFF);
-				PrintToConsoleAll("MENU_SELECT_CVARLIST -> %i", MENU_SELECT_CVARADD);
-
 
 				// Selectable entry
 				if( data.RowsData.Get(i, ROW_TYPE) != MENU_ENTRY )
@@ -681,8 +672,7 @@ void DisplayExtraMenu(int client, int menu_id)
 						case MENU_SELECT_CVARONOFF:
 						{
 							char buffer[32];
-							data.RowsData.GetString(i, buffer, sizeof(buffer), ROW_CVARNAME);
-							PrintToChatAll("GetConVarBool(FindConVar(%s)", buffer);
+							data.MenuVals[client].GetString(i, buffer, sizeof(buffer), ROW_CVARNAME);
 							if(GetConVarBool(FindConVar(buffer)))
 							{
 								ReplaceString(sTemp, sizeof(sTemp), "_OPT_", "[●]");
@@ -703,7 +693,7 @@ void DisplayExtraMenu(int client, int menu_id)
 						case MENU_SELECT_CVARADD:
 						{
 							char buffer[32];
-							data.RowsData.GetString(i, buffer, sizeof(buffer), ROW_CVARNAME);
+							data.MenuVals[client].GetString(i, buffer, sizeof(buffer), ROW_CVARNAME);
 							float value = GetConVarFloat(FindConVar(buffer));
 							FloatToString(value, sVals, sizeof(sVals));
 							ReplaceString(sVals, sizeof(sVals), ".000000", "");
@@ -1220,7 +1210,7 @@ void OnButton_Left(int client)
 				if( data.MenuVals[client].Get(index) == 1 ) // Prevent triggering if already unselected
 				{
 					char buffer[32];
-					data.RowsData.GetString(index, buffer, sizeof(buffer), ROW_CVARNAME);
+					data.MenuVals[client].GetString(index, buffer, sizeof(buffer), ROW_CVARNAME);
 					SetConVarBool(FindConVar(buffer), false);
 					data.MenuVals[client].Set(index, 0);
 				}
@@ -1246,7 +1236,7 @@ void OnButton_Left(int client)
 			{
 				// Decrement, validate value
 				char buffer[32];
-				data.RowsData.GetString(index, buffer, sizeof(buffer), ROW_CVARNAME);
+				data.MenuVals[client].GetString(index, buffer, sizeof(buffer), ROW_CVARNAME);
 				int old_val = GetConVarInt(FindConVar(buffer));
 				int new_val = data.RowsData.Get(index, ROW_INCRE);
 				int min = data.RowsData.Get(index, ROW_IN_MIN);
@@ -1351,7 +1341,7 @@ void OnButton_Right(int client)
 				if( data.MenuVals[client].Get(index) == 0 ) // Prevent triggering if already selected
 				{
 					char buffer[32];
-					data.RowsData.GetString(index, buffer, sizeof(buffer), ROW_CVARNAME);
+					data.MenuVals[client].GetString(index, buffer, sizeof(buffer), ROW_CVARNAME);
 					SetConVarBool(FindConVar(buffer), true);
 					data.MenuVals[client].Set(index, 1);
 				}
@@ -1376,7 +1366,7 @@ void OnButton_Right(int client)
 			{
 				// Increment, validate value
 				char buffer[32];
-				data.RowsData.GetString(index, buffer, sizeof(buffer), ROW_CVARNAME);
+				data.MenuVals[client].GetString(index, buffer, sizeof(buffer), ROW_CVARNAME);
 				int old_val = GetConVarInt(FindConVar(buffer));
 				int new_val = data.RowsData.Get(index, ROW_INCRE);
 				int max = data.RowsData.Get(index, ROW_IN_MAX);
