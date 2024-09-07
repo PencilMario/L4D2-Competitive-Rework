@@ -90,14 +90,14 @@ public void OnLibraryAdded(const char[] name)
         g_Extramenu.AddEntry                            ("  ");
         g_Extramenu.AddEntry                            ("A. 服务器控制");
         g_RemoveLobby = g_Extramenu.AddEntryOnly        ("1. 移除大厅匹配");
-        g_skipsteamcheck = g_Extramenu.AddEntrySwitch   ("2. 跳过steam验证 _OPT_", false, 0);
-        g_playnumber = g_Extramenu.AddEntryAdd          ("3. 服务器人数: _OPT_", false, GetConvarIntEx("sv_maxplayers"), 1, 1, GetConvarIntEx("slots_max_slots"));
+        g_skipsteamcheck = g_Extramenu.AddEntryCvarSwitch("2. 跳过steam验证 _OPT_", "sv_steam_bypass", false);
+        g_playnumber = g_Extramenu.AddEntryCvarAdd      ("3. 服务器人数: _OPT_", "sv_maxplayers", false, 1, 1, GetConvarIntEx("slots_max_slots"));
         g_Extramenu.AddEntry                            ("  ");
         g_Extramenu.AddEntry                            ("B. 特感设置 ");
-        g_infrespawn = g_Extramenu.AddEntryAdd          ("1. 特感复活时间: _OPT_", false, GetConvarIntEx("z_respawn_interval"), 1, 5, 20);
+        g_infrespawn = g_Extramenu.AddEntryCvarAdd      ("1. 特感复活时间: _OPT_", "z_respawn_interval",false,  1, 5, 20);
         g_Tankrespawnarea = g_Extramenu.AddEntryAdd     ("2. Tank刷新位置: _OPT_", false,  20, 5, 20, 80);
         g_reset_tank_iron = g_Extramenu.AddEntryOnly    ("3. 铁位置重置");
-        g_saveprops = g_Extramenu.AddEntryOnly           ("4. 保存当前铁位置");
+        g_saveprops = g_Extramenu.AddEntryOnly          ("4. 保存当前铁位置");
         g_Extramenu.AddEntry                            ("  ");
 
 
@@ -187,7 +187,7 @@ int GetConvarIntEx(char[] cvar){
     }
 }
 
-int GetConvarFloattoIntEx(char[] cvar, float multi){
+/* int GetConvarFloattoIntEx(char[] cvar, float multi){
     ConVar c = FindConVar(cvar);
     if (c != null){
         return RoundToCeil(c.FloatValue * multi);
@@ -195,3 +195,4 @@ int GetConvarFloattoIntEx(char[] cvar, float multi){
         return -1;
     }
 }
+ */
