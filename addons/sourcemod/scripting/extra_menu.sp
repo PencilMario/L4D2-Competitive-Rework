@@ -18,7 +18,7 @@
 
 
 
-#define PLUGIN_VERSION 		"1.5"
+#define PLUGIN_VERSION 		"1.6"
 
 /*======================================================================================
 	Plugin Info:
@@ -31,6 +31,11 @@
 
 ========================================================================================
 	Change Log:
+1.6 (2024年9月8日)
+	- 新功能：addentry可选返回index还是menuid（用于forward）默认为menuid
+	- 可以修改文本
+	- 可以根据index获取menuid
+	
 1.5 (2024年9月7日)
 	- AddEntry将返回该项的index
 	- 新type: MENU_SELECT_CVARADD/MENU_SELECT_CVARONOFF
@@ -183,7 +188,7 @@ enum struct MenuData
 	}
 
 	// Add Entry
-	int AddEntry(const char[] entry, EXTRA_MENU_TYPE type, bool close, int default_value, any add_value, any add_min, any add_max, const char[] convar)
+	int AddEntry(const char[] entry, EXTRA_MENU_TYPE type, bool close, int default_value, any add_value, any add_min, any add_max, const char[] convar, bool return_index)
 	{
 		this.MenuList.PushString(entry);
 
@@ -215,7 +220,19 @@ enum struct MenuData
 		{
 			this.MenuVals[i].Push(default_value);
 		}
-		return this.TotalItem - 1;
+		if (!return_index)
+			return this.TotalItem - 1;
+		else return index;
+	}
+
+	int GetMenuIdbyIndex(int index)
+	{
+		return this.RowsData.Get(index, ROW_INDEX);
+	}
+
+	int SetEntryText(int index, const char[] entry)
+	{
+		return this.MenuList.SetString(index, entry);
 	}
 }
 
@@ -242,6 +259,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("ExtraMenu_AddOptions",	Native_AddOptions);
 	CreateNative("ExtraMenu_NewPage",		Native_AddPage);
 	CreateNative("ExtraMenu_Display",		Native_Display);
+	CreateNative("ExtraMenu_GetMenuItemIdbyIndex", Native_GetMenuIdByIndex);
+	CreateNative("ExtraMenu_SetEntryText", Native_SetEntryText);
 
 	// Forward
 	g_hFWD_ExtraMenu_OnSelect				= new GlobalForward("ExtraMenu_OnSelect", ET_Event, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
@@ -410,8 +429,9 @@ int Native_AddEntry(Handle plugin, int numParams)
 		cvarlength += 1;
 		char[] cvar = new char[cvarlength];
 		GetNativeString(9, cvar, cvarlength);
-		int value = data.AddEntry(entry, type, close, default_value, add_value, add_min, add_max, cvar);
-
+		bool return_index = GetNativeCell(10);
+		int value = data.AddEntry(entry, type, close, default_value, add_value, add_min, add_max, cvar, return_index);
+		
 		g_AllMenus.SetArray(sKey, data, sizeof(data));
 		return value;
 	}
@@ -419,6 +439,32 @@ int Native_AddEntry(Handle plugin, int numParams)
 	#if VERIFY_INDEXES
 	return false;
 	#endif
+}
+
+int Native_GetMenuIdByIndex(Handle plugin, int numParams)
+{
+	int menu_id = GetNativeCell(1);
+	int index = GetNativeCell(2);
+	char sKey[MAX_KEYS];
+	IntToString(menu_id, sKey, sizeof(sKey));
+	MenuData data;
+	g_AllMenus.GetArray(sKey, data, sizeof(data));
+	return data.GetMenuIdbyIndex(index);
+}
+
+int Native_SetEntryText(Handle plugin, int numParams){
+	int menu_id = GetNativeCell(1);
+	int index = GetNativeCell(2);
+	char sKey[MAX_KEYS];
+	IntToString(menu_id, sKey, sizeof(sKey));
+	int maxlength;
+	GetNativeStringLength(3, maxlength);
+	maxlength += 1;
+	char[] entry = new char[maxlength];
+	GetNativeString(3, entry, maxlength);
+	MenuData data;
+	g_AllMenus.GetArray(sKey, data, sizeof(data));
+	return data.SetEntryText(index, entry);
 }
 
 int Native_AddOptions(Handle plugin, int numParams)
