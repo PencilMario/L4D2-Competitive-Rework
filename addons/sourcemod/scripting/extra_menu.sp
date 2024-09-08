@@ -199,9 +199,6 @@ enum struct MenuData
 		this.RowsData.Set(index, close, ROW_CLOSE);
 		this.RowsCvar.SetString(index, convar);
 
-		char buffer[64];
-		this.RowsCvar.GetString(index, buffer, sizeof(buffer));
-		PrintToConsoleAll("add %s | cvar %s", buffer, convar);
 		// Store indexes of selectable entries, for using in the forward
 		if( type != MENU_ENTRY )
 		{
@@ -218,7 +215,7 @@ enum struct MenuData
 		{
 			this.MenuVals[i].Push(default_value);
 		}
-		return index;
+		return this.TotalItem - 1;
 	}
 }
 
@@ -413,7 +410,6 @@ int Native_AddEntry(Handle plugin, int numParams)
 		cvarlength += 1;
 		char[] cvar = new char[cvarlength];
 		GetNativeString(9, cvar, cvarlength);
-		PrintToConsoleAll("nativeadd %s", cvar);
 		int value = data.AddEntry(entry, type, close, default_value, add_value, add_min, add_max, cvar);
 
 		g_AllMenus.SetArray(sKey, data, sizeof(data));
@@ -681,7 +677,6 @@ void DisplayExtraMenu(int client, int menu_id)
 						{
 							char buffer[32];
 							data.RowsCvar.GetString(i, buffer, sizeof(buffer));
-							PrintToConsoleAll("cvar %s", buffer);
 
 							if(GetConVarBool(FindConVar(buffer)))
 							{
@@ -704,7 +699,6 @@ void DisplayExtraMenu(int client, int menu_id)
 						{
 							char buffer[32];
 							data.RowsCvar.GetString(i, buffer, sizeof(buffer));
-							PrintToConsoleAll("add %s", buffer);
 							float value = GetConVarFloat(FindConVar(buffer));
 							FloatToString(value, sVals, sizeof(sVals));
 							ReplaceString(sVals, sizeof(sVals), ".000000", "");

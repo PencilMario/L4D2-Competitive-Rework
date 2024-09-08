@@ -152,7 +152,6 @@ Action CmdMenuTest(int client, int args)
 }
 
 public void ExtraMenu_OnSelect(int client, int menu_id, int option, int value){
-    PrintToConsoleAll("ExtraMenu_OnSelect client:%i menu_id:%i option:%i value:%i", client, menu_id, option, value);
     if (menu_id != g_Extramenu._index) return;
     if (option == g_RemoveLobby) {
         ServerCommand("sm_unreserve;sm_cvar sv_force_unreserved 1; sm_cvar sv_tags hidden; sm_cvar sv_steamgroup 0");
