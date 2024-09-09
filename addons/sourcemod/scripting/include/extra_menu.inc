@@ -216,8 +216,8 @@ methodmap ExtraMenu
 	 * @param text 	所显示的文字
 	 * @return		成功时为 true，否则为 false（可能在菜单不可用时）。
 	 */
-	public int AddEntry(char[] text){
-		return this.__AddIntry(text, MENU_ENTRY);
+	public int AddEntry(char[] text, bool return_index=false){
+		return this.__AddIntry(text, MENU_ENTRY, false, 0, 0, 0, 0, "", return_index);
 	}
 	/**
 	 * 添加一行不可选文字，同AddEntry
@@ -225,8 +225,8 @@ methodmap ExtraMenu
 	 * @param text	所显示的文字
 	 * @return		失败为 -1（可能在菜单不可用时）
 	 */
-	public int AddEntryText(char[] text){
-		return this.AddEntry(text);
+	public int AddEntryText(char[] text, bool return_index=false){
+		return this.AddEntry(text, return_index);
 	}
 
 	/**
@@ -236,8 +236,8 @@ methodmap ExtraMenu
 	 * @param close 在选择选项后关闭菜单。
 	 * @return		成功时为该可选项的index，否则为 -1（可能在菜单不可用时）。
 	 */
-	public int AddEntryOnly(char[] text, bool close = false){
-		return this.__AddIntry(text, MENU_SELECT_ONLY, close)
+	public int AddEntryOnly(char[] text, bool close = false, bool return_index=false){
+		return this.__AddIntry(text, MENU_SELECT_ONLY, close, 0, 0, -999999, 999999, "", return_index)
 	}
 
 	/**
@@ -248,8 +248,8 @@ methodmap ExtraMenu
 	 * @param default_value 默认值
 	 * @return		成功时为该可选项的index，否则为 -1（可能在菜单不可用时）。
 	 */
-	public int AddEntrySwitch(char[] text, bool close = false, int default_value = 0){
-		return this.__AddIntry(text, MENU_SELECT_ONOFF, close, default_value);
+	public int AddEntrySwitch(char[] text, bool close = false, int default_value = 0, bool return_index=false){
+		return this.__AddIntry(text, MENU_SELECT_ONOFF, close, default_value, 0, 0, 0, "", return_index);
 	}
 
 	/**
@@ -263,8 +263,8 @@ methodmap ExtraMenu
 	 * @param add_max 		最大值
 	 * @return		成功时为该可选项的index，否则为 -1（可能在菜单不可用时）。
 	 */
-	public int AddEntryAdd(char[] text, bool close = false, int default_value = 0, int add_value = 0, int add_min = -999999, int add_max = 999999){
-		return this.__AddIntry(text, MENU_SELECT_ADD, close, default_value, add_value, add_min, add_max);
+	public int AddEntryAdd(char[] text, bool close = false, int default_value = 0, int add_value = 0, int add_min = -999999, int add_max = 999999, bool return_index=false){
+		return this.__AddIntry(text, MENU_SELECT_ADD, close, default_value, add_value, add_min, add_max, "", return_index);
 	}
 
 	/**
@@ -275,8 +275,8 @@ methodmap ExtraMenu
 	 * @param close 在选择选项后关闭菜单。
 	 * @return		成功时为该可选项的index，否则为 -1（可能在菜单不可用时）。
 	 */
-	public int AddEntrySelect(char[] text, char[] select, bool close = false){
-		int res = this.__AddIntry(text, MENU_SELECT_LIST,close);
+	public int AddEntrySelect(char[] text, char[] select, bool close = false, bool return_index=false){
+		int res = this.__AddIntry(text, MENU_SELECT_LIST,close, 0, 0, 0, 0, "", return_index);
 		this._AddOptions(select);
 		return res;
 	}
@@ -293,8 +293,8 @@ methodmap ExtraMenu
 	 * 
 	 * @return		成功时为该可选项的index，否则为 -1（可能在菜单不可用时）。
 	 */
-	public int AddEntryCvarAdd(char[] text, char[] cvar, bool close = false, int add_value = 0, int add_min = -999999, int add_max = 999999){
-		return this.__AddIntry(text, MENU_SELECT_CVARADD, close, GetConVarInt(FindConVar(cvar)), add_value, add_min, add_max, cvar);
+	public int AddEntryCvarAdd(char[] text, char[] cvar, bool close = false, int add_value = 0, int add_min = -999999, int add_max = 999999, bool return_index=false){
+		return this.__AddIntry(text, MENU_SELECT_CVARADD, close, GetConVarInt(FindConVar(cvar)), add_value, add_min, add_max, cvar, return_index);
 	}
 
 	/**
@@ -306,8 +306,8 @@ methodmap ExtraMenu
 	 * 
 	 * @return		成功时为该可选项的index，否则为 -1（可能在菜单不可用时）。
 	 */
-	public int AddEntryCvarSwitch(char[] text, char[] cvar, bool close = false){
-		return this.__AddIntry(text, MENU_SELECT_CVARONOFF, close, GetConVarInt(FindConVar(cvar)), 0, -999999, 999999, cvar);
+	public int AddEntryCvarSwitch(char[] text, char[] cvar, bool close = false, bool return_index=false){
+		return this.__AddIntry(text, MENU_SELECT_CVARONOFF, close, GetConVarInt(FindConVar(cvar)), 0, -999999, 999999, cvar, return_index);
 	}
 
 	/**
@@ -321,6 +321,16 @@ methodmap ExtraMenu
 	public bool _AddOptions(char[] entry)
 	{
 		ExtraMenu_AddOptions(view_as<int>(this), entry);
+	}
+
+	public int SetEntryText(int index, char[] text, any ...){
+		static char buffer[256];
+		VFormat(buffer, sizeof(buffer), message, 3);
+		return ExtraMenu_SetEntryText(this._index, index, buffer);
+	}
+
+	public int GetMenuItemIdbyIndex(int index){
+		return ExtraMenu_GetMenuItemIdbyIndex(this._index, index);
 	}
 
 	/**
