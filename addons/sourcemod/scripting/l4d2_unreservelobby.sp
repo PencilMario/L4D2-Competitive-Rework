@@ -21,7 +21,7 @@ public Plugin myinfo = {
 
 public void OnPluginStart() {
 	CreateConVar("l4d_unreserve_version", PLUGIN_VERSION, "Version of the Lobby Unreserve plugin.", FCVAR_NOTIFY|FCVAR_DONTRECORD);
-	g_cvUnreserve = CreateConVar("l4d_reserve_full", "1", "Automatically unreserve server after a full lobby joins", FCVAR_SPONLY|FCVAR_NOTIFY);
+	g_cvUnreserve = CreateConVar("l4d_unreserve_full", "1", "Automatically unreserve server after a full lobby joins", FCVAR_SPONLY|FCVAR_NOTIFY);
 	g_cvUnreserve.AddChangeHook(CvarChanged);
 	g_cvGameMode = FindConVar("mp_gamemode");
 	g_cvCookie = FindConVar("sv_lobby_cookie");
