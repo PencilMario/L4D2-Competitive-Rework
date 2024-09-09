@@ -116,8 +116,25 @@
 	{
 		"hostname"		"[N&B.Zonemod]玩不了一点"
 	}
-	"34110"
+	"27081"
 	{
-		"hostname"		"[N&B.Zonemod]我是求生糕手"
+		"hostname"		"琥珀の对抗服 [Zonemod 2.8.9] #1"
 	}
+	"27082"
+	{
+		"hostname"		"琥珀の对抗服 [Zonemod 2.8.9] #2"
+	}
+	"27083"
+	{
+		"hostname"		"琥珀の对抗服 [Zonemod 2.8.9] #3"
+	}
+	"27084"
+	{
+		"hostname"		"琥珀の对抗服 [Zonemod 2.8.9] #4"
+	}
+	"27085"
+	{
+		"hostname"		"琥珀の对抗服 [Zonemod 2.8.9] #5"
+	}
+
 }
