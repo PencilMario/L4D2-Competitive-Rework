@@ -6,10 +6,10 @@
 #define PLUGIN_VERSION			"2.1.2"
 #define PLUGIN_URL				"http://forums.alliedmods.net/showthread.php?t=87759"
 
-ConVar g_cvUnreserve, g_cvGameMode, g_cvCookie, g_cvLobbyOnly, g_cvMaxPlayers;
+ConVar g_cvUnreserve, g_cvGameMode, g_cvCookie, g_cvLobbyOnly, g_cvMaxPlayers, g_cvForceUnreserse;
 bool g_bUnreserve;
 
-int g_iLobbySlot, g_iMaxPlayerJoin, g_iResetCount;
+int g_iLobbySlot;
 
 public Plugin myinfo = {
 	name = PLUGIN_NAME,
@@ -27,6 +27,7 @@ public void OnPluginStart() {
 	g_cvCookie = FindConVar("sv_lobby_cookie");
 	g_cvLobbyOnly = FindConVar("sv_allow_lobby_connect_only");
 	g_cvMaxPlayers = FindConVar("sv_maxplayers");
+	g_cvForceUnreserse = FindConVar("sv_force_unreserved");
 
 	HookEvent("player_disconnect", Event_PlayerDisconnect, EventHookMode_Pre);
 
@@ -35,6 +36,7 @@ public void OnPluginStart() {
 
 Action cmdUnreserve(int client, int args) {
 	ServerCommand("sv_cookie 0");
+	g_cvForceUnreserse.IntValue = 1;
 	ReplyToCommand(client, "[UL] Lobby reservation has been removed.");
 	return Plugin_Handled;
 }
@@ -48,7 +50,7 @@ void CvarChanged(ConVar convar, const char[] oldValue, const char[] newValue) {
 }
 
 void GetCvars() {
-	g_bUnreserve = !g_cvUnreserve.BoolValue;
+	g_bUnreserve = g_cvUnreserve.BoolValue;
 }
 
 public void OnClientAuthorized(int client, const char[] auth) {
@@ -60,12 +62,15 @@ public void OnClientAuthorized(int client, const char[] auth) {
 
 	if (!IsServerLobbyFull(-1))
 		return;
-
 	ServerCommand("sv_cookie 0");
 }
 
 //OnClientDisconnect will fired when changing map, issued by gH0sTy at http://docs.sourcemod.net/api/index.php?fastload=show&id=390&
 void Event_PlayerDisconnect(Event event, const char[] name, bool dontBroadcast) {
+	if (g_cvForceUnreserse.BoolValue) {
+		ServerCommand("sv_cookie 0");
+		return;
+	}
 	if (g_cvMaxPlayers.IntValue == -1)
 		return;
 
@@ -97,8 +102,6 @@ void Event_PlayerDisconnect(Event event, const char[] name, bool dontBroadcast) 
 }
 
 void SetDefaultLobbySlot(){
-	int humans = GetConnectedPlayer(0);
-
 	char sGameMode[32];
 	g_cvGameMode.GetString(sGameMode, sizeof(sGameMode));
 	if (StrEqual(sGameMode, "versus") || StrEqual(sGameMode, "scavenge"))
@@ -112,6 +115,7 @@ bool IsServerLobbyFull(int client)
 {
 	
 	int humans = GetConnectedPlayer(client);
+	SetDefaultLobbySlot();
 	/*
 	char sGameMode[32];
 	g_cvGameMode.GetString(sGameMode, sizeof(sGameMode));
