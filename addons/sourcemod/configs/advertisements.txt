@@ -53,5 +53,9 @@
     {
         "chat"      "{green}>3< hana"
     }
+    "10"
+    {
+        "chat"      "{green}:)提醒下如果有计划开服的甚至是服比较多的\n{default}你要是打算ban cvar就别开mod钓鱼执法, 懒得喷:) 管好用你数据库开服的人\n说的就是你萌新聚集地:)\n你要是不禁那个bmod就去更新confogl把ban改成kick也更符合常人的脑回路"
+    }
 }
 
