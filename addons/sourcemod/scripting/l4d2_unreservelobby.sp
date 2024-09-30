@@ -6,7 +6,7 @@
 #define PLUGIN_VERSION			"2.1.2"
 #define PLUGIN_URL				"http://forums.alliedmods.net/showthread.php?t=87759"
 
-ConVar g_cvUnreserve, g_cvGameMode, g_cvCookie, g_cvLobbyOnly, g_cvMaxPlayers, g_cvForceUnreserse;
+ConVar g_cvUnreserve, g_cvGameMode, g_cvCookie, g_cvLobbyOnly, g_cvMaxPlayers, g_cvForceUnreserse, g_cvAutoRemoveLimit;
 bool g_bUnreserve;
 
 int g_iLobbySlot;
@@ -22,6 +22,7 @@ public Plugin myinfo = {
 public void OnPluginStart() {
 	CreateConVar("l4d_unreserve_version", PLUGIN_VERSION, "Version of the Lobby Unreserve plugin.", FCVAR_NOTIFY|FCVAR_DONTRECORD);
 	g_cvUnreserve = CreateConVar("l4d_unreserve_full", "1", "Automatically unreserve server after a full lobby joins", FCVAR_SPONLY|FCVAR_NOTIFY);
+	g_cvAutoRemoveLimit = CreateConVar("l4d_unreserve_autoremove_whenplayer", "-1", "Automatically unreserve server after a full lobby joins");
 	g_cvUnreserve.AddChangeHook(CvarChanged);
 	g_cvGameMode = FindConVar("mp_gamemode");
 	g_cvCookie = FindConVar("sv_lobby_cookie");
@@ -125,7 +126,7 @@ bool IsServerLobbyFull(int client)
 	}
 	return humans >= 4;
 	*/
-	return humans >= g_iLobbySlot;
+	return humans >= (g_cvAutoRemoveLimit.IntValue == -1 ? g_iLobbySlot : g_cvAutoRemoveLimit.IntValue);
 }
 
 int GetConnectedPlayer(int client) {
