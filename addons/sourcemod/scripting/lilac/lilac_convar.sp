@@ -28,12 +28,12 @@ static char query_list[][] = {
 	"r_drawmodelstatsoverlay",
 	"r_shadowwireframe",
 	"r_showenvcubemap",
-	"r_drawrenderboxes",
+	"r_drawrenderboxes"/* ,
 	"r_modelwireframedecal",
 	"z_gun_vertical_punch",
 	"r_flashlightfov",
 	"mat_fullbright",
-	"cl_max_shadow_renderable_dist"
+	"cl_max_shadow_renderable_dist" */
 };
 
 static int query_index[MAXPLAYERS + 1];
