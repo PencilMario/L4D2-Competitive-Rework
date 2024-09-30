@@ -29,7 +29,7 @@ public void OnPluginStart() {
 	g_cvLobbyOnly = FindConVar("sv_allow_lobby_connect_only");
 	g_cvMaxPlayers = FindConVar("sv_maxplayers");
 	g_cvForceUnreserse = FindConVar("sv_force_unreserved");
-
+	HookConVarChange(g_cvAutoRemoveLimit, Convar_OnLimitSet);
 	HookEvent("player_disconnect", Event_PlayerDisconnect, EventHookMode_Pre);
 
 	RegAdminCmd("sm_unreserve", cmdUnreserve, ADMFLAG_BAN, "sm_unreserve - manually force removes the lobby reservation");
@@ -48,6 +48,16 @@ public void OnConfigsExecuted() {
 
 void CvarChanged(ConVar convar, const char[] oldValue, const char[] newValue) {
 	GetCvars();
+}
+void Convar_OnLimitSet(Handle cvar, const char[] oldValue, const char[] newValue){
+	for (int i = 0; i <= MaxClients; i++){
+		if (IsClientInGame(i))
+		{
+			OnClientAuthorized(i, "1");
+			break;
+		}
+	}
+	
 }
 
 void GetCvars() {
