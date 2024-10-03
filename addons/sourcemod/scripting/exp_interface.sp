@@ -146,7 +146,7 @@ public Action Timer_GetClientExp(Handle timer, int iClient){
     Call_PushCell(res);
     Call_Finish();
     // global forward
-    log.info("[%N] Total: %i, gametime: %i, rankpoint: %i, shotgunkills: %i, smgkills:%i, tankrocks: %i, versuswin: %i, versustotal：%i", 
+    log.info("[%N] Total: %i, gametime: %i, rankpoint: %i, shotgunkills: %i, smgkills:%i, tankrocks: %i, versuswin: %i, versustotal：%i, maxrankpoint: %i, kill_per_round: %.0f, rock_per_round: %.0f, hour_per_round: %.0f", 
         iClient, res, 
         PlayerInfoData[iClient].gametime,
         PlayerInfoData[iClient].rankpoint,
@@ -154,7 +154,11 @@ public Action Timer_GetClientExp(Handle timer, int iClient){
         PlayerInfoData[iClient].smgkills,
         PlayerInfoData[iClient].tankrocks,
         PlayerInfoData[iClient].versuswin,
-        PlayerInfoData[iClient].versustotal
+        PlayerInfoData[iClient].versustotal,
+        PlayerInfoData[iClient].get_player_maxrankpoint(),
+        PlayerInfoData[iClient].kill_per_round(),
+        PlayerInfoData[iClient].rock_per_round(),
+        PlayerInfoData[iClient].hour_per_round()
     );
     return Plugin_Stop;
 }
