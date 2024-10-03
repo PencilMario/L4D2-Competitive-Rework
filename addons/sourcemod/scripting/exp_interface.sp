@@ -9,6 +9,8 @@
 #define PTYPE_SMG 0
 #define PTYPE_SHOTGUN 1
 
+#define IS_VALID_CLIENT(%1)     (%1 > 0 && %1 <= MaxClients)
+
 enum struct PlayerInfo{
     int rankpoint;
     int gametime;	
@@ -67,6 +69,28 @@ public void OnPluginStart(){
 
 }
 
+int GetClientFromSteamID(int authid)
+{
+	for(int iClient = 1; iClient <= MaxClients; iClient++)
+	{
+		if(!IsClientConnected(iClient) || GetSteamAccountID(iClient) != authid) {
+			continue;
+		}
+
+		return iClient;
+	}
+
+	return -1;
+}
+
+public void SteamWorks_OnValidateClient(int iOwnerAuthId, int iAuthId)
+{
+	int iClient = GetClientFromSteamID(iAuthId);
+
+	if(IS_VALID_CLIENT(iClient)) {
+		OnClientPutInServer(iClient);
+	}
+}
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
     g_hForward_OnGetExp = CreateGlobalForward("L4D2_OnGetExp", ET_Ignore, Param_Cell, Param_Cell);
@@ -106,8 +130,9 @@ public int _Native_GetClientExp(Handle plugin, int numParams){
 }
 public void OnClientPutInServer(int client){
     GetTimeOut[client] = 8;
-    CreateTimer(0.5, Timer_GetClientExp, client);
+    CreateTimer(0.0, Timer_GetClientExp, client);
 }
+
 public void ClearClientExpData(int client){
     PlayerInfoData[client].gametime = 0;
     PlayerInfoData[client].rankpoint = -2;

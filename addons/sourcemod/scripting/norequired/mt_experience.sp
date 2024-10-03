@@ -5,6 +5,7 @@
 #include <colors>
 #include <mix_team>
 #include <steamworks>
+#include <exp_interface>
 
 
 public Plugin myinfo = { 
@@ -90,7 +91,7 @@ public Action OnMixInProgress()
 		}
 
 		tPlayer.id = iClient;
-		tPlayer.rating = CalculatePlayerRating(GetPlayerStats(iClient));
+		tPlayer.rating = L4D2_GetClientExp(iClient);//CalculatePlayerRating(GetPlayerStats(iClient));
 
 		if (tPlayer.rating <= 0.0)
 		{
