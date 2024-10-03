@@ -50,7 +50,7 @@ int L4D2_GetClientExpRankLevel(int client){
 	for (int i = 0; i < EXPRANK_SIZE; i++){
 		if (rank > EXPRankTable[i]) return i;
 	}
-	return 0;
+	return EXPRANK_SIZE - 1;
 }
 
 /**
