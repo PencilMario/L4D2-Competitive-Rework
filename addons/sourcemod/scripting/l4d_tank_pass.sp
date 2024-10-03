@@ -15,6 +15,19 @@
 #include <l4d_lib>
 #include <exp_interface>
 #include <colors>
+
+static char EXPRankNames[EXPRANK_SIZE][] = {
+	"活化石登",
+	"超级老登",
+	"老登",
+	"小老登",
+	"中登",
+	"小中登",
+	"小登",
+	"小小登",
+	"看不见登"
+};
+
 /*
 |--------------------------------------------------------------------------
 | MACROS
@@ -305,7 +318,7 @@ void TankPassMenu(int client, int menuType = Menu_Pass)
         }
     }
     char buffer[64], buffer2[3];
-    Format(buffer, sizeof(buffer), "最高经验分: %N(%i)", maxexpplayer, maxexp);
+    Format(buffer, sizeof(buffer), "最高经验分: %N(%s)", maxexpplayer, EXPRankNames[L4D2_GetClientExpRankLevel(maxexpplayer)]);
     Format(buffer2, sizeof(buffer2), "%i", maxexpplayer);
     menu.AddItem(buffer2, buffer);
     for (int i = 1; i <= MaxClients; i++){

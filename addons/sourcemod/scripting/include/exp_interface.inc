@@ -27,7 +27,6 @@ static int EXPRankTable[EXPRANK_SIZE] = {
 	290,//70%
 	0//100%
 }
-
 static char EXPRankNames[EXPRANK_SIZE][] = {
 	"活化石登",
 	"超级老登",
@@ -51,6 +50,7 @@ int L4D2_GetClientExpRankLevel(int client){
 	for (int i = 0; i < EXPRANK_SIZE; i++){
 		if (rank > EXPRankTable[i]) return i;
 	}
+	return 0;
 }
 
 /**
