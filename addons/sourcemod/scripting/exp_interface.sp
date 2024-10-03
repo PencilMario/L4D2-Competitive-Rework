@@ -20,6 +20,33 @@ enum struct PlayerInfo{
     int smgkills;
     int shotgunkills;
     int type;
+    
+    // 理论最高分
+    int get_player_maxrankpoint(){
+        return this.gametime + this.versustotal;
+    }
+    
+    // 场均击杀
+    float kill_per_round(){
+        int kills = this.smgkills + this.shotgunkills;
+        return float(kills) / float(this.versustotal);
+    }
+    
+    float rock_per_round(){
+        return float(this.tankrocks) / float(this.versustotal);
+    }
+
+    float hour_per_round(){
+        return float(this.gametime) / float(this.versustotal);
+    }
+    
+    // 击杀数修正
+    void reset_max_kills(){
+        if (this.kill_per_round() < 600.0) return;
+        float per = 600.0 / this.kill_per_round();
+        this.smgkills = RoundToNearest(float(this.smgkills) * per);
+        this.shotgunkills = RoundToNearest(float(this.shotgunkills) * per);
+    }
 }
 
 PlayerInfo PlayerInfoData[MAXPLAYERS];
@@ -177,10 +204,12 @@ public int GetClientRP(int iClient){
 int Calculate_RP(PlayerInfo tPlayer)
 {
     int killtotal = tPlayer.shotgunkills + tPlayer.smgkills;
-    float shotgunperc = float(tPlayer.shotgunkills) / float(killtotal);   
-    float rpm = float(tPlayer.tankrocks) / float(tPlayer.gametime);
-    rpm = 1.0 + rpm;
-    float rp = tPlayer.winrounds * (0.55 * float(tPlayer.gametime) + float(tPlayer.tankrocks) * rpm * 0.65 + 
-        float(killtotal) * 0.005 * (1.0 + shotgunperc));
+    float shotgunperc = float(tPlayer.shotgunkills) / float(killtotal);  
+    float maxrp = float(tPlayer.get_player_maxrankpoint()) * 1.135; 
+    float rp = 
+        0.55 * float(tPlayer.gametime) * (tPlayer.hour_per_round() > 5.73 ? 5.73 / tPlayer.hour_per_round() : 1.0) + 
+        float(tPlayer.tankrocks) * 0.65 * (tPlayer.rock_per_round() > 1.88 ? 1.88 / tPlayer.rock_per_round() : 1.0) + 
+        (float(killtotal) * 0.005 * (tPlayer.kill_per_round() > 570.0 ? 570.0 / tPlayer.kill_per_round() : 1.0) * (1.0 + shotgunperc));
+    if (rp > maxrp) rp = maxrp;
     return RoundToNearest(rp);
 }

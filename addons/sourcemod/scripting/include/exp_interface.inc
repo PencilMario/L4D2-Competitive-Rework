@@ -3,6 +3,55 @@
 #endif
 #define _exp_interface_included
 
+enum {
+	EXPRANK_1,
+	EXPRANK_2,
+	EXPRANK_3,
+	EXPRANK_4,
+	EXPRANK_5,
+	EXPRANK_6,
+	EXPRANK_7,
+	EXPRANK_8,
+	EXPRANK_9,
+	EXPRANK_SIZE
+}
+
+static int EXPRankTable[EXPRANK_SIZE] = {
+	20850,//0.01%
+	18630,//0.1%
+	14846,//1%
+	7980,//5%
+	3584,//20%
+	1949,//35%
+	952,//50%
+	290,//70%
+	0//100%
+}
+
+static char EXPRankNames[EXPRANK_SIZE][] = {
+	"活化石登",
+	"超级老登",
+	"老登",
+	"小老登",
+	"中登",
+	"小中登",
+	"小登",
+	"小小登",
+	"看不见登"
+}
+/**
+ * @brief 获取客户端的等级
+ *
+ * @param client		客户端
+ *
+ * @return				等级
+ */
+int L4D2_GetClientExpRankLevel(int client){
+	int rank = L4D2_GetClientExp(client);
+	for (int i = 0; i < EXPRANK_SIZE; i++){
+		if (rank > EXPRankTable[i]) return i;
+	}
+}
 
 /**
  * @brief 当成功获取一个客户端的经验信息时被调用
