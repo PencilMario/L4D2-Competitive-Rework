@@ -325,7 +325,7 @@ methodmap ExtraMenu
 
 	public int SetEntryText(int index, char[] text, any ...){
 		static char buffer[256];
-		VFormat(buffer, sizeof(buffer), message, 3);
+		VFormat(buffer, sizeof(buffer), text, 3);
 		return ExtraMenu_SetEntryText(this._index, index, buffer);
 	}
 
