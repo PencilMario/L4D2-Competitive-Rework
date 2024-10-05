@@ -317,10 +317,14 @@ void TankPassMenu(int client, int menuType = Menu_Pass)
             maxexpplayer = i;
         }
     }
-    char buffer[64], buffer2[3];
-    Format(buffer, sizeof(buffer), "最高经验分: %N(%s)", maxexpplayer, EXPRankNames[L4D2_GetClientExpRankLevel(maxexpplayer)]);
-    Format(buffer2, sizeof(buffer2), "%i", maxexpplayer);
-    menu.AddItem(buffer2, buffer);
+    if (maxexpplayer)
+    {
+        char buffer[64], buffer2[3];
+        Format(buffer, sizeof(buffer), "最高经验分: %N(%s)", maxexpplayer, EXPRankNames[L4D2_GetClientExpRankLevel(maxexpplayer)]);
+        Format(buffer2, sizeof(buffer2), "%i", maxexpplayer);
+        IntToString(UID(maxexpplayer), SZF(buffer2));
+        menu.AddItem(buffer2, buffer);
+    }
     for (int i = 1; i <= MaxClients; i++){
         if (!IsValidTarget(i)) continue;
 
