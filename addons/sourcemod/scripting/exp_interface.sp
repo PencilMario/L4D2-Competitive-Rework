@@ -64,33 +64,17 @@ public void OnPluginStart(){
     for (int i = 1; i <= MaxClients; i++){
         if (IsClientInGame(i) && !IsFakeClient(i)){
             GetTimeOut[i] = 8;
-            CreateTimer(0.0, Timer_GetClientExp, i);
+            CreateTimer(0.1, Timer_GetClientExp, i);
         }
     }
 
 }
 
-int GetClientFromSteamID(int authid)
+public void OnClientAuthorized(int iClient)
 {
-	for(int iClient = 1; iClient <= MaxClients; iClient++)
-	{
-		if(!IsClientConnected(iClient) || GetSteamAccountID(iClient) != authid) {
-			continue;
-		}
-
-		return iClient;
-	}
-
-	return -1;
-}
-
-public void SteamWorks_OnValidateClient(int iOwnerAuthId, int iAuthId)
-{
-	int iClient = GetClientFromSteamID(iAuthId);
-
 	if(IS_VALID_CLIENT(iClient)) {
 		GetTimeOut[iClient] = 8;
-        CreateTimer(0.0, Timer_GetClientExp, iClient);
+        CreateTimer(0.1, Timer_GetClientExp, iClient);
 	}
 }
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
@@ -112,7 +96,7 @@ public int _Native_CheckAndGetAllClient(Handle plugin, int numParams)
         if (IsClientInGame(i) && !IsFakeClient(i)){
             if (PlayerInfoData[i].rankpoint <= 0){
                 GetTimeOut[i] = 8;
-                CreateTimer(0.0, Timer_GetClientExp, i);            }
+                CreateTimer(0.1, Timer_GetClientExp, i);            }
         }
     }
     return 0;
