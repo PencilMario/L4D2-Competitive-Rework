@@ -63,7 +63,8 @@ public void OnPluginStart(){
 
     for (int i = 1; i <= MaxClients; i++){
         if (IsClientInGame(i) && !IsFakeClient(i)){
-            OnClientPutInServer(i);
+            GetTimeOut[i] = 8;
+            CreateTimer(0.0, Timer_GetClientExp, i);
         }
     }
 
@@ -88,7 +89,8 @@ public void SteamWorks_OnValidateClient(int iOwnerAuthId, int iAuthId)
 	int iClient = GetClientFromSteamID(iAuthId);
 
 	if(IS_VALID_CLIENT(iClient)) {
-		OnClientPutInServer(iClient);
+		GetTimeOut[iClient] = 8;
+        CreateTimer(0.0, Timer_GetClientExp, iClient);
 	}
 }
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
@@ -109,8 +111,8 @@ public int _Native_CheckAndGetAllClient(Handle plugin, int numParams)
     for (int i = 1; i <= MaxClients; i++){
         if (IsClientInGame(i) && !IsFakeClient(i)){
             if (PlayerInfoData[i].rankpoint <= 0){
-                OnClientPutInServer(i);
-            }
+                GetTimeOut[i] = 8;
+                CreateTimer(0.0, Timer_GetClientExp, i);            }
         }
     }
     return 0;
@@ -128,10 +130,10 @@ public int _Native_GetClientExp(Handle plugin, int numParams){
 
     return PlayerInfoData[client].rankpoint;
 }
-public void OnClientPutInServer(int client){
+/* public void OnClientPutInServer(int client){
     GetTimeOut[client] = 8;
     CreateTimer(0.0, Timer_GetClientExp, client);
-}
+} */
 
 public void ClearClientExpData(int client){
     PlayerInfoData[client].gametime = 0;
