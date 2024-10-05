@@ -70,11 +70,11 @@ public void OnPluginStart(){
 
 }
 
-public void OnClientAuthorized(int iClient)
+public void OnClientPutInServer(int iClient)
 {
 	if(IS_VALID_CLIENT(iClient)) {
 		GetTimeOut[iClient] = 8;
-        CreateTimer(0.1, Timer_GetClientExp, iClient);
+        CreateTimer(0.5, Timer_GetClientExp, iClient);
 	}
 }
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
