@@ -92,6 +92,7 @@ public void OnLibraryAdded(const char[] name)
         g_RemoveLobby = g_Extramenu.AddEntryOnly        ("1. 移除大厅匹配");
         g_skipsteamcheck = g_Extramenu.AddEntryCvarSwitch("2. 跳过steam验证 _OPT_", "sv_steam_bypass", false);
         g_playnumber = g_Extramenu.AddEntryCvarAdd      ("3. 服务器人数: _OPT_", "sv_maxplayers", false, 1, 1, GetConvarIntEx("slots_max_slots"));
+        g_Extramenu.AddEntryCvarAdd                     ("4. 大厅匹配最大人数: _OPT_", "l4d_unreserve_autoremove_whenplayer", false, 1, 1, 8);
         g_Extramenu.AddEntry                            ("  ");
         g_Extramenu.AddEntry                            ("B. 特感设置 ");
         g_infrespawn = g_Extramenu.AddEntryCvarAdd      ("1. 特感复活时间: _OPT_", "z_respawn_interval",false,  1, 5, 20);
