@@ -8,6 +8,8 @@
 
 #define PTYPE_SMG 0
 #define PTYPE_SHOTGUN 1
+#define MAX_RETRY 12
+#define RETRY_INTERVAL 1.0
 
 #define IS_VALID_CLIENT(%1)     (%1 > 0 && %1 <= MaxClients)
 
@@ -63,7 +65,7 @@ public void OnPluginStart(){
 
     for (int i = 1; i <= MaxClients; i++){
         if (IsClientInGame(i) && !IsFakeClient(i)){
-            GetTimeOut[i] = 8;
+            GetTimeOut[i] = MAX_RETRY;
             CreateTimer(0.1, Timer_GetClientExp, i);
         }
     }
@@ -73,7 +75,7 @@ public void OnPluginStart(){
 public void OnClientPutInServer(int iClient)
 {
 	if(IS_VALID_CLIENT(iClient)) {
-		GetTimeOut[iClient] = 8;
+		GetTimeOut[iClient] = MAX_RETRY;
         CreateTimer(0.5, Timer_GetClientExp, iClient);
 	}
 }
@@ -95,7 +97,7 @@ public int _Native_CheckAndGetAllClient(Handle plugin, int numParams)
     for (int i = 1; i <= MaxClients; i++){
         if (IsClientInGame(i) && !IsFakeClient(i)){
             if (PlayerInfoData[i].rankpoint <= 0){
-                GetTimeOut[i] = 8;
+                GetTimeOut[i] = MAX_RETRY;
                 CreateTimer(0.1, Timer_GetClientExp, i);            }
         }
     }
@@ -114,10 +116,6 @@ public int _Native_GetClientExp(Handle plugin, int numParams){
 
     return PlayerInfoData[client].rankpoint;
 }
-/* public void OnClientPutInServer(int client){
-    GetTimeOut[client] = 8;
-    CreateTimer(0.0, Timer_GetClientExp, client);
-} */
 
 public void ClearClientExpData(int client){
     PlayerInfoData[client].gametime = 0;
@@ -143,13 +141,13 @@ public Action Timer_GetClientExp(Handle timer, int iClient){
             return Plugin_Stop;
         } 
         log.debug("%i 不在游戏内, 重试%i", iClient, GetTimeOut[iClient]);
-        CreateTimer(0.5, Timer_GetClientExp, iClient);
+        CreateTimer(RETRY_INTERVAL, Timer_GetClientExp, iClient);
         return Plugin_Stop;
     }
     if (IsFakeClient(iClient)) return Plugin_Stop;
     int res = GetClientRP(iClient);
     if (res == -2) {
-        CreateTimer(0.5, Timer_GetClientExp, iClient);
+        CreateTimer(RETRY_INTERVAL, Timer_GetClientExp, iClient);
         return Plugin_Stop;
     }
     Call_StartForward(g_hForward_OnGetExp);
