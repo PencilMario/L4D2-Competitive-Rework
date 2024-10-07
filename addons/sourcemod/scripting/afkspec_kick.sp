@@ -4,10 +4,7 @@
 #include <l4d2util_constants>
 #include <readyup>
 #include <fix_team_shuffle>
-
-#undef REQUIRE_PLUGIN 
 #include <mix_team>
-#define REQUIRE_PLUGIN
 #define CHECK_INTERVAL 1.0
 
 char snd1[] = "buttons/blip2.wav";
@@ -18,8 +15,6 @@ char snd5[] = "ui/menu_enter05.wav";
 
 int kicktime[MAXPLAYERS] = {20};
 int butitolazy = 0;
-
-bool mix_available = false;
 public void OnPluginStart()
 {
     CreateTimer(CHECK_INTERVAL, Timer_CheckTeams, _, TIMER_REPEAT);
@@ -34,18 +29,7 @@ public void OnMapStart(){
         kicktime[i] = 20;
     }
 }
-public void OnLibraryAdded(const char[] name)
-{
-    if (strcmp(name, "mix_team") == 0){
-        mix_available = true;
-    }
-}
-public void OnLibraryRemoved(const char[] name)
-{
-    if (strcmp(name, "mix_team") == 0){
-        mix_available = false;
-    }
-}
+
 void ResetTimeout(int client){
     if (IsInReady()){
         kicktime[client] = 60
@@ -83,8 +67,8 @@ public Action Timer_CheckTeams(Handle timer)
                         }
                     break;
                 }
-                else if (mix_available) {
-                    if (GetMixState() != STATE_NONE && butitolazy-- < 0) {
+                else if (GetMixState() != STATE_NONE) {
+                    if (butitolazy-- < 0) {
                         CPrintToChat(i, "[{olive}!{default}] 正在进行分队, 占位踢出将在分队结束后开始倒数计时");
                         butitolazy = 15;
                         }
