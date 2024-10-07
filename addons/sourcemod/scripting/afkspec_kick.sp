@@ -34,9 +34,6 @@ public void OnMapStart(){
         kicktime[i] = 20;
     }
 }
-public void OnAllPluginsLoaded(){
-    mix_available = LibraryExists("mix_team");
-}
 public void OnLibraryAdded(const char[] name)
 {
     if (strcmp(name, "mix_team") == 0){
