@@ -79,7 +79,7 @@ public void OnClientAuthorized(int client, const char[] auth) {
 //OnClientDisconnect will fired when changing map, issued by gH0sTy at http://docs.sourcemod.net/api/index.php?fastload=show&id=390&
 void Event_PlayerDisconnect(Event event, const char[] name, bool dontBroadcast) {
 	if (g_cvForceUnreserse.BoolValue) {
-		ServerCommand("sv_cookie 0");
+		ServerCommand("sv_cookie 0")
 		return;
 	}
 	if (g_cvMaxPlayers.IntValue == -1)
@@ -106,9 +106,6 @@ void Event_PlayerDisconnect(Event event, const char[] name, bool dontBroadcast) 
 	g_cvCookie.GetString(sCookie, sizeof(sCookie));
 	if (StrEqual(sCookie, "0"))
 		return;
-
-	if (g_cvUnreserve)
-
 	ServerCommand("sv_cookie %s", sCookie);
 }
 
