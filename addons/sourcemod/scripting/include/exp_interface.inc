@@ -16,7 +16,7 @@ enum {
 	EXPRANK_SIZE
 }
 
-static int EXPRankTable[EXPRANK_SIZE] = {
+stock const EXPRankTable[EXPRANK_SIZE] = {
 	20850,//0.01%
 	18630,//0.1%
 	14846,//1%
@@ -27,7 +27,7 @@ static int EXPRankTable[EXPRANK_SIZE] = {
 	290,//70%
 	0//100%
 }
-static char EXPRankNames[EXPRANK_SIZE][] = {
+stock const char EXPRankNames[EXPRANK_SIZE][] = {
 	"活化石登",
 	"超级老登",
 	"老登",

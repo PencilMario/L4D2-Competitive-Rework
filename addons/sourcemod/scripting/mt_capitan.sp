@@ -4,7 +4,7 @@
 #include <sourcemod>
 #include <colors>
 #include <mix_team>
-
+#include <exp_interface>
 
 public Plugin myinfo = { 
 	name = "MixTeamCapitan",
@@ -108,7 +108,7 @@ public int BuildMenu(Menu &hMenu, int iClient, int iStep)
 
 	hMenu.SetTitle(sMenuTitle);
 
-	char sPlayerInfo[6], sPlayerName[32];
+	char sPlayerInfo[6], sPlayerName[64];
 	for (int iPlayer = 1; iPlayer <= MaxClients; iPlayer++) 
 	{
 		if (!IsClientInGame(iPlayer) || !IS_SPECTATOR(iPlayer) || !IsMixMember(iPlayer) || iClient == iPlayer) {
@@ -119,6 +119,7 @@ public int BuildMenu(Menu &hMenu, int iClient, int iStep)
 		GetClientName(iPlayer, sPlayerName, sizeof(sPlayerName));
 		
 		hMenu.AddItem(sPlayerInfo, sPlayerName);
+		Format(sPlayerInfo, sizeof(sPlayerInfo), "[%s]%s", EXPRankNames[L4D2_GetClientExpRankLevel(iPlayer)] , sPlayerInfo);
 	}
 
 	hMenu.ExitButton = false;
