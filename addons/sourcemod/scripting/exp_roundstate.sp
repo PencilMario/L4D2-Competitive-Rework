@@ -50,6 +50,9 @@ public Action CMD_Exp(int client, int args){
                 infs += L4D2_GetClientExp(i);
                 infc++;
             }
+            case L4D2Team_Spectator:{
+                CPrintToChat(client,"{default}%N{default} %i[{green}%s{default}]", i, L4D2_GetClientExp(i), EXPRankNames[L4D2_GetClientExpRankLevel(i)]);
+            }
         }
     }
     int suravg = surs/surc;
