@@ -29,7 +29,8 @@ public void OnRoundIsLive(){
         }
         
     }        
-    CPrintToChatAll("[{green}EXP{default}] {blue}生还者: %i{default} (平均 %i) | {red}感染者: %i{default} (平均 %i)", surs, surs/surc, infs, infs/infc);
+    CPrintToChatAll("[{green}EXP{default}] {blue}生还者: %i{default} (平均 %i)", surs, surs/surc);
+    CPrintToChatAll("[{green}EXP{default}] {red}感染者: %i{default} (平均 %i)", infs, infs/infc);
     CPrintToChatAll("{default}[{blue}{default}] 使用{green} !exp{default} 查看每个人的经验分");
     
 }
@@ -51,6 +52,7 @@ public Action CMD_Exp(int client, int args){
         }
         
     }
-    CPrintToChatAll("[{green}EXP{default}] {blue}生还者: %i{default} (平均 %i) | {red}感染者: %i{default} (平均 %i)", surs, surs/surc, infs, infs/infc);
+    CPrintToChatAll("[{green}EXP{default}] {blue}生还者: %i{default} (平均 %i)", surs, surs/surc);
+    CPrintToChatAll("[{green}EXP{default}] {red}感染者: %i{default} (平均 %i)", infs, infs/infc);
     return Plugin_Handled;
 }
