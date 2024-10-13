@@ -16,7 +16,6 @@ public void OnRoundIsLive(){
     int surc, infc;
     for (int i = 1; i <= MaxClients; i++){
         if (!IsClientInGame(i)) continue;
-        CPrintToChatAll("{blue}%N{default} %i[{green}%s{default}]", i, L4D2_GetClientExp(i), EXPRankNames[L4D2_GetClientExpRankLevel(i)]);
         switch (GetClientTeam(i)){
             case L4D2Team_Survivor:{
                 surs += L4D2_GetClientExp(i);
@@ -42,12 +41,12 @@ public Action CMD_Exp(int client, int args){
         if (!IsClientInGame(i)) continue;
         switch (GetClientTeam(i)){
             case L4D2Team_Survivor:{
-                CPrintToChatAll("{blue}%N{default} %i[{green}%s{default}]", i, L4D2_GetClientExp(i), EXPRankNames[L4D2_GetClientExpRankLevel(i)]);
+                CPrintToChat(client, "{blue}%N{default} %i[{green}%s{default}]", i, L4D2_GetClientExp(i), EXPRankNames[L4D2_GetClientExpRankLevel(i)]);
                 surs += L4D2_GetClientExp(i);
                 surc++;
             }
             case L4D2Team_Infected:{
-                CPrintToChatAll("{red}%N{default} %i[{green}%s{default}]", i, L4D2_GetClientExp(i), EXPRankNames[L4D2_GetClientExpRankLevel(i)]);
+                CPrintToChat(client,"{red}%N{default} %i[{green}%s{default}]", i, L4D2_GetClientExp(i), EXPRankNames[L4D2_GetClientExpRankLevel(i)]);
                 infs += L4D2_GetClientExp(i);
                 infc++;
             }
@@ -66,9 +65,9 @@ public Action CMD_Exp(int client, int args){
             }
         }
     }
-    CPrintToChatAll("============================");
-    CPrintToChatAll("[{green}EXP{default}] {blue}生还者: %i{default} (平均 %i / 标准差 %i)", surs, surs/surc, suravg2);
-    CPrintToChatAll("[{green}EXP{default}] {red}感染者: %i{default} (平均 %i / 标准差 %i)", infs, infs/infc, infavg2);
+    CPrintToChat(client,"============================");
+    CPrintToChat(client,"[{green}EXP{default}] {blue}生还者: %i{default} (平均 %i / 标准差 %i)", surs, surs/surc, suravg2);
+    CPrintToChat(client,"[{green}EXP{default}] {red}感染者: %i{default} (平均 %i / 标准差 %i)", infs, infs/infc, infavg2);
     return Plugin_Handled;
 }
 
