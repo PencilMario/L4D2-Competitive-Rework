@@ -21,7 +21,7 @@ public void OnRoundIsLive(){
             case L4D2Team_Survivor:{
                 surs += L4D2_GetClientExp(i);
                 surc++;
-            }`
+            }
             case L4D2Team_Infected:{
                 infs += L4D2_GetClientExp(i);
                 infc++;
