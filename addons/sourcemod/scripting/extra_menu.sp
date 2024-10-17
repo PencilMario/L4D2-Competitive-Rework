@@ -723,12 +723,15 @@ void DisplayExtraMenu(int client, int menu_id)
 						{
 							char buffer[32];
 							data.RowsCvar.GetString(i, buffer, sizeof(buffer));
-
-							if(GetConVarBool(FindConVar(buffer)))
-							{
-								ReplaceString(sTemp, sizeof(sTemp), "_OPT_", "[●]");
+							ConVar cvar = FindConVar(buffer);
+							if (cvar == INVALID_HANDLE){
+								if(GetConVarBool(cvar)){
+									ReplaceString(sTemp, sizeof(sTemp), "_OPT_", "[●]");
+								} else {
+									ReplaceString(sTemp, sizeof(sTemp), "_OPT_", "[○]");
+								}
 							} else {
-								ReplaceString(sTemp, sizeof(sTemp), "_OPT_", "[○]");
+								ReplaceString(sTemp, sizeof(sTemp), "_OPT_", "ERR: CVAR NOT FOUND");
 							}
 						}
 
@@ -745,10 +748,15 @@ void DisplayExtraMenu(int client, int menu_id)
 						{
 							char buffer[32];
 							data.RowsCvar.GetString(i, buffer, sizeof(buffer));
-							float value = GetConVarFloat(FindConVar(buffer));
-							FloatToString(value, sVals, sizeof(sVals));
-							ReplaceString(sVals, sizeof(sVals), ".000000", "");
-							ReplaceString(sTemp, sizeof(sTemp), "_OPT_", sVals);
+							ConVar cvar = FindConVar(buffer);
+							if (cvar != INVALID_HANDLE){
+								float value = GetConVarFloat(FindConVar(buffer));
+								FloatToString(value, sVals, sizeof(sVals));
+								ReplaceString(sVals, sizeof(sVals), ".000000", "");
+								ReplaceString(sTemp, sizeof(sTemp), "_OPT_", sVals);
+							} else {
+								ReplaceString(sTemp, sizeof(sTemp), "_OPT_", "ERR: CVAR NOT FOUND");
+							}
 						}
 
 						// List options
@@ -1262,8 +1270,11 @@ void OnButton_Left(int client)
 				{
 					char buffer[32];
 					data.RowsCvar.GetString(index, buffer, sizeof(buffer));
-					SetConVarBool(FindConVar(buffer), false);
-					data.MenuVals[client].Set(index, 0);
+					ConVar cvar = FindConVar(buffer);
+					if (cvar != INVALID_HANDLE){
+						SetConVarBool(FindConVar(buffer), false);
+						data.MenuVals[client].Set(index, 0);
+					}
 				}
 				else
 				{
@@ -1288,13 +1299,16 @@ void OnButton_Left(int client)
 				// Decrement, validate value
 				char buffer[32];
 				data.RowsCvar.GetString(index, buffer, sizeof(buffer));
-				int old_val = GetConVarInt(FindConVar(buffer));
-				int new_val = data.RowsData.Get(index, ROW_INCRE);
-				int min = data.RowsData.Get(index, ROW_IN_MIN);
-				new_val = old_val - new_val;
-				if( new_val < min ) new_val = min;
-				SetConVarInt(FindConVar(buffer), new_val);
-				data.MenuVals[client].Set(index, new_val);
+				ConVar cvar = FindConVar(buffer);
+				if (cvar != INVALID_HANDLE){
+					int old_val = GetConVarInt(cvar);
+					int new_val = data.RowsData.Get(index, ROW_INCRE);
+					int min = data.RowsData.Get(index, ROW_IN_MIN);
+					new_val = old_val - new_val;
+					if( new_val < min ) new_val = min;
+					SetConVarInt(FindConVar(buffer), new_val);
+					data.MenuVals[client].Set(index, new_val);
+				}
 			}
 
 			case MENU_SELECT_LIST:
@@ -1393,8 +1407,11 @@ void OnButton_Right(int client)
 				{
 					char buffer[32];
 					data.RowsCvar.GetString(index, buffer, sizeof(buffer));
-					SetConVarBool(FindConVar(buffer), true);
-					data.MenuVals[client].Set(index, 1);
+					ConVar cvar = FindConVar(buffer);
+					if (cvar != INVALID_HANDLE){
+						SetConVarBool(FindConVar(buffer), true);
+						data.MenuVals[client].Set(index, 1);
+					}
 				}
 				else
 				{
@@ -1418,13 +1435,16 @@ void OnButton_Right(int client)
 				// Increment, validate value
 				char buffer[32];
 				data.RowsCvar.GetString(index, buffer, sizeof(buffer));
-				int old_val = GetConVarInt(FindConVar(buffer));
-				int new_val = data.RowsData.Get(index, ROW_INCRE);
-				int max = data.RowsData.Get(index, ROW_IN_MAX);
-				new_val = old_val + new_val;
-				if( new_val > max ) new_val = max;
-				SetConVarInt(FindConVar(buffer), new_val);
-				data.MenuVals[client].Set(index, new_val);
+				ConVar cvar = FindConVar(buffer);
+				if (cvar != INVALID_HANDLE){
+					int old_val = GetConVarInt(FindConVar(buffer));
+					int new_val = data.RowsData.Get(index, ROW_INCRE);
+					int max = data.RowsData.Get(index, ROW_IN_MAX);
+					new_val = old_val + new_val;
+					if( new_val > max ) new_val = max;
+					SetConVarInt(FindConVar(buffer), new_val);
+					data.MenuVals[client].Set(index, new_val);
+				}
 			}
 
 			case MENU_SELECT_LIST:
