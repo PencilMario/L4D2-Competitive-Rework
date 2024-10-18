@@ -721,7 +721,7 @@ void DisplayExtraMenu(int client, int menu_id)
 						}
 						case MENU_SELECT_CVARONOFF:
 						{
-							char buffer[32];
+							char buffer[MAX_CVAR_LEN];
 							data.RowsCvar.GetString(i, buffer, sizeof(buffer));
 							ConVar cvar = FindConVar(buffer);
 							if (cvar == INVALID_HANDLE){
@@ -731,7 +731,9 @@ void DisplayExtraMenu(int client, int menu_id)
 									ReplaceString(sTemp, sizeof(sTemp), "_OPT_", "[○]");
 								}
 							} else {
-								ReplaceString(sTemp, sizeof(sTemp), "_OPT_", "ERR: CVAR NOT FOUND");
+								char buffer2[128];
+								Format(buffer2, sizeof(buffer2), "ERR: cant find cvar %s", buffer);
+								ReplaceString(sTemp, sizeof(sTemp), "_OPT_", buffer2);
 							}
 						}
 
@@ -746,7 +748,7 @@ void DisplayExtraMenu(int client, int menu_id)
 
 						case MENU_SELECT_CVARADD:
 						{
-							char buffer[32];
+							char buffer[MAX_CVAR_LEN];
 							data.RowsCvar.GetString(i, buffer, sizeof(buffer));
 							ConVar cvar = FindConVar(buffer);
 							if (cvar != INVALID_HANDLE){
@@ -755,7 +757,9 @@ void DisplayExtraMenu(int client, int menu_id)
 								ReplaceString(sVals, sizeof(sVals), ".000000", "");
 								ReplaceString(sTemp, sizeof(sTemp), "_OPT_", sVals);
 							} else {
-								ReplaceString(sTemp, sizeof(sTemp), "_OPT_", "ERR: CVAR NOT FOUND");
+								char buffer2[128];
+								Format(buffer2, sizeof(buffer2), "ERR: cant find cvar %s", buffer);
+								ReplaceString(sTemp, sizeof(sTemp), "_OPT_", buffer2);
 							}
 						}
 
