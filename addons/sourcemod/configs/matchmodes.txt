@@ -18,6 +18,10 @@
 		{
 			"name" "ZoneMod 2.8.9d"
 		}
+		"zm_carplayplus"
+		{
+			"name" "ZoneMod 2.8.9d zm_carplayplus"
+		}
 		"zonemod6v6"
 		{
 			"name" "ZoneMod 6V6(自动更新/测试中)"
