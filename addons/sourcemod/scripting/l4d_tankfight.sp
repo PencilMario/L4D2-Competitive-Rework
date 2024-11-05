@@ -41,11 +41,8 @@ CZombieManager ZombieManager;
 #define IS_VALID_INFECTED(%1)   (IS_VALID_INGAME(%1) && IS_INFECTED(%1))
 #define IS_VALID_INGAME(%1)     (IS_VALID_CLIENT(%1) && IsClientInGame(%1))
 #define ZC_TANK    8
-#define MAX_MAPRULE 16
-#define BANNED_MAP 2.0
-#define MAX_MAP 64
 
-ConVar g_cvTeleport, g_cvMinFlow;
+
 int g_iMapTFType = 0;
 
 enum /*strMapType*/
@@ -59,91 +56,6 @@ enum
     TYPE_FINISH = 11,
     TYPE_STATIC = 12
 };
-enum MapDistanceRuleType{
-    /**
-     * 距离：克和生还的距离
-     * 指定传送点：生还要被传送到的位置（进度百分比）
-     */
-    MAPTYPE_NONE = 0,
-    MAPTYPE_DEFAULT, // CVAR指定的值
-    MAPTYPE_GLOBAL,  // 设置该地图全局距离
-    MAPTYPE_RANGE, // 设置该地图指定进度区间内的距离
-    MAPTYPE_STATIC, // 设置该地图指定进度区间内的指定传送点
-    MAPTYPE_DONTTELEPORT, // 在该地图不进行传送。如果tank出生点-间隔距离<0，也不会进行传送
-    MAPTYPE_BANNED, // 该地图不支持，将自动更换地图
-
-
-    
-};
-
-enum struct MapDistanceRule{
-    MapDistanceRuleType ruletype;
-    float startpos; // 起始进度
-    float endpos;  // 结束进度
-    float length_pos; // 生还和克的最小进度差距 & MAPTYPE_STATIC时的复活位置
-}
-enum struct ThisMapSurvivorPos{
-    MapDistanceRuleType ruletype;
-    float length_pos;
-}
-enum struct TFMapRule{
-    char mapname[MAX_MAP_NAME];
-    MapDistanceRule maprule[MAX_MAPRULE];
-
-    void addMapRule(MapDistanceRuleType type, float start, float end, float value){
-        for(int i = 0; i < MAX_MAPRULE; i++){
-            if (maprule[i].ruletype == MAPTYPE_NONE){
-                maprule[i].ruletype = type;
-                maprule[i].startpos = start;
-                maprule[i].endpos = end;
-                maprule[i].length_pos = value;
-                return;
-            }
-        }
-        LogError("地图 '%s' 的规则已满！请修改MAX_MAPRULE的值并重新编译！", mapname);
-    }
-
-    ThisMapSurvivorPos getDistance(float current){
-        ThisMapSurvivorPos result;
-        for(int i = 0; i < MAX_MAPRULE; i++){
-            switch (maprule[i].ruletype){
-                case MAPTYPE_NONE: {continue;}
-                case MAPTYPE_BANNED: {result.ruletype = MAPTYPE_BANNED;}
-                case MAPTYPE_DONTTELEPORT: {result.ruletype = MAPTYPE_DONTTELEPORT;}
-                case MAPTYPE_STATIC: {
-                    if (maprule[i].ruletype < result.ruletype) continue; 
-                    if (maprule[i].startpos < current && maprule[i].endpos > current){
-                        result.ruletype = MAPTYPE_STATIC;
-                        result.length_pos = maprule[i].length_pos;
-                    }
-                }
-                case MAPTYPE_RANGE:{
-                    if (maprule[i].ruletype < result.ruletype) continue; // 有更高优先级的规则命中
-                    if (maprule[i].startpos < current && maprule[i].endpos > current){
-                        result.ruletype = MAPTYPE_RANGE;
-                        result.length_pos = maprule[i].length_pos;
-                    }
-                }
-                case MAPTYPE_GLOBAL:{
-                    if (maprule[i].ruletype < result.ruletype) continue; 
-                    result.ruletype = MAPTYPE_GLOBAL;
-                    result.length_pos = maprule[i].length_pos;
-                }
-                default:{
-                    if (result.ruletype < MAPTYPE_DEFAULT) continue; 
-                    result.ruletype = MAPTYPE_DEFAULT; // cvar
-                    result.length_pos = g_cvMinFlow.FloatValue;
-                }
-            }
-        }
-        if (current - result.length_pos < 0 && result.ruletype != MAPTYPE_STATIC){
-            result.ruletype = MAPTYPE_DONTTELEPORT;
-        }
-        return result;
-    }
-}
-
-TFMapRule mapRuleData[MAX_MAP];
 static const char g_sTankModels[][TANK_MODEL_STRLEN] = {
     "models/infected/hulk.mdl",
     "models/infected/hulk_dlc3.mdl",
@@ -164,7 +76,7 @@ int g_iPredictSurModel = INVALID_ENT_REFERENCE;
 int g_iRound = 0;
 float g_vModelPos[3], g_vModelAng[3];
 float g_vSmodelPos[3], g_vSmodelAng[3];
-
+ConVar g_cvTeleport;
 
 //=========================================================================================================
 
@@ -198,7 +110,6 @@ public void OnPluginStart()
                             ...	"0 = Disable, 1 = Enable",
                                 FCVAR_SPONLY,
                                 true, 0.0, true, 1.0);
-    g_cvMinFlow = CreateConVar("tf_minflow", "0.12", "默认最低间隔");
     
     HookEvent("round_start", Event_RoundStart);
     HookEvent("tank_spawn", Event_TankSpawn);
@@ -228,7 +139,7 @@ bool IsTankInGame()
 {
     for (int client = 1; client <= MaxClients; client++) {
         if (IS_VALID_INFECTED(client) && IsPlayerAlive(client) && GetEntProp(client, Prop_Send, "m_zombieClass") == ZC_TANK) {
-            return true;   
+            return true;
         }
     }
     return false;
@@ -388,18 +299,10 @@ Action Timer_DelaySpawn(Handle timer)
     spawn.IntValue = 0;
     return Plugin_Stop;
 }
-ThisMapSurvivorPos getThisMapInfo(){
-    float tank = L4D2Direct_GetVSTankToSpawnThisRound(0);
-    char currmap[128];
-    GetCurrentMap(currmap, sizeof(currmap));
-    for (int i = 0; i < MAX_MAP; i++){
-        if (StrEqual(currmap, mapRuleData[i].mapname)){
-            return mapRuleData[i].getDistance(tank);
-        }
-    }
-}
+
 bool IsMissionFinalMap()
 {
+    
     char g_sMapName[48][32];
     GetCurrentMap(g_sMapName[g_iRound], 32);
     Handle g_hTrieMaps;
@@ -605,13 +508,10 @@ int ProcessSurPredictModel(float vPos[3], float vAng[3])
 {
     if (GetVectorLength(vPos) == 0.0)
     {
-        ThisMapSurvivorPos pos = getThisMapInfo();
-        if(pos.ruletype == MAPTYPE_BANNED) {CreateTimer(20.0, Timer_AnounceChangeMap);return -1;}
-        if(pos.ruletype == MAPTYPE_DONTTELEPORT) {return -1;}
-        float tank = L4D2Direct_GetVSTankToSpawnThisRound(0);
         if (L4D2Direct_GetVSTankToSpawnThisRound(0))
         {
-            for (float p = pos.ruletype == MAPTYPE_STATIC ? pos.length_pos : tank - pos.length_pos; p > 0.0; p -= 0.01)
+            // 从 -12% 反方向获取位置
+            for (float p = L4D2Direct_GetVSTankFlowPercent(0) -0.12; p > 0.0; p -= 0.01)
             {
                 TerrorNavArea nav = GetBossSpawnAreaForFlow(p);
                 if (nav.Valid())
