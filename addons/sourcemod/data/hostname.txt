@@ -54,7 +54,7 @@
 	}	
 	"30721"
 	{
-		"hostname"		"HANA suki"
+		"hostname"		"[TankFight] HANA suki"
 	}
 	"35710"
 	{
