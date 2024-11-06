@@ -430,6 +430,7 @@ void StopCountdown()
 	CTimer_Invalidate(CountdownPointer());
 }
 public Action L4D_OnFirstSurvivorLeftSafeArea(int x){
+    if (IsInReady()) return Plugin_Continue;
     if (g_iMapTFType == TYPE_STATIC) return Plugin_Continue;
     OnPreTFStart();
     if (!IsInReady()){
