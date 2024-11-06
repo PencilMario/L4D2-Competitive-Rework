@@ -229,6 +229,10 @@ int PreDamageMenuHandler(Menu menu, MenuAction action, int iClient, int param2)
 		}
 		case MenuAction_Select:
 		{
+            if (TFData.isPreDamageStateEnded()) {
+                PrintToChat(iClient, "预伤害阶段已经过了~");
+                return 0;
+            }
 			char index[12];
             menu.GetItem(param2, index, sizeof(index));
             int victim = StringToInt(index);
@@ -508,18 +512,12 @@ bool IsMissionFinalMap()
     // finales
     g_hTrieMaps = CreateTrie();
     SetTrieValue(g_hTrieMaps, "c1m4_atrium",					MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c2m5_concert",				   MP_FINALE);
     SetTrieValue(g_hTrieMaps, "c3m1_plankcountry",				MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c3m4_plantation",				MP_FINALE);
     SetTrieValue(g_hTrieMaps, "c4m5_milltown_escape",		   MP_FINALE);
     SetTrieValue(g_hTrieMaps, "c5m5_bridge",					MP_FINALE);
     SetTrieValue(g_hTrieMaps, "c6m3_port",					  MP_FINALE);
     SetTrieValue(g_hTrieMaps, "c7m3_port",					  MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c8m5_rooftop",				   MP_FINALE);
     SetTrieValue(g_hTrieMaps, "c9m2_lots",					  MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c10m5_houseboat",				MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c11m5_runway",				   MP_FINALE);
-    SetTrieValue(g_hTrieMaps, "c12m5_cornfield",				MP_FINALE);
     SetTrieValue(g_hTrieMaps, "c13m4_cutthroatcreek",		   MP_FINALE);
     SetTrieValue(g_hTrieMaps, "c14m2_lighthouse",		   MP_FINALE);
     SetTrieValue(g_hTrieMaps, "c7m1_docks",		   MP_FINALE);
