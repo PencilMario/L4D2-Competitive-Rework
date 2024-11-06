@@ -184,6 +184,7 @@ public Action CMD_tfpre(int client, int args){
     if (IsInfected(client)){
         PreDamageMenu(client);
     }
+    return Plugin_Handled;
 }
 public void OnPreTFStart(){
     TFData.Reset();
@@ -206,7 +207,7 @@ public void OnPreTFStart(){
 void PreDamageMenu(int client){
     Menu menu = new Menu(PreDamageMenuHandler);
     char index[3], buffer[64];
-    menu.SetTitle("预伤害菜单 / 剩余 %i 次 (-%f HP/ +%.1f CD)", TFData.iClientDamagedTime[client] ,TFData.GetClientPerTimeDamage(), TFData.GetClientPerTimeCooltime());
+    menu.SetTitle("预伤害菜单 / 剩余 %i 次 (-%.0f HP/ +%.1f CD)", TFData.iClientDamagedTime[client] ,TFData.GetClientPerTimeDamage(), TFData.GetClientPerTimeCooltime());
     for (int i = 1; i <= MaxClients; i++){
         if (!IS_VALID_INGAME(i)) continue;
         if (IsSurvivor(i) && IsPlayerAlive(i)){
@@ -236,8 +237,11 @@ int PreDamageMenuHandler(Menu menu, MenuAction action, int iClient, int param2)
 			char index[12];
             menu.GetItem(param2, index, sizeof(index));
             int victim = StringToInt(index);
+            int tank_fru;
             if (TFData.iClientDamagedTime[iClient]-- > 0){
+                if (IsTank(iClient)) tank_fru = GetTankFrustration(iClient);
                 HurtEntity(victim, /* IsTank(iClient) ? victim :  */iClient, TFData.GetClientPerTimeDamage());
+                if (IsTank(iClient)) SetTankFrustration(iClient, tank_fru);
                 TFData.fPreDamageDuration += TFData.GetClientPerTimeCooltime();
                 CTimer_SetDuration(CountdownPointer(), TFData.fPreDamageDuration);
                 PreDamageMenu(iClient);
