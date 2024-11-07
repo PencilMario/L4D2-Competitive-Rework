@@ -892,7 +892,7 @@ void TeleportAllSurvivorToPercentFlow(float TargetPercent)
             vAng[2] = 0.0;
             for (int i = 1; i< MaxClients; i++){
                 if (IsClientInGame(i) && IsSurvivor(i)){
-                    TeleportEntity(i, vPos, vAng, NULL_VECTOR);
+                    TeleportEntity(i, (TargetPercent != TFData.fSurvivorPencentTarget) ? vPos : g_vModelPos, vAng, NULL_VECTOR);
                 }
             }
             break;
