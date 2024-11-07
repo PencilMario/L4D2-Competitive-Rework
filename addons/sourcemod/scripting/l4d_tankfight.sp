@@ -161,6 +161,21 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     MarkNativeAsOptional("InfoEditor_GetString");
     return APLRes_Success;
 }
+public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon)
+{
+	if (!IsClientInGame(client) || IsFakeClient(client) || GetClientTeam(client) != L4D2Team_Infected)
+			return Plugin_Continue;
+	
+    if (!IsInfectedGhost(client)) return Plugin_Continue;
+    if (!IsInReady()) return Plugin_Continue;
+	
+    if (buttons & IN_USE)
+	{
+		TeleportEntity(client, g_vSmodelPos, g_vSmodelAng);
+        return Plugin_Handled;
+	}
+	return Plugin_Continue;
+}
 
 public void OnPluginStart()
 {
@@ -388,11 +403,7 @@ public Action SelectSurvivorSpawnPosition(Handle timer){
     if (IsTankInPlay()){
         return Plugin_Stop;
     } else {
-        for (int i = 1; i < MaxClients; i++){
-            if (IsClientInGame(i) && IsSurvivor(i)){
-                TeleportClientToPercentFlow(i, TFData.fSurvivorPercentReal > TFData.fSurvivorPencentTarget ? TFData.fSurvivorPencentTarget : TFData.fSurvivorPercentReal);
-            }
-        }
+        TeleportAllSurvivorToPercentFlow(TFData.fSurvivorPercentReal > TFData.fSurvivorPencentTarget ? TFData.fSurvivorPencentTarget : TFData.fSurvivorPercentReal);
         TFData.fSurvivorPercentReal += 0.06;
         if (TFData.fSurvivorPercentReal > TFData.fSurvivorPencentTarget){
             return Plugin_Stop;
@@ -547,6 +558,7 @@ Action ChangtToNewMap(Handle Timer)
     ArrayList offmaps = new ArrayList(32);
     offmaps.PushString("c1m1_hotel");
     offmaps.PushString("c2m1_highway");
+    offmaps.PushString("c3m1_plankcountry");
     offmaps.PushString("c4m1_milltown_a");
     offmaps.PushString("c5m1_waterfront");
     offmaps.PushString("c6m1_riverbank");
@@ -864,7 +876,7 @@ void CheatCommand(const char[] sCmd, const char[] sArgs = "")
     }
 }
 float vPos[3], vAng[3];
-void TeleportClientToPercentFlow(int client, float TargetPercent)
+void TeleportAllSurvivorToPercentFlow(float TargetPercent)
 {
     // 从 -12% 反方向获取位置
     for (float p = TargetPercent; p > 0.0; p -= 0.01)
@@ -878,11 +890,12 @@ void TeleportClientToPercentFlow(int client, float TargetPercent)
             vAng[0] = 0.0;
             vAng[1] = GetRandomFloat(0.0, 360.0);
             vAng[2] = 0.0;
-            
+            for (int i = 1; i< MaxClients; i++){
+                if (IsClientInGame(i) && IsSurvivor(i)){
+                    TeleportEntity(i, vPos, vAng, NULL_VECTOR);
+                }
+            }
             break;
         }
     }
-    
-
-    TeleportEntity(client, vPos, vAng, NULL_VECTOR);
 }
