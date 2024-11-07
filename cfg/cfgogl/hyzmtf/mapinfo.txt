@@ -632,7 +632,7 @@
 			"Before elevator (bugged spawn)"
 			{
 				"min"		"42"
-				"max"		"81"
+				"max"		"100"
 			}
 		}
 	}
