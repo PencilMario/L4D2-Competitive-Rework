@@ -232,7 +232,7 @@ void PreDamageMenu(int client){
         }
     }
     menu.ExitBackButton = true;
-	menu.Display(client, MENU_TIME_FOREVER);
+	menu.Display(client, 12);
 }
 
 int PreDamageMenuHandler(Menu menu, MenuAction action, int iClient, int param2)
