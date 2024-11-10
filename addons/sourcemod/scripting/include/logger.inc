@@ -226,7 +226,7 @@ methodmap Logger __nullable__
      * @param prefix 前缀
      */
     public void SetLogPrefix(const char[] prefix){
-        Format(LoggerData[this.index].PreFix, MAX_LOGGERNAME_LENGTH, "%s", prefix) 
+        Format(LoggerData[this.index].PreFix, MAX_LOGGERNAME_LENGTH, "%s", prefix); 
     }
 
     // logger对象的数据索引
