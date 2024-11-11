@@ -1,7 +1,7 @@
 #include <sourcemod>
 #include <sdktools>
 #include <colors>
-#include "include/sdkhooks.inc"
+#include <sdkhooks>
 #undef REQUIRE_PLUGIN
 
 #pragma semicolon 1
