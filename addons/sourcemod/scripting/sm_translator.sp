@@ -22,7 +22,7 @@
 #include <logger>
 
 #define VER "1.0.1"
-#define SHORT_LEN 5
+#define SHORT_LEN 7
 #define Language_NotSupport "NONE"
 
 ConVar g_hTranslateApi;
