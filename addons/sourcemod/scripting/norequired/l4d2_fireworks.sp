@@ -1,4 +1,3 @@
-/*
 *	Fireworks Party
 *	Copyright (C) 2020 Silvers
 *
