@@ -4,14 +4,55 @@
 #include <colors>
 #include <l4d2util_constants>
 #include <exp_interface>
+
+#undef REQUIRE_PLUGIN
 #include <readyup>
+#define REQUIRE_PLUGIN
+
+bool g_bReadyUpAvailable = false;
 
 public void OnPluginStart()
 {
     RegConsoleCmd("sm_exp", CMD_Exp);
 }
 
-public void OnRoundIsLive(){
+public void OnAllPluginsLoaded()
+{
+    g_bReadyUpAvailable = LibraryExists("readyup");
+}
+
+public void OnLibraryAdded(const char[] name)
+{
+    if (StrEqual(name, "readyup"))
+    {
+        g_bReadyUpAvailable = true;
+    }
+}
+
+public void OnLibraryRemoved(const char[] name)
+{
+    if (StrEqual(name, "readyup"))
+    {
+        g_bReadyUpAvailable = false;
+    }
+}
+
+#if !defined REQUIRE_PLUGIN
+public void __pl_readyup_SetNTVOptional()
+{
+    MarkNativeAsOptional("OnRoundIsLive");
+}
+#endif
+
+public void OnRoundIsLive()
+{
+    if (g_bReadyUpAvailable)
+    {
+        CreateTimer(3.0, Timer_DelayedRoundIsLive);
+    }
+}
+
+public Action Timer_DelayedRoundIsLive(Handle timer){
     int surs, infs;
     int surc, infc;
     int suravg2, infavg2;
@@ -46,7 +87,10 @@ public void OnRoundIsLive(){
     CPrintToChatAll("[{green}EXP{default}] {red}感染者: %i{default} (平均 %i / 标准差 %i)", infs, infs/infc, infavg2);
     CPrintToChatAll("{default}使用{green} !exp{default} 查看每个人的经验分");
     
+    return Plugin_Handled;
+
 }
+
 public Action CMD_Exp(int client, int args){
     int surs, infs;
     int surc, infc;
