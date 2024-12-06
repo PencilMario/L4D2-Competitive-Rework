@@ -78,9 +78,9 @@ public void OnPluginStart()
     RegAdminCmd("sm_setmenu", CmdMenuTest, ADMFLAG_ROOT);
 }
 public void OnAllPluginsLoaded(){
-	if (LibraryExists("extra_menu")) OnLibraryAdded("extra_menu");
+	if (LibraryExists("extra_menu")) OnLibraryAdded_2("extra_menu");
 }
-public void OnLibraryAdded(const char[] name)
+public void OnLibraryAdded_2(const char[] name)
 {
     if( strcmp(name, "extra_menu") == 0 )
     {
