@@ -16,7 +16,7 @@
 		}
 		"zonemod"
 		{
-			"name" "ZoneMod 2.8.9d"
+			"name" "ZoneMod 2.8.9e"
 		}
 		"zm_carplayplus"
 		{
@@ -28,7 +28,7 @@
 		}
 		"zoneretro"
 		{
-			"name" "ZoneMod Retro 2.8.9d"
+			"name" "ZoneMod Retro 2.8.9e"
 		}
 		"zm3v3"
 		{
@@ -129,7 +129,7 @@
 	{
 		"zonehunters"
 		{
-			"name" "ZoneHunters 2.8.9d"
+			"name" "ZoneHunters 2.8.9e"
 		}
 		"zh3v3"
 		{
