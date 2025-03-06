@@ -75,7 +75,7 @@ void PrintExp(int client, bool show_everyone){
     int surs, infs;
     int surc, infc;
     int suravg2, infavg2;
-    int surl[MAXPLAYERS], infl[MAXPLAYERS];
+    int surl[MAXPLAYERS], infl[MAXPLAYERS] = {0};
     for (int i = 1; i <= MaxClients; i++){
         if (!IsClientInGame(i)) continue;
         switch (GetClientTeam(i)){
@@ -121,43 +121,65 @@ int abs(int v){
     return v < 0 ? -v : v;
 }
 
-float CalculateCoefficientOfVariation(int[] array, int length)
-{
-    int sum = 0;
+float CalculateCoefficientOfVariation(int[] array, int length) {
+    float sum = 0.0;
     int validLength = 0;
     
-    // 第一遍遍历：计算有效数据的总和和数量
+    // 调试输出原始数据
+    PrintToServer("[DEBUG] 原始数据:");
     for (int i = 0; i < length; i++) {
-        if (array[i] >= 0) {
-            sum += array[i];
+        PrintToServer("array[%d] = %d", i, array[i]);
+    }
+    
+    // 第一遍遍历：计算有效数据
+    for (int i = 0; i < length; i++) {
+        if (array[i] > 0) {
+            sum += float(array[i]);
             validLength++;
+            PrintToServer("[处理] 接受 array[%d] = %d (当前sum=%.2f, valid=%d)", 
+                i, array[i], sum, validLength);
+        } else {
+            PrintToServer("[跳过] 排除 array[%d] = %d (非正数)", i, array[i]);
         }
     }
     
-    // 有效性检查（至少需要两个有效数据点）
+    PrintToServer("[SUM] 总和=%.2f 有效数据=%d", sum, validLength);
+    
     if (validLength <= 1) {
+        PrintToServer("[错误] 有效数据不足: %d <=1", validLength);
         return 0.0;
     }
     
     // 计算平均值
-    float mean = float(sum) / float(validLength);
+    float mean = sum / float(validLength);
+    PrintToServer("[MEAN] 平均值=%.2f", mean);
     
-    // 处理平均值为零的特殊情况
     if (mean == 0.0) {
+        PrintToServer("[警告] 平均值为零!");
         return 0.0;
     }
     
     // 第二遍遍历：计算方差
     float variance = 0.0;
     for (int i = 0; i < length; i++) {
-        if (array[i] >= 0) {
+        if (array[i] > 0) {
             float diff = float(array[i]) - mean;
             variance += (diff * diff);
+            PrintToServer("[方差] array[%d]贡献: (%.2f - %.2f)^2 = %.2f (累计=%.2f)",
+                i, float(array[i]), mean, diff*diff, variance);
         }
     }
     variance /= float(validLength - 1); // 样本方差
+    PrintToServer("[VAR] 方差=%.2f (分母=%d-1)", variance, validLength);
     
-    // 计算标准差和变异系数
+    // 计算标准差
     float std_dev = SquareRoot(variance);
-    return (std_dev / mean) * 100.0;
+    PrintToServer("[STD] 标准差=%.2f (sqrt(%.2f))", std_dev, variance);
+    
+    // 最终结果
+    float cv = (std_dev / mean) * 100.0;
+    PrintToServer("[CV] 变异系数= (%.2f / %.2f) *100 = %.2f%%", 
+        std_dev, mean, cv);
+    
+    return cv;
 }
