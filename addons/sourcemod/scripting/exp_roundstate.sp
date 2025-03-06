@@ -128,7 +128,9 @@ float CalculateCoefficientOfVariation(int[] array, int length) {
     // 调试输出原始数据
     PrintToServer("[DEBUG] 原始数据:");
     for (int i = 0; i < length; i++) {
-        PrintToServer("array[%d] = %d", i, array[i]);
+        if (array[i] > 0) {
+            PrintToServer("array[%d] = %d", i, array[i]);
+        }
     }
     
     // 第一遍遍历：计算有效数据
