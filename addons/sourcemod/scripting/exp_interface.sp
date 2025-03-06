@@ -79,6 +79,14 @@ public void OnClientPutInServer(int iClient)
         CreateTimer(0.5, Timer_GetClientExp, iClient);
 	}
 }
+
+public void OnClientAuthorized(int iClient)
+{
+    if (PlayerInfoData[iClient].rankpoint <= 0){
+        OnClientPutInServer(iClient);
+    }
+}
+
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
     g_hForward_OnGetExp = CreateGlobalForward("L4D2_OnGetExp", ET_Ignore, Param_Cell, Param_Cell);
