@@ -127,8 +127,8 @@ void PrintExp(int client, bool show_everyone){
         }
     }
     CPrintToChat(client,"============================");
-    CPrintToChat(client,"[{green}EXP{default}] {blue}生还者: %i{default} (平均 %i / 标准差 %i / 变异系数 %.2f%)", surs, surs/surc, suravg2, CalculateCoefficientOfVariation(surl, MAXPLAYERS));
-    CPrintToChat(client,"[{green}EXP{default}] {red}感染者: %i{default} (平均 %i / 标准差 %i / 变异系数 %.2f%)", infs, infs/infc, infavg2, CalculateCoefficientOfVariation(infl, MAXPLAYERS));
+    CPrintToChat(client,"[{green}EXP{default}] {blue}生还者: %i{default} (平均 %i / 标准差 %i / 变异系数 %.2f%%)", surs, surs/surc, suravg2, CalculateCoefficientOfVariation(surl, MAXPLAYERS));
+    CPrintToChat(client,"[{green}EXP{default}] {red}感染者: %i{default} (平均 %i / 标准差 %i / 变异系数 %.2f%%)", infs, infs/infc, infavg2, CalculateCoefficientOfVariation(infl, MAXPLAYERS));
 }
 
 int abs(int v){
