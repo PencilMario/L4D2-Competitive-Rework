@@ -14,6 +14,7 @@ bool g_bReadyUpAvailable = false;
 public void OnPluginStart()
 {
     RegConsoleCmd("sm_exp", CMD_Exp);
+    RegConsoleCmd("sm_testcv", CMD_Test);
 }
 
 public void OnAllPluginsLoaded()
@@ -68,7 +69,20 @@ public Action CMD_Exp(int client, int args){
     PrintExp(client, true);
     return Plugin_Handled;
 }
-
+public Action CMD_Test(int client, int args){
+    int rand1 = GetRandomInt(100, 10000);
+    int rand2 = GetRandomInt(100, 10000);
+    int rand3 = GetRandomInt(100, 10000);
+    int rand4 = GetRandomInt(100, 10000);
+    int array[] = {-100, -2, 0, -100, -100, 0, -2, -100};
+    array[0] = rand1;
+    array[3] = rand2;
+    array[4] = rand3;
+    array[7] = rand4;
+    float res = CalculateCoefficientOfVariation(array, sizeof(array));
+    ReplyToCommand(client, "变异系数: %.2f%%", res);
+    return Plugin_Handled;
+}
 
 
 void PrintExp(int client, bool show_everyone){
@@ -141,7 +155,7 @@ float CalculateCoefficientOfVariation(int[] array, int length) {
             PrintToServer("[处理] 接受 array[%d] = %d (当前sum=%.2f, valid=%d)", 
                 i, array[i], sum, validLength);
         } else {
-            PrintToServer("[跳过] 排除 array[%d] = %d (非正数)", i, array[i]);
+            //PrintToServer("[跳过] 排除 array[%d] = %d (非正数)", i, array[i]);
         }
     }
     
