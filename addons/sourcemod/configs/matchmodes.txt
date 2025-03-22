@@ -2,6 +2,10 @@
 {
 	"ZoneMod Configs"
 	{
+		"CialloZoneV2"
+		{
+			"name" "CialloZone 2.8.4"
+		}
 		"zonemod"
 		{
 			"name" "ZoneMod 2.8.4"
