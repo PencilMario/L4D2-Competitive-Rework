@@ -13,7 +13,7 @@ gitrep=L4D2-Competitive-Rework
 echo "Install Game";
 git config --global --add safe.directory /home/steam/L4D2-Competitive-Rework
 cd /home/steam/$gitrep/;
-
+sudo timedatectl set-timezone Asia/Shanghai
 bash update_full.sh
 
 #crontab
