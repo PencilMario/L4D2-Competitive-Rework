@@ -280,13 +280,16 @@ void MovePlayerToTeam(int client, int team)
     switch (team)
     {
         case L4D2_TEAM_SPECTATOR:
-            ChangeClientTeam(client, L4D2_TEAM_SPECTATOR); 
+            //ChangeClientTeam(client, L4D2_TEAM_SPECTATOR); 
+            ServerCommand("sm_swapto force %i %N", client, L4D2_TEAM_SPECTATOR);
 
         case L4D2_TEAM_SURVIVOR:
-            FakeClientCommand(client, "jointeam 2");
+            //FakeClientCommand(client, "jointeam 2");
+            ServerCommand("sm_swapto force %i %N", client, L4D2_TEAM_SURVIVOR);
 
         case L4D2_TEAM_INFECTED:
-            ChangeClientTeam(client, L4D2_TEAM_INFECTED);
+            //ChangeClientTeam(client, L4D2_TEAM_INFECTED);
+            ServerCommand("sm_swapto force %i %N", client, L4D2_TEAM_INFECTED);
     }
 }
 
