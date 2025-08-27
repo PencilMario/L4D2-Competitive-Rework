@@ -270,51 +270,26 @@ bool IsNewGame()
 
     return teamAScore == 0 && teamBScore == 0;
 }
-void MoveToSurvivor(int client){
-    bool hasbot = HasSurvivorBot();
-    if (!hasbot){
-        // If no survivor bot exists, create one and then move the player
-        CreateSurvivorBot()
-        CreateTimer(0.2, Timer_MoveToSurvivorAfterBotCreation, client);
-    }
-    else{
-        ServerCommand("sm_swapto force %i %N", L4D2_TEAM_SURVIVOR, client);
-    }
-}
 
-public Action Timer_MoveToSurvivorAfterBotCreation(Handle timer, int client) {
-    ServerCommand("sm_swapto force %i %N", L4D2_TEAM_SURVIVOR, client);
-    return Plugin_Handled;
-}
 void MovePlayerToTeam(int client, int team)
 {
-    // Only check bot creation for survivor team
-    if (team == L4D2_TEAM_SURVIVOR)
-    {
-        int survivorLimit = GetConVarInt(FindConVar("survivor_limit"));
-        int currentSurvivors = NumberOfPlayersInTheTeam(L4D2_TEAM_SURVIVOR);
-        
-        if (currentSurvivors >= survivorLimit)
-        {
-            // Try to create a bot. If creation fails, return
-            if (!CreateSurvivorBot())
-                return;
-        }
-    }
+    // No need to check multiple times if we're trying to move a player to a possibly full team.
+    if (team != L4D2_TEAM_SPECTATOR && NumberOfPlayersInTheTeam(team) >= TeamSize())
+        return;
 
     switch (team)
     {
         case L4D2_TEAM_SPECTATOR:
-            //ChangeClientTeam(client, L4D2_TEAM_SPECTATOR); W
-            ServerCommand("sm_swapto force %i %N", L4D2_TEAM_SPECTATOR, client);
+            //ChangeClientTeam(client, L4D2_TEAM_SPECTATOR); 
+            ServerCommand("sm_swapto force %i %N", client, L4D2_TEAM_SPECTATOR);
 
         case L4D2_TEAM_SURVIVOR:
             //FakeClientCommand(client, "jointeam 2");
-            MoveToSurvivor(client);
+            ServerCommand("sm_swapto force %i %N", client, L4D2_TEAM_SURVIVOR);
 
         case L4D2_TEAM_INFECTED:
             //ChangeClientTeam(client, L4D2_TEAM_INFECTED);
-            ServerCommand("sm_swapto force %i %N", L4D2_TEAM_INFECTED, client);
+            ServerCommand("sm_swapto force %i %N", client, L4D2_TEAM_INFECTED);
     }
 }
 
@@ -333,79 +308,7 @@ int NumberOfPlayersInTheTeam(int team)
     return count;
 }
 
-bool HasSurvivorBot()
+int TeamSize()
 {
-    for (int client = 1; client <= MaxClients; client++)
-    {
-        if (IsClientInGame(client) && IsFakeClient(client) && GetClientTeam(client) == L4D2_TEAM_SURVIVOR)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool CreateSurvivorBot()
-{
-    int Bot = CreateFakeClient("SurvivorBot");
-    
-    // If bot creation failed, return false
-    if (Bot == 0) return false;
-
-    ChangeClientTeam(Bot, L4D2_TEAM_SURVIVOR);
-    
-    // Ensure classname is set correctly
-    DispatchKeyValue(Bot, "classname", "survivorbot");
-    
-    // Attempt to spawn the bot
-    if (!DispatchSpawn(Bot)) 
-    {
-        KickClient(Bot, "Failed to spawn bot");
-        return false;
-    }
-    
-    // Respawn if not alive
-    if (!IsPlayerAlive(Bot)) 
-    {
-        // Use CreateTimer to ensure proper spawning
-        CreateTimer(0.1, Timer_RespawnBot, Bot);
-    }
-    
-    return true;
-}
-
-public Action Timer_RespawnBot(Handle timer, int Bot)
-{
-    if (IsClientConnected(Bot) && IsClientInGame(Bot))
-    {
-        // Attempt to respawn and teleport the bot
-        static Handle hRoundRespawn;
-        if (hRoundRespawn == null)
-        {
-            Handle hGameConf = LoadGameConfigFile("l4d_respawn_improved");
-            StartPrepSDKCall(SDKCall_Player);
-            PrepSDKCall_SetFromConf(hGameConf, SDKConf_Signature, "RoundRespawn");
-            hRoundRespawn = EndPrepSDKCall();
-            CloseHandle(hGameConf);
-        }
-        
-        if (hRoundRespawn != null)
-        {
-            SDKCall(hRoundRespawn, Bot);
-            
-            // Teleport to a survivor
-            for (int i = 1; i <= MaxClients; i++)
-            {
-                if (IsClientInGame(i) && GetClientTeam(i) == L4D2_TEAM_SURVIVOR && IsPlayerAlive(i) && i != Bot)
-                {
-                    float teleportOrigin[3];
-                    GetClientAbsOrigin(i, teleportOrigin);
-                    TeleportEntity(Bot, teleportOrigin, NULL_VECTOR, NULL_VECTOR);
-                    break;
-                }
-            }
-        }
-    }
-    
-    return Plugin_Handled;
+    return GetConVarInt(FindConVar("survivor_limit"));
 }
