@@ -1,6 +1,6 @@
 /*
 *	Left 4 DHooks Direct
-*	Copyright (C) 2024 Silvers
+*	Copyright (C) 2026 Silvers
 *
 *	This program is free software: you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -81,8 +81,8 @@ void LoadGameData()
 	BuildPath(Path_SM, sPath, sizeof(sPath), "gamedata/%s.txt", g_bLeft4Dead2 ? GAMEDATA_2 : GAMEDATA_1);
 	if( FileExists(sPath) == false ) SetFailState("\n==========\nMissing required file: \"%s\".\nRead installation instructions again.\n==========", sPath);
 
-	GameData hGameData = new GameData(g_bLeft4Dead2 ? GAMEDATA_2 : GAMEDATA_1);
-	if( hGameData == null ) SetFailState("Failed to load \"%s.txt\" gamedata.", g_bLeft4Dead2 ? GAMEDATA_2 : GAMEDATA_1);
+	GameData hGameData = g_hGameData;
+	if( hGameData == null ) SetFailState("Failed to retrieve \"%s.txt\" gamedata.", g_bLeft4Dead2 ? GAMEDATA_2 : GAMEDATA_1);
 
 	#if defined DEBUG
 	#if DEBUG
@@ -91,9 +91,6 @@ void LoadGameData()
 	PrintToServer("");
 	#endif
 	#endif
-
-	g_bLinuxOS = hGameData.GetOffset("OS") == 1;
-	FormatEx(g_sSystem, sizeof(g_sSystem), "%s/%d/%s", g_bLinuxOS ? "NIX" : "WIN", g_bLeft4Dead2 ? 2 : 1, PLUGIN_VERSION);
 
 
 
@@ -313,6 +310,17 @@ void LoadGameData()
 
 	if( g_bLeft4Dead2 )
 	{
+		StartPrepSDKCall(SDKCall_Player);
+		if( PrepSDKCall_SetFromConf(hGameData, SDKConf_Signature, "CTerrorPlayer::GetSpecialInfectedDominatingMe") == false )
+		{
+			LogError("Failed to find signature: \"CTerrorPlayer::GetSpecialInfectedDominatingMe\" (%s)", g_sSystem);
+		} else {
+			PrepSDKCall_SetReturnInfo(SDKType_CBasePlayer, SDKPass_Pointer);
+			g_hSDK_CTerrorPlayer_GetSpecialInfectedDominatingMe = EndPrepSDKCall();
+			if( g_hSDK_CTerrorPlayer_GetSpecialInfectedDominatingMe == null )
+				LogError("Failed to create SDKCall: \"CTerrorPlayer::GetSpecialInfectedDominatingMe\" (%s)", g_sSystem);
+		}
+
 		StartPrepSDKCall(SDKCall_Static);
 		if( !PrepSDKCall_SetFromConf(hGameData, SDKConf_Signature, "IsVisibleToPlayer") )
 		{
@@ -1000,6 +1008,20 @@ void LoadGameData()
 		}
 
 		StartPrepSDKCall(SDKCall_Player);
+		if( PrepSDKCall_SetFromConf(hGameData, SDKConf_Signature, "CTerrorPlayer::OnRevivedByDefibrillator") == false )
+		{
+			SetFailState("Failed to find signature: \"CTerrorPlayer::OnRevivedByDefibrillator\" (%s)", g_sSystem);
+		}
+		PrepSDKCall_AddParameter(SDKType_CBasePlayer, SDKPass_Pointer);
+		PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+		g_hSDK_CTDefibPlayer = EndPrepSDKCall();
+		
+		if( g_hSDK_CTDefibPlayer == null )
+		{
+			LogError("Failed to create SDKCall: \"CTerrorPlayer::OnRevivedByDefibrillator\" (%s)", g_sSystem);
+		}
+
+		StartPrepSDKCall(SDKCall_Player);
 		if( PrepSDKCall_SetFromConf(hGameData, SDKConf_Signature, "SurvivorBot::IsReachable") == false )
 		{
 			LogError("Failed to find signature: \"SurvivorBot::IsReachable\" (%s)", g_sSystem);
@@ -1101,6 +1123,18 @@ void LoadGameData()
 	}
 
 	StartPrepSDKCall(SDKCall_GameRules);
+	if( PrepSDKCall_SetFromConf(hGameData, SDKConf_Signature, "CTerrorGameRules::SetCampaignScores") == false )
+	{
+		LogError("Failed to find signature: \"CTerrorGameRules::SetCampaignScores\" (%s)", g_sSystem);
+	} else {
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		g_hSDK_CTerrorGameRules_SetCampaignScores = EndPrepSDKCall();
+		if( g_hSDK_CTerrorGameRules_SetCampaignScores == null )
+			LogError("Failed to create SDKCall: \"CTerrorGameRules::SetCampaignScores\" (%s)", g_sSystem);
+	}
+
+	StartPrepSDKCall(SDKCall_GameRules);
 	if( PrepSDKCall_SetFromConf(hGameData, SDKConf_Signature, "CTerrorGameRules::GetTeamScore") == false )
 	{
 		LogError("Failed to find signature: \"CTerrorGameRules::GetTeamScore\" (%s)", g_sSystem);
@@ -1157,6 +1191,19 @@ void LoadGameData()
 		g_hSDK_KeyValues_GetString = EndPrepSDKCall();
 		if( g_hSDK_KeyValues_GetString == null )
 			LogError("Failed to create SDKCall: \"KeyValues::GetString\" (%s)", g_sSystem);
+	}
+
+	StartPrepSDKCall(SDKCall_Raw);
+	if( PrepSDKCall_SetFromConf(hGameData, SDKConf_Virtual, "CAmmoDef::MaxCarry") == false )
+	{
+		LogError("Failed to find signature: \"CAmmoDef::MaxCarry\" (%s)", g_sSystem);
+	} else {
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_AddParameter(SDKType_CBasePlayer, SDKPass_Pointer, VDECODE_FLAG_ALLOWNULL);
+		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		g_hSDK_AmmoDef_MaxCarry = EndPrepSDKCall();
+		if( g_hSDK_AmmoDef_MaxCarry == null )
+			LogError("Failed to create SDKCall: \"CAmmoDef::MaxCarry\" (%s)", g_sSystem);
 	}
 
 	if( g_bLeft4Dead2 )
@@ -1390,6 +1437,16 @@ void LoadGameData()
 			LogError("Failed to create SDKCall: \"CTerrorPlayer::GetFlowDistance\" (%s)", g_sSystem);
 	}
 
+	StartPrepSDKCall(SDKCall_Raw);
+	if( PrepSDKCall_SetFromConf(hGameData, SDKConf_Signature, "Intensity::Reset") == false )
+	{
+		LogError("Failed to find signature: \"Intensity::Reset\" (%s)", g_sSystem);
+	} else {
+		g_hSDK_Intensity_Reset = EndPrepSDKCall();
+		if( g_hSDK_Intensity_Reset == null )
+			LogError("Failed to create SDKCall: \"Intensity::Reset\" (%s)", g_sSystem);
+	}
+
 	StartPrepSDKCall(SDKCall_Player);
 	if( PrepSDKCall_SetFromConf(hGameData, SDKConf_Signature, "CTerrorPlayer::SetShovePenalty") == false )
 	{
@@ -1428,18 +1485,20 @@ void LoadGameData()
 			LogError("Failed to create SDKCall: \"CTerrorPlayer::DoAnimationEvent\" (%s)", g_sSystem);
 	}
 
-	if( !g_bLeft4Dead2 )
+	StartPrepSDKCall(SDKCall_GameRules);
+	if( PrepSDKCall_SetFromConf(hGameData, SDKConf_Signature, "CTerrorGameRules::RecomputeTeamScores") == false )
 	{
-		StartPrepSDKCall(SDKCall_GameRules);
-		if( PrepSDKCall_SetFromConf(hGameData, SDKConf_Signature, "CTerrorGameRules::RecomputeTeamScores") == false )
+		LogError("Failed to find signature: \"CTerrorGameRules::RecomputeTeamScores\" (%s)", g_sSystem);
+	} else {
+		if( g_bLeft4Dead2 )
 		{
-			LogError("Failed to find signature: \"CTerrorGameRules::RecomputeTeamScores\" (%s)", g_sSystem);
-		} else {
-			PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-			g_hSDK_CTerrorGameRules_RecomputeTeamScores = EndPrepSDKCall();
-			if( g_hSDK_CTerrorGameRules_RecomputeTeamScores == null )
-				LogError("Failed to create SDKCall: \"CTerrorGameRules::RecomputeTeamScores\" (%s)", g_sSystem);
+			PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 		}
+
+		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
+		g_hSDK_CTerrorGameRules_RecomputeTeamScores = EndPrepSDKCall();
+		if( g_hSDK_CTerrorGameRules_RecomputeTeamScores == null )
+			LogError("Failed to create SDKCall: \"CTerrorGameRules::RecomputeTeamScores\" (%s)", g_sSystem);
 	}
 
 
@@ -1902,6 +1961,18 @@ void LoadGameData()
 			LogError("Failed to create SDKCall: \"CDirector::UnregisterForbiddenTarget\" (%s)", g_sSystem);
 	}
 
+	StartPrepSDKCall(SDKCall_Entity);
+	if( PrepSDKCall_SetFromConf(hGameData, SDKConf_Signature, "InfoChangelevel::IsEntitySaveable") == false )
+	{
+		LogError("Failed to find signature: \"InfoChangelevel::IsEntitySaveable\" (%s)", g_sSystem);
+	} else {
+		PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+		PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
+		g_hSDK_InfoChangeLevel_IsEntitySaveable = EndPrepSDKCall();
+		if( g_hSDK_InfoChangeLevel_IsEntitySaveable == null )
+			LogError("Failed to create SDKCall: \"InfoChangeLevel::IsEntitySaveable\" (%s)", g_sSystem);
+	}
+
 	StartPrepSDKCall(SDKCall_Raw);
 	if( PrepSDKCall_SetFromConf(hGameData, SDKConf_Signature, "CDirectorVersusMode::EndVersusModeRound") == false )
 	{
@@ -2116,6 +2187,18 @@ void LoadGameData()
 		g_pScriptedEventManager = hGameData.GetOffset("ScriptedEventManagerPtr");
 		ValidateOffset(g_pScriptedEventManager, "ScriptedEventManagerPtr");
 
+		g_pItemManager = hGameData.GetOffset("ItemManagerPtr");
+		ValidateOffset(g_pItemManager, "ItemManagerPtr");
+
+		g_pMusicBanks = hGameData.GetOffset("MusicBanksPtr");
+		ValidateOffset(g_pMusicBanks, "MusicBanksPtr");
+
+		g_pSessionManager = hGameData.GetOffset("SessionManagerPtr");
+		ValidateOffset(g_pSessionManager, "SessionManagerPtr");
+
+		g_pChallengeMode = hGameData.GetOffset("ChallengeModePtr");
+		ValidateOffset(g_pChallengeMode, "ChallengeModePtr");
+
 
 
 		// DisableAddons
@@ -2160,6 +2243,9 @@ void LoadGameData()
 	// ====================================================================================================
 	//									ADDRESSES
 	// ====================================================================================================
+	// g_iOff_EHandle = hGameData.GetOffset("EHandleOffset");
+	// ValidateOffset(g_iOff_EHandle, "EHandleOffset");
+
 	g_iOff_LobbyReservation = hGameData.GetOffset("LobbyReservationOffset");
 	ValidateOffset(g_iOff_LobbyReservation, "LobbyReservationOffset");
 
@@ -2188,17 +2274,29 @@ void LoadGameData()
 		g_pMeleeWeaponInfoStore = hGameData.GetAddress("MeleeWeaponInfoStore");
 		ValidateAddress(g_pMeleeWeaponInfoStore, "g_pMeleeWeaponInfoStore", true);
 
-		g_pScriptedEventManager =			LoadFromAddress(g_pDirector + view_as<Address>(g_pScriptedEventManager), NumberType_Int32);
+		g_pScriptedEventManager = LoadFromAddress(g_pDirector + view_as<Address>(g_pScriptedEventManager), NumberType_Int32);
 		ValidateAddress(g_pScriptedEventManager, "ScriptedEventManagerPtr", true);
 
-		g_pVersusMode =						LoadFromAddress(g_pDirector + view_as<Address>(g_pVersusMode), NumberType_Int32);
+		g_pVersusMode = LoadFromAddress(g_pDirector + view_as<Address>(g_pVersusMode), NumberType_Int32);
 		ValidateAddress(g_pVersusMode, "VersusModePtr", true);
 
-		g_pScavengeMode =					LoadFromAddress(g_pDirector + view_as<Address>(g_pScavengeMode), NumberType_Int32);
+		g_pScavengeMode = LoadFromAddress(g_pDirector + view_as<Address>(g_pScavengeMode), NumberType_Int32);
 		ValidateAddress(g_pScavengeMode, "ScavengeModePtr", true);
 
 		g_pSurvivalMode = LoadFromAddress(g_pDirector + view_as<Address>(g_pSurvivalMode), NumberType_Int32);
 		ValidateAddress(g_pSurvivalMode, "g_pSurvivalMode", true);
+
+		g_pItemManager = LoadFromAddress(g_pDirector + view_as<Address>(g_pItemManager), NumberType_Int32);
+		ValidateAddress(g_pItemManager, "ItemManagerPtr", true);
+
+		g_pMusicBanks = LoadFromAddress(g_pDirector + view_as<Address>(g_pMusicBanks), NumberType_Int32);
+		ValidateAddress(g_pMusicBanks, "MusicBanksPtr", true);
+
+		g_pSessionManager = LoadFromAddress(g_pDirector + view_as<Address>(g_pSessionManager), NumberType_Int32);
+		ValidateAddress(g_pSessionManager, "SessionManagerPtr", true);
+
+		g_pChallengeMode = LoadFromAddress(g_pDirector + view_as<Address>(g_pChallengeMode), NumberType_Int32);
+		ValidateAddress(g_pChallengeMode, "ChallengeModePtr", true);
 	} else {
 		// L4D1: g_pDirector is also g_pVersusMode.
 		g_pVersusMode = view_as<int>(g_pDirector);
@@ -2220,12 +2318,18 @@ void LoadGameData()
 	PrintToServer("%12d == g_pNavMesh", g_pNavMesh);
 	PrintToServer("%12d == g_pServer", g_pServer);
 	PrintToServer("%12d == g_pWeaponInfoDatabase", g_pWeaponInfoDatabase);
+	PrintToServer("%12d == g_pVersusModePtr", g_pVersusMode);
+	PrintToServer("%12d == g_pSurvivalModePtr", g_pSurvivalMode);
+
 	if( g_bLeft4Dead2 )
 	{
 		PrintToServer("%12d == g_pMeleeWeaponInfoStore", g_pMeleeWeaponInfoStore);
-		PrintToServer("%12d == ScriptedEventManagerPtr", g_pScriptedEventManager);
-		PrintToServer("%12d == VersusModePtr", g_pVersusMode);
+		PrintToServer("%12d == g_pScriptedEventManagerPtr", g_pScriptedEventManager);
 		PrintToServer("%12d == g_pScavengeMode", g_pScavengeMode);
+		PrintToServer("%12d == g_pItemManagerPtr", g_pItemManager);
+		PrintToServer("%12d == g_pMusicBanksPtr", g_pMusicBanks);
+		PrintToServer("%12d == g_pSessionManagerPtr", g_pSessionManager);
+		PrintToServer("%12d == g_pChallengeModePtr", g_pChallengeMode);
 	}
 	PrintToServer("");
 	#endif
@@ -2260,6 +2364,9 @@ void LoadGameData()
 	// Various offsets
 	g_iOff_m_iCampaignScores = hGameData.GetOffset("m_iCampaignScores");
 	ValidateOffset(g_iOff_m_iCampaignScores, "m_iCampaignScores");
+
+	g_iOff_m_iCampaignScores2 = hGameData.GetOffset("m_iCampaignScores2");
+	ValidateOffset(g_iOff_m_iCampaignScores2, "m_iCampaignScores2");
 
 	g_iOff_m_fTankSpawnFlowPercent = hGameData.GetOffset("m_fTankSpawnFlowPercent");
 	ValidateOffset(g_iOff_m_fTankSpawnFlowPercent, "m_fTankSpawnFlowPercent");
@@ -2301,6 +2408,9 @@ void LoadGameData()
 		g_iOff_m_iSetupNotifyTime = hGameData.GetOffset("CDirectorSurvivalMode::m_iSetupNotifyTime");
 		ValidateOffset(g_iOff_m_iSetupNotifyTime, "CDirectorSurvivalMode::m_iSetupNotifyTime");
 	}
+
+	g_iOff_Intensity = hGameData.GetOffset("m_intensity");
+	ValidateOffset(g_iOff_Intensity, "m_intensity");
 
 	g_iOff_m_flow = hGameData.GetOffset("m_flow");
 	ValidateOffset(g_iOff_m_flow, "m_flow");
@@ -2361,8 +2471,26 @@ void LoadGameData()
 	}
 	else if( byte != 0x90 )
 	{
-		LogError("CTerrorPlayer::CanBecomeGhost patch: byte mismatch. %X", LoadFromAddress(g_pCTerrorPlayer_CanBecomeGhost + view_as<Address>(g_iCanBecomeGhostOffset), NumberType_Int8));
+		LogError("CTerrorPlayer::CanBecomeGhost patch: byte mismatch. %X (%s)", LoadFromAddress(g_pCTerrorPlayer_CanBecomeGhost + view_as<Address>(g_iCanBecomeGhostOffset), NumberType_Int8), g_sSystem);
 	}
+	// ====================
+
+
+
+	// ====================
+	// Patch to allow "L4D_RespawnPlayer" to not reset stats
+	// ====================
+	// Address to function
+	g_pCTerrorPlayer_RoundRespawn = hGameData.GetAddress("CTerrorPlayer::RoundRespawn::Address");
+	ValidateAddress(g_pCTerrorPlayer_RoundRespawn, "CTerrorPlayer::RoundRespawn::Address", true);
+
+	// Offset to patch
+	g_iOff_RespawnPlayer = hGameData.GetOffset("CTerrorPlayer::RoundRespawn::Offset");
+	ValidateOffset(g_iOff_RespawnPlayer, "CTerrorPlayer::RoundRespawn::Offset");
+
+	// Patch count and byte match
+	g_iByte_RespawnPlayer = hGameData.GetOffset("CTerrorPlayer::RoundRespawn::Bytes");
+	g_iSize_RespawnPlayer = hGameData.GetOffset("CTerrorPlayer::RoundRespawn::Count");
 	// ====================
 
 
@@ -2475,6 +2603,7 @@ void LoadGameData()
 	#if defined DEBUG
 	#if DEBUG
 	PrintToServer("m_iCampaignScores = %d", g_iOff_m_iCampaignScores);
+	PrintToServer("m_iCampaignScores2 = %d", g_iOff_m_iCampaignScores2);
 	PrintToServer("m_fTankSpawnFlowPercent = %d", g_iOff_m_fTankSpawnFlowPercent);
 	PrintToServer("m_fWitchSpawnFlowPercent = %d", g_iOff_m_fWitchSpawnFlowPercent);
 	PrintToServer("m_iTankPassedCount = %d", g_iOff_m_iTankPassedCount);
@@ -2482,6 +2611,7 @@ void LoadGameData()
 	PrintToServer("m_bWitchThisRound = %d", g_iOff_m_bWitchThisRound);
 	PrintToServer("InvulnerabilityTimer = %d", g_iOff_InvulnerabilityTimer);
 	PrintToServer("m_iTankTickets = %d", g_iOff_m_iTankTickets);
+	PrintToServer("m_intensity = %d", g_iOff_Intensity);
 	PrintToServer("m_flow = %d", g_iOff_m_flow);
 	PrintToServer("m_chapter = %d", g_iOff_m_chapter);
 	PrintToServer("m_PendingMobCount = %d", g_iOff_m_PendingMobCount);

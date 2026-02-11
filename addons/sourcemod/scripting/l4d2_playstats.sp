@@ -736,7 +736,7 @@ public void OnConfigsExecuted()
 }
 
 // find a player
-public void OnClientPostAdminCheck(int client)
+public void OnClientPutInServer(int client)
 {
 	GetPlayerIndexForClient(client);
 }
@@ -2725,7 +2725,7 @@ public void OnWitchCrown(int attacker, int damage)
 	g_strRoundPlayerData[index][g_iCurTeam][plyCrowns]++;
 }
 
-public void OnWitchDrawCrown(int attacker, int damage, int chipdamage)
+public void OnWitchCrownHurt(int attacker, int damage, int chipdamage)
 {
 	int index = GetPlayerIndexForClient(attacker);
 	if (index == -1) { 
