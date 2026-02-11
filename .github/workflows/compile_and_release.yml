@@ -118,24 +118,51 @@ jobs:
             echo "No changes detected in compiled plugins."
           else
             echo "changes=true" >> $GITHUB_OUTPUT
-            echo "Changes detected in compiled plugins:"
-            git diff --name-only addons/sourcemod/plugins/
+            echo "Changes detected in compiled plugins."
           fi
 
-      - name: Commit compiled plugins
+      - name: Prepare release package
         if: steps.check_changes.outputs.changes == 'true'
         run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add addons/sourcemod/plugins/
-          git commit -m "Compile plugins from source code"
+          # Create project package directory
+          mkdir -p project_package
 
-      - name: Push changes
+          # Copy entire project
+          cp -r "$GITHUB_WORKSPACE" project_package/L4D2-Competitive-Rework
+
+          # Create manifest file
+          {
+            echo "# L4D2 Competitive Rework - Compiled Release"
+            echo ""
+            echo "**Package Date:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+            echo ""
+            echo "## Contents"
+            echo "Complete project with recompiled plugins."
+            echo ""
+            echo "Updated plugins location:"
+            echo "- \`addons/sourcemod/plugins/\` - Main and optional plugins"
+            echo "- \`addons/sourcemod/plugins/fixes/\` - Bug fix plugins"
+            echo "- \`addons/sourcemod/plugins/optional/\` - Optional plugins"
+            echo "- \`addons/sourcemod/plugins/disabled/\` - Disabled plugins"
+            echo "- \`addons/sourcemod/plugins/fun/\` - Fun plugins"
+            echo ""
+            echo "## Installation"
+            echo "Extract the contents of this zip file to your game directory."
+            echo ""
+            echo "**Build Information**"
+            echo "- Compiled: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+            echo "- Compiler: spcomp 1.12"
+            echo "- Commit: ${{ github.sha }}"
+          } > project_package/RELEASE_INFO.txt
+
+          cat project_package/RELEASE_INFO.txt
+
+      - name: Create project zip package
         if: steps.check_changes.outputs.changes == 'true'
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
+        run: |
+          zip -r L4D2-Competitive-Rework-compiled.zip project_package/ -q
+          ls -lh L4D2-Competitive-Rework-compiled.zip
+          echo "Project zip package created successfully"
 
       - name: Generate release notes
         if: steps.check_changes.outputs.changes == 'true'
@@ -153,13 +180,18 @@ jobs:
             echo "**Release Date:** $release_date"
             echo ""
             echo "## Summary"
-            echo "Recompiled plugins from the latest source code."
+            echo "Complete L4D2 Competitive Rework project with recompiled plugins from the latest source code."
             echo ""
             echo "### Build Information"
             echo "- SourceMod Version: 1.12"
             echo "- Compiler: spcomp with optimization level 2"
             echo "- Build Date: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
             echo "- Commit: ${{ github.sha }}"
+            echo ""
+            echo "### Installation"
+            echo "1. Download \`L4D2-Competitive-Rework-compiled.zip\`"
+            echo "2. Extract to your game server directory"
+            echo "3. The entire project structure will be placed with updated compiled plugins"
           } > release_notes.md
 
           cat release_notes.md
@@ -175,6 +207,7 @@ jobs:
           body_path: release_notes.md
           draft: false
           prerelease: false
+          files: L4D2-Competitive-Rework-compiled.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
