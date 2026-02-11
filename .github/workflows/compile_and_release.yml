@@ -39,6 +39,7 @@ jobs:
         run: |
           errors=0
           compiled_count=0
+          skipped_count=0
 
           # Find all .sp files in scripting directory (including subdirectories)
           find . -name "*.sp" -type f | while read -r file; do
@@ -50,13 +51,20 @@ jobs:
 
             # Get the basename without extension
             filename=$(basename "$file" .sp)
-            output_file="${filename}.smx"
+            output_file="compiled/${filename}.smx"
+
+            # Check if compiled file already exists
+            if [ -f "$output_file" ]; then
+              echo "Already compiled: $file (skipping)"
+              skipped_count=$((skipped_count + 1))
+              continue
+            fi
 
             echo "Compiling $file -> $output_file"
-            if spcomp -E -w234 -w217 -O2 -v2 -i "${{ env.SCRIPTS_PATH }}/include" "$file" -o "${{ env.SCRIPTS_PATH }}/compiled/$output_file"; then
+            if spcomp -E -w234 -w217 -O2 -v2 -i "${{ env.SCRIPTS_PATH }}/include" "$file" -o "$output_file"; then
               compiled_count=$((compiled_count + 1))
             else
-              echo "WARNING: Failed to compile $file - skipping"
+              echo "::warning file=$file::Failed to compile plugin: $file"
               errors=$((errors + 1))
             fi
           done
@@ -64,6 +72,7 @@ jobs:
           echo ""
           echo "Compilation Summary:"
           echo "Successfully compiled: $compiled_count plugins"
+          echo "Skipped (already compiled): $skipped_count plugins"
           echo "Failed to compile: $errors plugin(s)"
         working-directory: ${{ env.SCRIPTS_PATH }}/
 
@@ -100,9 +109,9 @@ jobs:
                 done
               fi
 
-              # If no matching file found, log warning and skip
+              # If no matching file found, log warning notification and skip
               if [ "$found" = false ]; then
-                echo "WARNING: No matching plugin file found for $filename - skipping"
+                echo "::notice title=Plugin Not Found::No matching plugin file found for $filename - skipping"
                 not_found_count=$((not_found_count + 1))
               fi
             fi
