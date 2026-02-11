@@ -66,78 +66,29 @@ jobs:
           fi
         working-directory: ${{ env.SCRIPTS_PATH }}/
 
-      - name: Copy compiled plugins to plugins directory
+      - name: Prepare release artifacts
         run: |
-          echo "Copying compiled .smx files to plugins directory..."
+          # Create a temporary directory for release artifacts
+          mkdir -p release_artifacts
 
-          found_count=0
-          not_found_count=0
-
-          # Copy main directory plugins
-          for file in "${{ env.SCRIPTS_PATH }}/compiled"/*.smx; do
-            if [ -f "$file" ]; then
-              filename=$(basename "$file")
-              found=false
-
-              # Try to find the corresponding .smx file in plugins directory
-              # First check main plugins directory
-              if [ -f "${{ env.PLUGINS_PATH }}/$filename" ]; then
-                echo "Updating ${{ env.PLUGINS_PATH }}/$filename"
-                cp "$file" "${{ env.PLUGINS_PATH }}/$filename"
-                found=true
-                found_count=$((found_count + 1))
-              else
-                # Check subdirectories (fixes, optional, disabled, fun, anticheat, server_specified)
-                for subdir in fixes optional disabled fun anticheat server_specified; do
-                  if [ -f "${{ env.PLUGINS_PATH }}/$subdir/$filename" ]; then
-                    echo "Updating ${{ env.PLUGINS_PATH }}/$subdir/$filename"
-                    cp "$file" "${{ env.PLUGINS_PATH }}/$subdir/$filename"
-                    found=true
-                    found_count=$((found_count + 1))
-                    break
-                  fi
-                done
-              fi
-
-              # If no matching file found, log warning and skip
-              if [ "$found" = false ]; then
-                echo "WARNING: No matching plugin file found for $filename - skipping"
-                not_found_count=$((not_found_count + 1))
-              fi
-            fi
+          # Copy all compiled .smx files to release artifacts directory
+          find "${{ env.SCRIPTS_PATH }}/compiled" -name "*.smx" -type f | while read -r file; do
+            cp "$file" release_artifacts/
           done
 
-          echo ""
-          echo "Plugin copy completed."
-          echo "Successfully updated: $found_count plugins"
-          echo "Skipped (not found): $not_found_count plugins"
+          # Create a summary file
+          {
+            echo "# Compiled Plugins Summary"
+            echo ""
+            echo "**Compilation Date:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+            echo ""
+            echo "## Compiled Plugins"
+            ls -lh release_artifacts/*.smx | awk '{print "- " $9 " (" $5 ")"}' | sed 's|release_artifacts/||'
+            echo ""
+            echo "Total: $(ls -1 release_artifacts/*.smx 2>/dev/null | wc -l) plugins"
+          } > release_artifacts/MANIFEST.txt
 
-      - name: Check for changes
-        id: check_changes
-        run: |
-          if git diff --quiet; then
-            echo "changes=false" >> $GITHUB_OUTPUT
-            echo "No changes detected in compiled plugins."
-          else
-            echo "changes=true" >> $GITHUB_OUTPUT
-            echo "Changes detected in compiled plugins:"
-            git diff --name-only
-          fi
-
-      - name: Commit compiled plugins
-        if: steps.check_changes.outputs.changes == 'true'
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add addons/sourcemod/plugins/
-          git commit -m "Compile plugins from source code"
-
-      - name: Push changes
-        if: steps.check_changes.outputs.changes == 'true'
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
+          cat release_artifacts/MANIFEST.txt
 
       - name: Generate release notes
         id: release_notes
@@ -156,19 +107,15 @@ jobs:
             echo "## Summary"
             echo "This release contains recompiled plugins from the latest source code."
             echo ""
-            echo "### Changes"
-            if [ -n "$(git diff HEAD~1 --name-only addons/sourcemod/plugins/ 2>/dev/null)" ]; then
-              echo "The following plugins were recompiled:"
-              echo ""
-              git diff HEAD~1 --name-only addons/sourcemod/plugins/ 2>/dev/null | sed 's/^/- /'
-            else
-              echo "- All plugins recompiled from latest source code"
-            fi
-            echo ""
             echo "### Build Information"
             echo "- SourceMod Version: 1.12"
             echo "- Compiler: spcomp with optimization level 2"
+            echo "- Optimization Level: 2"
             echo "- Build Date: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+            echo "- Commit: ${{ github.sha }}"
+            echo ""
+            echo "### Installation"
+            echo "Extract the contents of the release to your server's game directory to replace the compiled plugins."
           } > release_notes.md
 
           cat release_notes.md
@@ -177,19 +124,12 @@ jobs:
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
-        if: steps.check_changes.outputs.changes == 'true'
         with:
           tag_name: ${{ steps.release_notes.outputs.release_tag }}
           name: Plugin Compilation Release ${{ steps.release_notes.outputs.release_date }}
           body_path: release_notes.md
           draft: false
           prerelease: false
-          files: |
-            addons/sourcemod/plugins/**/*.smx
+          files: release_artifacts/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Skip release (no changes)
-        if: steps.check_changes.outputs.changes == 'false'
-        run: |
-          echo "No plugin changes detected. Release skipped."
