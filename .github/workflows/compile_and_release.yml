@@ -1,0 +1,195 @@
+name: Compile Plugins and Release
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'addons/sourcemod/scripting/**/*.sp'
+      - 'addons/sourcemod/scripting/**/*.inc'
+  workflow_dispatch:
+
+jobs:
+  build-and-release:
+    name: Compile plugins and create release
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set environment variables
+        run: |
+          echo "SCRIPTS_PATH=$GITHUB_WORKSPACE/addons/sourcemod/scripting" >> $GITHUB_ENV
+          echo "PLUGINS_PATH=$GITHUB_WORKSPACE/addons/sourcemod/plugins" >> $GITHUB_ENV
+
+      - name: Setup SourcePawn Compiler 1.12
+        uses: rumblefrog/setup-sp@master
+        with:
+          version: "1.12"
+
+      - name: Create compile output directory
+        run: mkdir -p "${{ env.SCRIPTS_PATH }}/compiled"
+
+      - name: Compile all plugins
+        run: |
+          errors=0
+          compiled_count=0
+
+          # Find all .sp files in scripting directory (including subdirectories)
+          find . -name "*.sp" -type f | while read -r file; do
+            # Skip archive, dev_plugins, and other non-compilable directories
+            if [[ "$file" == *"/archive/"* ]] || [[ "$file" == *"/dev_plugins/"* ]] || [[ "$file" == *"/testsuite/"* ]]; then
+              echo "Skipping archived/test file: $file"
+              continue
+            fi
+
+            # Get the basename without extension
+            filename=$(basename "$file" .sp)
+            output_file="${filename}.smx"
+
+            echo "Compiling $file -> $output_file"
+            spcomp -E -w234 -w217 -O2 -v2 -i "${{ env.SCRIPTS_PATH }}/include" "$file" -o "${{ env.SCRIPTS_PATH }}/compiled/$output_file" || {
+              echo "ERROR: Failed to compile $file"
+              errors=$((errors + 1))
+              continue
+            }
+            compiled_count=$((compiled_count + 1))
+          done
+
+          if [ "$errors" -gt 0 ]; then
+            echo "$errors plugin(s) failed to compile."
+            exit 1
+          else
+            echo "Successfully compiled $compiled_count plugins."
+          fi
+        working-directory: ${{ env.SCRIPTS_PATH }}/
+
+      - name: Copy compiled plugins to plugins directory
+        run: |
+          echo "Copying compiled .smx files to plugins directory..."
+
+          found_count=0
+          not_found_count=0
+
+          # Copy main directory plugins
+          for file in "${{ env.SCRIPTS_PATH }}/compiled"/*.smx; do
+            if [ -f "$file" ]; then
+              filename=$(basename "$file")
+              found=false
+
+              # Try to find the corresponding .smx file in plugins directory
+              # First check main plugins directory
+              if [ -f "${{ env.PLUGINS_PATH }}/$filename" ]; then
+                echo "Updating ${{ env.PLUGINS_PATH }}/$filename"
+                cp "$file" "${{ env.PLUGINS_PATH }}/$filename"
+                found=true
+                found_count=$((found_count + 1))
+              else
+                # Check subdirectories (fixes, optional, disabled, fun, anticheat, server_specified)
+                for subdir in fixes optional disabled fun anticheat server_specified; do
+                  if [ -f "${{ env.PLUGINS_PATH }}/$subdir/$filename" ]; then
+                    echo "Updating ${{ env.PLUGINS_PATH }}/$subdir/$filename"
+                    cp "$file" "${{ env.PLUGINS_PATH }}/$subdir/$filename"
+                    found=true
+                    found_count=$((found_count + 1))
+                    break
+                  fi
+                done
+              fi
+
+              # If no matching file found, log warning and skip
+              if [ "$found" = false ]; then
+                echo "WARNING: No matching plugin file found for $filename - skipping"
+                not_found_count=$((not_found_count + 1))
+              fi
+            fi
+          done
+
+          echo ""
+          echo "Plugin copy completed."
+          echo "Successfully updated: $found_count plugins"
+          echo "Skipped (not found): $not_found_count plugins"
+
+      - name: Check for changes
+        id: check_changes
+        run: |
+          if git diff --quiet; then
+            echo "changes=false" >> $GITHUB_OUTPUT
+            echo "No changes detected in compiled plugins."
+          else
+            echo "changes=true" >> $GITHUB_OUTPUT
+            echo "Changes detected in compiled plugins:"
+            git diff --name-only
+          fi
+
+      - name: Commit compiled plugins
+        if: steps.check_changes.outputs.changes == 'true'
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add addons/sourcemod/plugins/
+          git commit -m "Compile plugins from source code"
+
+      - name: Push changes
+        if: steps.check_changes.outputs.changes == 'true'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          release_date=$(date '+%Y-%m-%d')
+          release_tag="v$(date '+%Y%m%d-%H%M%S')"
+          echo "release_date=$release_date" >> $GITHUB_OUTPUT
+          echo "release_tag=$release_tag" >> $GITHUB_OUTPUT
+
+          # Generate release notes with compilation summary
+          {
+            echo "# Plugin Compilation Release"
+            echo ""
+            echo "**Release Date:** $release_date"
+            echo ""
+            echo "## Summary"
+            echo "This release contains recompiled plugins from the latest source code."
+            echo ""
+            echo "### Changes"
+            if [ -n "$(git diff HEAD~1 --name-only addons/sourcemod/plugins/ 2>/dev/null)" ]; then
+              echo "The following plugins were recompiled:"
+              echo ""
+              git diff HEAD~1 --name-only addons/sourcemod/plugins/ 2>/dev/null | sed 's/^/- /'
+            else
+              echo "- All plugins recompiled from latest source code"
+            fi
+            echo ""
+            echo "### Build Information"
+            echo "- SourceMod Version: 1.12"
+            echo "- Compiler: spcomp with optimization level 2"
+            echo "- Build Date: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+          } > release_notes.md
+
+          cat release_notes.md
+        env:
+          TZ: UTC
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: steps.check_changes.outputs.changes == 'true'
+        with:
+          tag_name: ${{ steps.release_notes.outputs.release_tag }}
+          name: Plugin Compilation Release ${{ steps.release_notes.outputs.release_date }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+          files: |
+            addons/sourcemod/plugins/**/*.smx
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Skip release (no changes)
+        if: steps.check_changes.outputs.changes == 'false'
+        run: |
+          echo "No plugin changes detected. Release skipped."
