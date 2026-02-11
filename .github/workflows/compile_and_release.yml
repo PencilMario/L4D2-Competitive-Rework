@@ -9,6 +9,9 @@ on:
       - 'addons/sourcemod/scripting/**/*.inc'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-and-release:
     name: Compile plugins and create release
