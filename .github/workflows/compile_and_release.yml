@@ -124,13 +124,7 @@ jobs:
       - name: Prepare release package
         if: steps.check_changes.outputs.changes == 'true'
         run: |
-          # Create project package directory
-          mkdir -p project_package
-
-          # Copy entire project
-          cp -r "$GITHUB_WORKSPACE" project_package/L4D2-Competitive-Rework
-
-          # Create manifest file
+          # Create manifest file in project root
           {
             echo "# L4D2 Competitive Rework - Compiled Release"
             echo ""
@@ -153,15 +147,17 @@ jobs:
             echo "- Compiled: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
             echo "- Compiler: spcomp 1.12"
             echo "- Commit: ${{ github.sha }}"
-          } > project_package/RELEASE_INFO.txt
+          } > "$GITHUB_WORKSPACE/RELEASE_INFO.txt"
 
-          cat project_package/RELEASE_INFO.txt
+          cat "$GITHUB_WORKSPACE/RELEASE_INFO.txt"
 
       - name: Create project zip package
         if: steps.check_changes.outputs.changes == 'true'
         run: |
-          zip -r L4D2-Competitive-Rework-compiled.zip project_package/ -q
+          cd "$GITHUB_WORKSPACE/.."
+          zip -r L4D2-Competitive-Rework-compiled.zip L4D2-Competitive-Rework -q -x "L4D2-Competitive-Rework/.git/*" "L4D2-Competitive-Rework/.github/*" "L4D2-Competitive-Rework/.gitignore" "L4D2-Competitive-Rework/.gitattributes"
           ls -lh L4D2-Competitive-Rework-compiled.zip
+          mv L4D2-Competitive-Rework-compiled.zip "$GITHUB_WORKSPACE/"
           echo "Project zip package created successfully"
 
       - name: Generate release notes
