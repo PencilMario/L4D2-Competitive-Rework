@@ -20,7 +20,7 @@
 		}
 		"zm_carplayplus"
 		{
-			"name" "ZoneMod 2.8.9d zm_carplayplus"
+			"name" "ZoneMod 2.8.9 zm_carplayplus"
 		}
 		"zonemod6v6"
 		{

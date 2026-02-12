@@ -211,7 +211,7 @@ void MoveToSpectatorWhoIsNotInTheTeam(ArrayList arrayList, int team)
         if (!IsClientInGame(client) || IsFakeClient(client) || GetClientTeam(client) != team)
             continue;
 
-        if (FindValueInArray(arrayList, client) == -1)
+        if (FindValueInArray(arrayList, client) == -1){
             MovePlayerToTeam(client, L4D2_TEAM_SPECTATOR);
             PrintToChat(client,"为防止错位，你当前不能加入游戏，请等待一段时间后重试");
         }
