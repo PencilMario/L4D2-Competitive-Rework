@@ -5,7 +5,7 @@ echo "==================开始执行=================="
 
 # github存储库信息
 gitrep=L4D2-Competitive-Rework
-repo_owner="SirPlease"
+repo_owner="PencilMario"
 release_dir="/tmp/l4d2_release"
 
 sudo iptables -F

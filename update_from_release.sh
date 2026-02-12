@@ -4,7 +4,7 @@ TZ=UTC-8 date
 echo "==================开始执行=================="
 
 gitrep=L4D2-Competitive-Rework
-repo_owner="SirPlease"
+repo_owner="PencilMario"
 release_dir="/tmp/l4d2_release"
 
 echo "Downloading latest release...";
