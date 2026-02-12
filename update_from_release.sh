@@ -31,7 +31,7 @@ if [ -z "$latest_release" ] || [ "$latest_release" == "null" ]; then
 fi
 
 echo "Downloading from: $latest_release"
-wget -q -O "$release_dir/release.zip" "$latest_release"
+wget -q -O "$release_dir/release.zip" "https://releases.0721play.top/$latest_release"
 
 if [ ! -f "$release_dir/release.zip" ]; then
     echo "Failed to download release"
