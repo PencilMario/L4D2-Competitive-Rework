@@ -39,7 +39,26 @@ if [ ! -f "$release_dir/release.zip" ]; then
 fi
 
 echo "Extracting release...";
-unzip -q "$release_dir/release.zip" -d "$release_dir/"
+
+# 尝试使用unzip或python来解压
+if command -v unzip &> /dev/null; then
+    unzip -q "$release_dir/release.zip" -d "$release_dir/"
+elif command -v python3 &> /dev/null; then
+    python3 << 'EOF'
+import zipfile
+import sys
+try:
+    with zipfile.ZipFile("/tmp/l4d2_release/release.zip", 'r') as zip_ref:
+        zip_ref.extractall("/tmp/l4d2_release/")
+    print("Extraction completed")
+except Exception as e:
+    print(f"Error: {e}", file=sys.stderr)
+    sys.exit(1)
+EOF
+else
+    echo "Error: Neither unzip nor python3 found. Cannot extract release."
+    exit 1
+fi
 
 # 找到解压后的项目目录（通常是 L4D2-Competitive-Rework）
 project_path=$(find "$release_dir" -maxdepth 1 -type d -name "$gitrep" | head -1)
