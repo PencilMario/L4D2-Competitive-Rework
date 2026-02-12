@@ -14,8 +14,16 @@ cd /tmp;
 rm -rf "$release_dir"
 mkdir -p "$release_dir"
 
-# 获取最新的release下载链接 (使用jq解析JSON)
-latest_release=$(curl -s https://api.github.com/repos/$repo_owner/$gitrep/releases/latest | jq -r '.assets[0].browser_download_url')
+# 获取最新的release下载链接
+# 尝试用jq，如果不存在就用python或grep
+if command -v jq &> /dev/null; then
+    latest_release=$(curl -s https://api.github.com/repos/$repo_owner/$gitrep/releases/latest | jq -r '.assets[0].browser_download_url')
+elif command -v python3 &> /dev/null; then
+    latest_release=$(curl -s https://api.github.com/repos/$repo_owner/$gitrep/releases/latest | python3 -c "import sys, json; data=json.load(sys.stdin); print(data['assets'][0]['browser_download_url'] if data.get('assets') else '')")
+else
+    # 使用grep提取（最后的fallback）
+    latest_release=$(curl -s https://api.github.com/repos/$repo_owner/$gitrep/releases/latest | grep -o '"browser_download_url": "[^"]*"' | head -1 | cut -d '"' -f 4)
+fi
 
 if [ -z "$latest_release" ] || [ "$latest_release" == "null" ]; then
     echo "Failed to get latest release URL"
