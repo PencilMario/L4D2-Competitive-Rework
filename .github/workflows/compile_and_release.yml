@@ -163,6 +163,12 @@ jobs:
 
           cat "$GITHUB_WORKSPACE/RELEASE_INFO.txt"
 
+      - name: Remove l4dtoolz addon
+        if: steps.check_changes.outputs.changes == 'true'
+        run: |
+          rm -rf "$GITHUB_WORKSPACE/addons/l4dtoolz"
+          echo "Removed addons/l4dtoolz folder"
+
       - name: Create project zip package
         if: steps.check_changes.outputs.changes == 'true'
         run: |
