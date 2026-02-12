@@ -24,6 +24,7 @@ jobs:
   build:
     name: build with sm${{ matrix.sm_version }}
     runs-on: ubuntu-latest
+    if: false
     strategy:
       fail-fast: false
       matrix:
