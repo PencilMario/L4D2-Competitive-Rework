@@ -21,10 +21,10 @@ cd /tmp;
 rm -rf "$release_dir"
 mkdir -p "$release_dir"
 
-# 获取最新的release下载链接
-latest_release=$(curl -s https://api.github.com/repos/$repo_owner/$gitrep/releases/latest | grep 'browser_download_url' | head -1 | cut -d '"' -f 4)
+# 获取最新的release下载链接 (使用jq解析JSON)
+latest_release=$(curl -s https://api.github.com/repos/$repo_owner/$gitrep/releases/latest | jq -r '.assets[0].browser_download_url')
 
-if [ -z "$latest_release" ]; then
+if [ -z "$latest_release" ] || [ "$latest_release" == "null" ]; then
     echo "Failed to get latest release URL"
     exit 1
 fi
