@@ -1,3 +1,5 @@
+> 原先那堆太屎山了以至于没法跑起来 如果你在找我的插件 去master分支翻翻吧
+ 
 # **L4D2 Competitive Rework**
 
 > [!IMPORTANT]
