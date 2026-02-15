@@ -81,40 +81,24 @@ for dir in "${directories[@]}"; do
     if [ -d "$dir" ]; then
 
         sudo timedatectl set-timezone Asia/Shanghai
-        ../steamcmd.sh +force_install_dir ${dir%/left4dead2} +login anonymous +app_update 222860 validate +quit
+        cd ~
+        ./steamcmd.sh +force_install_dir ${dir%/left4dead2} +login anonymous +app_update 222860 validate +quit
 
         echo ""
-        find "$dir/addons/sourcemod/" \
-            ! -path "$dir/addons/sourcemod/logs*" \
-            ! -path "$dir/addons/sourcemod/configs/admins_simple.ini" \
-            ! -path "$dir/addons/sourcemod/configs/sourcebans*" \
-            ! -path "$dir/addons/sourcemod/configs/databases.cfg" \
-            ! -path "$dir/addons/sourcemod/data/music_mapstart.txt" \
-            -type f -delete
-        find $dir/addons/sourcemod/logs* -type f -mtime +14 -delete
-        find $dir/logs* -type f -mtime +14 -delete
-        rm -rf "$dir/addons/metamod/"*
-        rm -rf "$dir/addons/l4dtoolz/"*
-        rm -rf "$dir/addons/stripper/"*
-        rm -rf "$dir/scripts/vscripts/"*
-        rm -rf "$dir/models/player/custom_player/"*
-        rm -rf "$dir/sound/kodua/fortnite_emotes/"*
-        # 剩下三个cfg应该不会被删除
-        find "$dir/cfg/cfgogl/" \
-            ! -path "$dir/cfg/cfgogl/promod" \
-            -type f -delete
-        rm -rf "$dir/cfg/mixmap/"*
-        rm -rf "$dir/cfg/sourcemod/"*
-        rm -rf "$dir/cfg/stripper/"*
-
-        rm -f "$dir/l4dtoolz.dll"
-        rm -f "$dir/l4dtoolz.so"
-        rm -f "$dir/l4dtoolz.vdf"
-        rm -f "$dir/metamod.vdf"
+        # 删除addons中的所有文件
+        find "$dir/addons/" -type f -delete
+        find "$dir/addons/" -type d -empty -delete
 
         # 从release版本复制所有文件
         \cp -rp "$project_path/"* "$dir/";
         chmod 777 "$dir/"
+
+        # 执行自定义配置脚本
+        if [ -f "$HOME/custom_config.sh" ]; then
+            bash "$HOME/custom_config.sh"
+        else
+            echo "Warning: $HOME/custom_config.sh does not exist"
+        fi
 
         echo "Updated | $dir"
     else
