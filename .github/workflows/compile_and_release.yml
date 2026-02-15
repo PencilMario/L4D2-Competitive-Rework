@@ -206,6 +206,28 @@ jobs:
             echo "1. Download \`L4D2-Competitive-Rework-compiled.zip\`"
             echo "2. Extract to your game server directory"
             echo "3. The entire project structure will be placed with updated compiled plugins"
+            echo ""
+            echo "<details>"
+            echo "<summary><strong>Supported Game Configurations</strong></summary>"
+            echo ""
+
+            # Extract configuration names from cfg/cfgogl directories
+            for config_dir in cfg/cfgogl/*/; do
+              config_name=$(basename "$config_dir")
+              confogl_file="$config_dir/confogl.cfg"
+
+              if [ -f "$confogl_file" ]; then
+                # Extract the l4d_ready_cfg_name value
+                cfg_display=$(grep -oP 'l4d_ready_cfg_name\s+"\K[^"]+' "$confogl_file" | head -1)
+
+                if [ -n "$cfg_display" ]; then
+                  echo "- $cfg_display"
+                fi
+              fi
+            done | sort
+
+            echo ""
+            echo "</details>"
           } > release_notes.md
 
           cat release_notes.md
