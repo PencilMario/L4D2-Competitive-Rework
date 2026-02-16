@@ -1163,10 +1163,6 @@ public Action Command_ShowTankPositions(int client, int args)
         {
             validCount++;
             float flowPercent = g_fTankFlowPercentByRound[i] * 100.0;
-            float posX = g_vTankPositionsByRound[i][0];
-            float posY = g_vTankPositionsByRound[i][1];
-            float posZ = g_vTankPositionsByRound[i][2];
-
             CPrintToChat(client, "[{green}!{default}] 第 {olive}%d {default}轮 - 流程: {olive}%.2f%% {default}",
                         i + 1, flowPercent);
         }
