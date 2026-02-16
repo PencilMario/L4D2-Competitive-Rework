@@ -52,7 +52,9 @@ ConVar g_cvTankFightRounds;
 // 保存每一轮Tank的位置用于换边时保持一致
 float g_vTankPositionsByRound[10][3];
 float g_vTankAnglesByRound[10][3];
+float g_fTankFlowPercentByRound[10];  // 保存每一轮随机选择的流程百分比
 bool g_bTankPositionSavedByRound[10];
+bool g_bTankPositionsPreGenerated = false;  // 标记位置是否已预生成
 
 enum /*strMapType*/
 {
@@ -82,10 +84,8 @@ static char g_sSurvivorModels_Plugin[][TANK_MODEL_STRLEN] = {
 
 int g_iTankGlowModel = INVALID_ENT_REFERENCE;
 int g_iSurvivorGlowModel = INVALID_ENT_REFERENCE;
-int g_iRound = 0;
 float g_vTankModelPos[3], g_vTankModelAng[3];
 float g_vSurvivorModelPos[3], g_vSurvivorModelAng[3];
-ConVar g_cvTeleport;
 bool g_bMissionFinalMapCache = false;
 bool g_bMissionFinalMapCacheValid = false;
 enum struct TFRoundData{
@@ -141,12 +141,6 @@ public void OnPluginStart()
 {
     LoadSDK();
 
-    g_cvTeleport = CreateConVar("l4d_predict_glow_tp",
-                                "0",
-                                "Teleports tank to glow position for consistency.\n"
-                            ...	"0 = Disable, 1 = Enable",
-                                FCVAR_SPONLY,
-                                true, 0.0, true, 1.0);
 
     g_cvTankFightRounds = CreateConVar("l4d_tankfight_rounds",
                                 "1",
@@ -168,6 +162,121 @@ public void OnRoundIsLive()
     CPrintToChatAll("只有克局，克死亡后进入加时阶段。如果所有人都被扶起来且未被控回合结束！");
     CPrintToChatAll("游戏开始后，生还者会被传送到地图上发光的生还者模型");
     CPrintToChatAll("本场比赛将进行 {olive}%d {default}轮 Tank 战斗", g_cvTankFightRounds.IntValue);
+
+    // 预生成所有轮次的Tank位置
+    CreateTimer(0.1, Timer_PreGenerateTankPositions, .flags = TIMER_FLAG_NO_MAPCHANGE);
+}
+
+/**
+ * 获取所有可用的流程百分比
+ * @param outPercents 输出数组，存放所有有效的百分比
+ * @return 返回有效百分比的个数
+ */
+int GetAllValidTankPercents(ArrayList outPercents)
+{
+    outPercents.Clear();
+
+    for (int percent = 1; percent <= 99; percent++)
+    {
+        if (IsTankPercentValid(percent))
+        {
+            float flowPercent = float(percent) / 100.0;
+            outPercents.Push(flowPercent);
+        }
+    }
+
+    return outPercents.Length;
+}
+
+/**
+ * 从所有可用进度中随机选择一个
+ * @return 返回随机选择的流程百分比
+ */
+float GetRandomValidTankPercent()
+{
+    ArrayList validPercents = new ArrayList();
+    int count = GetAllValidTankPercents(validPercents);
+
+    if (count == 0)
+    {
+        // 如果没有有效位置，返回默认百分比
+        delete validPercents;
+        return L4D2Direct_GetVSTankFlowPercent(0);
+    }
+
+    int randomIndex = GetRandomInt(0, count - 1);
+    float result = validPercents.Get(randomIndex);
+
+    delete validPercents;
+    return result;
+}
+
+/**
+ * 预生成所有Tank战斗轮次的位置
+ */
+Action Timer_PreGenerateTankPositions(Handle timer)
+{
+    if (!L4D_IsVersusMode()) return Plugin_Stop;
+
+    int numRounds = g_cvTankFightRounds.IntValue;
+
+    // 如果已经生成过，直接使用已有结果
+    if (g_bTankPositionsPreGenerated)
+    {
+        PrintToConsoleAll("[TankFight] Tank 位置已在之前生成，直接使用已有结果");
+        int validCount = 0;
+        for (int i = 0; i < numRounds; i++)
+        {
+            if (g_bTankPositionSavedByRound[i])
+            {
+                validCount++;
+                PrintToConsoleAll("[TankFight] 已有位置 Round %d: Flow: %.2f%%, Pos=[%.1f, %.1f, %.1f]", i,
+                    g_fTankFlowPercentByRound[i] * 100.0,
+                    g_vTankPositionsByRound[i][0], g_vTankPositionsByRound[i][1], g_vTankPositionsByRound[i][2]);
+            }
+        }
+        CPrintToChatAll("[{green}!{default}] 使用已保存的 {olive}%d {default}轮 Tank 位置", validCount);
+        return Plugin_Stop;
+    }
+
+    PrintToConsoleAll("[TankFight] 开始预生成 %d 轮 Tank 位置...", numRounds);
+
+    for (int round = 0; round < numRounds; round++)
+    {
+        float target_percent = GetRandomValidTankPercent();
+
+        // 保存随机选择的流程百分比
+        g_fTankFlowPercentByRound[round] = target_percent;
+
+        // 将百分比转换为具体坐标保存
+        TerrorNavArea nav = GetBossSpawnAreaForFlow(target_percent);
+        if (nav.Valid())
+        {
+            float vPos[3], vAng[3];
+            L4D_FindRandomSpot(view_as<int>(nav), vPos);
+            vPos[2] -= 8.0;
+
+            vAng[0] = 0.0;
+            vAng[1] = GetRandomFloat(0.0, 360.0);
+            vAng[2] = 0.0;
+
+            g_vTankPositionsByRound[round] = vPos;
+            g_vTankAnglesByRound[round] = vAng;
+            g_bTankPositionSavedByRound[round] = true;
+
+            PrintToConsoleAll("[TankFight] Round %d: 位置已预生成，Flow: %.2f%%", round, target_percent * 100.0);
+        }
+        else
+        {
+            PrintToConsoleAll("[TankFight] Round %d: 警告 - 无法找到有效位置", round);
+        }
+    }
+
+
+    g_bTankPositionsPreGenerated = true;
+    CPrintToChatAll("[{green}!{default}] 所有 {olive}%d {default}轮的 Tank 位置已预生成完毕！", numRounds);
+    SetTankPercent(RoundToFloor(g_fTankFlowPercentByRound[0] * 100.0));
+    return Plugin_Stop;
 }
 
 public Action IsTankFightEnd(Handle timer)
@@ -240,9 +349,13 @@ void EndTankFightRound(){
         TFData.Reset();
 
         // 重新初始化下一轮
-        CreateTimer(2.0, Timer_DelayProcess, .flags = TIMER_FLAG_NO_MAPCHANGE);
-        CreateTimer(5.5, Timer_AccessTankWarp, false, TIMER_FLAG_NO_MAPCHANGE);
-
+        GenerateAndSetTankPosition(g_iTankFightCurrentRound);
+        TFData.fSurvivorPercentTarget = L4D2Direct_GetVSTankFlowPercent(InSecondHalfOfRound()) - 0.12;
+        TFData.fSurvivorPercentReal = L4D2Direct_GetVSTankFlowPercent(InSecondHalfOfRound()) - 0.24;
+        PrintToConsoleAll("TFData.fSurvivorPercent: %f/%f", TFData.fSurvivorPercentTarget, TFData.fSurvivorPercentReal);
+        CPrintToChatAll("[{green}!{default}] Tank生成位置：%f", L4D2Direct_GetVSTankFlowPercent(InSecondHalfOfRound()));
+        CreateTimer(5.0, Timer_DelayProcess, .flags = TIMER_FLAG_NO_MAPCHANGE);
+        //CreateTimer(10.5, Timer_AccessTankWarp, false, TIMER_FLAG_NO_MAPCHANGE);
         return;
     }
 
@@ -325,12 +438,12 @@ void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 }
 
 public Action SelectSurvivorSpawnPosition(Handle timer){
-    if (IsTankInPlay()){
+    if (TFData.fSurvivorPercentReal < 0.0) TFData.fSurvivorPercentReal = 0.01;
+    TeleportAllSurvivorToPercentFlow(TFData.fSurvivorPercentReal);
+    if (FindAliveTankClient() != -1){
         return Plugin_Stop;
     }
-
-    TeleportAllSurvivorToPercentFlow(TFData.fSurvivorPercentReal);
-    TFData.fSurvivorPercentReal += 0.06;
+    TFData.fSurvivorPercentReal += 0.02;
     if (TFData.fSurvivorPercentReal > TFData.fSurvivorPercentTarget){
         return Plugin_Stop;
     }
@@ -341,9 +454,9 @@ public Action L4D_OnFirstSurvivorLeftSafeArea(int x){
     if (IsInReady()) return Plugin_Continue;
     if (g_iMapTFType == TYPE_STATIC) return Plugin_Continue;
 
-    // Initialize survivor spawn positions
+    // 起始进度从 tankflow - 0.24 开始，每次增加 0.03，直至 tankflow - 0.12 为止
     TFData.fSurvivorPercentTarget = L4D2Direct_GetVSTankFlowPercent(0) - 0.12;
-    TFData.fSurvivorPercentReal = L4D2Direct_GetVSTankFlowPercent(0) - 0.12 - 0.24;
+    TFData.fSurvivorPercentReal = L4D2Direct_GetVSTankFlowPercent(0) - 0.24;
     if (TFData.fSurvivorPercentReal < 0.0) TFData.fSurvivorPercentReal = 0.0;
 
     if (!IsInReady()){
@@ -369,6 +482,17 @@ public void OnMapStart()
 {
     g_bMissionFinalMapCacheValid = false;
 
+    // 清空已有的Tank位置数据
+    g_bTankPositionsPreGenerated = false;
+    for (int i = 0; i < sizeof(g_bTankPositionSavedByRound); i++)
+    {
+        g_bTankPositionSavedByRound[i] = false;
+        g_vTankPositionsByRound[i] = NULL_VECTOR;
+        g_vTankAnglesByRound[i] = NULL_VECTOR;
+        g_fTankFlowPercentByRound[i] = 0.0;
+    }
+    PrintToConsoleAll("[TankFight] OnMapStart: 已清空所有预生成的Tank位置数据");
+
     for (int i = 0; i < sizeof(g_sTankModels); ++i){
         PrecacheModel(g_sTankModels[i]);
         PrecacheModel(g_sSurvivorModels_Plugin[i]);
@@ -389,13 +513,15 @@ public void OnMapEnd()
 {
     strcopy(g_sTankModels[TANK_VARIANT_SLOT], TANK_MODEL_STRLEN, "N/A");
     strcopy(g_sSurvivorModels_Plugin[TANK_VARIANT_SLOT], TANK_MODEL_STRLEN, "N/A");
-    g_iRound++;
+    g_iTankFightCurrentRound++;
     g_iTankFightCurrentRound = 0;
+    g_bTankPositionsPreGenerated = false;
     for (int i = 0; i < sizeof(g_bTankPositionSavedByRound); i++)
     {
         g_bTankPositionSavedByRound[i] = false;
         g_vTankPositionsByRound[i] = NULL_VECTOR;
         g_vTankAnglesByRound[i] = NULL_VECTOR;
+        g_fTankFlowPercentByRound[i] = 0.0;
     }
 }
 
@@ -434,7 +560,7 @@ bool IsMissionFinalMap()
     }
 
     char g_sMapName[48][32];
-    GetCurrentMap(g_sMapName[g_iRound], 32);
+    GetCurrentMap(g_sMapName[g_iTankFightCurrentRound], 32);
     Handle g_hTrieMaps;
     // finales
     g_hTrieMaps = CreateTrie();
@@ -456,7 +582,7 @@ bool IsMissionFinalMap()
     // since L4D_IsMissionFinalMap() is bollocksed, simple map string check
     int mapType;
     bool bIsFinal = false;
-    if (GetTrieValue(g_hTrieMaps, g_sMapName[g_iRound], mapType)) {
+    if (GetTrieValue(g_hTrieMaps, g_sMapName[g_iTankFightCurrentRound], mapType)) {
         bIsFinal = (mapType == MP_FINALE);
     }
 
@@ -503,12 +629,9 @@ Action Timer_DelayProcess(Handle timer)
         RemoveEntity(g_iSurvivorGlowModel);
         g_iSurvivorGlowModel = INVALID_ENT_REFERENCE;
     }
-    if (g_iRound >= 1){
-        TeleportAllSurvivorToPercentFlow(0.1);
-        GenerateAndSetTankPosition(g_iRound, !!GameRules_GetProp("m_bInSecondHalfOfRound", 1));
-        EnableTankSpawn();
-        CreateTimer(0.3, SelectSurvivorSpawnPosition);
-    }
+    GenerateAndSetTankPosition(g_iTankFightCurrentRound);
+    EnableTankSpawn();
+    CreateTimer(0.3, SelectSurvivorSpawnPosition);
     g_iTankGlowModel = ProcessPredictModel(g_vTankModelPos, g_vTankModelAng);
     g_iSurvivorGlowModel = ProcessSurPredictModel(g_vSurvivorModelPos, g_vSurvivorModelAng);
     if (g_iTankGlowModel != INVALID_ENT_REFERENCE)
@@ -592,7 +715,7 @@ void FreezePoints()
 void Event_TankSpawn(Event event, const char[] name, bool dontBroadcast)
 {
     if (!L4D_IsVersusMode()) return;
-
+    //PBONUS_SetDefibPenalty
     if (!IsValidEdict(g_iTankGlowModel))
         return;
 
@@ -600,27 +723,31 @@ void Event_TankSpawn(Event event, const char[] name, bool dontBroadcast)
     if (!client)
         return;
 
-    if (IsFakeClient(client))
+    int currentRound = g_iTankFightCurrentRound;
+
+    // 检查是否有预生成的位置
+    if (g_bTankPositionsPreGenerated && g_bTankPositionSavedByRound[currentRound])
     {
-        if (g_cvTeleport.BoolValue)
-            TeleportEntity(client, g_vTankModelPos, g_vTankModelAng, NULL_VECTOR);
+        float vPos[3], vAng[3];
+        vPos[0] = g_vTankPositionsByRound[currentRound][0];
+        vPos[1] = g_vTankPositionsByRound[currentRound][1];
+        vPos[2] = g_vTankPositionsByRound[currentRound][2];
+        vAng[0] = g_vTankAnglesByRound[currentRound][0];
+        vAng[1] = g_vTankAnglesByRound[currentRound][1];
+        vAng[2] = g_vTankAnglesByRound[currentRound][2];
+
+        // 将Tank传送到预生成的位置
+        TeleportEntity(client, vPos, vAng, NULL_VECTOR);
+        PrintToConsoleAll("[TankFight] Event_TankSpawn - Tank 已传送到预生成位置 Round: %d", currentRound);
     }
+
 
     RemoveEntity(g_iTankGlowModel);
     g_iTankGlowModel = INVALID_ENT_REFERENCE;
 
-    // 显示当前轮数信息
-    bool bIsSecondHalf = !!GameRules_GetProp("m_bInSecondHalfOfRound", 1);
-    if (bIsSecondHalf && g_bTankPositionSavedByRound[g_iTankFightCurrentRound])
-    {
-        CPrintToChatAll("[{green}!{default}] Tank 已生成，使用 {green}一致位置 {default}进行第 {olive}%d {default}轮战斗 ({olive}%d{default}/{olive}%d{default})",
-                       g_iTankFightCurrentRound + 1, g_iTankFightCurrentRound + 1, g_cvTankFightRounds.IntValue);
-    }
-    else
-    {
-        CPrintToChatAll("[{green}!{default}] Tank 已生成，进行第 {olive}%d {default}轮战斗 ({olive}%d{default}/{olive}%d{default})",
-                       g_iTankFightCurrentRound + 1, g_iTankFightCurrentRound + 1, g_cvTankFightRounds.IntValue);
-    }
+    CPrintToChatAll("[{green}!{default}] Tank 已生成，进行第 {olive}%d {default}轮战斗 ({olive}%d{default}/{olive}%d{default})",
+                       currentRound + 1, currentRound + 1, g_cvTankFightRounds.IntValue);
+
 
     CreateTimer(0.3, IsTankFightEnd, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 }
@@ -630,70 +757,43 @@ void Event_TankSpawn(Event event, const char[] name, bool dontBroadcast)
 /**
  * 生成并设置Tank的位置百分比
  * @param iRound 当前轮次
- * @param bIsSecondHalf 是否为第二半场
  */
-void GenerateAndSetTankPosition(int iRound, bool bIsSecondHalf)
+void GenerateAndSetTankPosition(int iRound)
 {
-    int attempts = 0;
-    int maxAttempts = 50;
-    float target_percent = -1.0;
-
-    // 生成有效的随机百分比
-    while (attempts < maxAttempts)
+    // 如果位置已预生成，使用预生成的位置和百分比
+    if (g_bTankPositionsPreGenerated && iRound < sizeof(g_vTankPositionsByRound) && g_bTankPositionSavedByRound[iRound])
     {
-        int target_percent_100 = GetRandomInt(1, 99);
-        target_percent = float(target_percent_100) / 100.0;
-
-        if (IsTankPercentValid(target_percent_100))
-        {
-            break;
-        }
-
-        attempts++;
+        // 使用保存的流程百分比
+        float target_percent = g_fTankFlowPercentByRound[iRound];
+        L4D2Direct_SetVSTankFlowPercent(0, target_percent);
+        L4D2Direct_SetVSTankFlowPercent(1, target_percent);
+        PrintToConsoleAll("[TankFight] GenerateAndSetTankPosition - Round: %d (预生成), Flow Percent: %.2f%%", iRound, target_percent * 100.0);
+        return;
     }
 
-    // 如果找不到有效位置，使用默认流程百分比
-    if (target_percent < 0.0)
-    {
-        target_percent = L4D2Direct_GetVSTankFlowPercent(0);
-    }
-
-    // 保存该轮的百分比位置（供换边后使用）
-    if (!bIsSecondHalf && iRound < sizeof(g_vTankPositionsByRound))
-    {
-        // 将百分比转换为具体坐标保存
-        TerrorNavArea nav = GetBossSpawnAreaForFlow(target_percent);
-        if (nav.Valid())
-        {
-            float vPos[3], vAng[3];
-            L4D_FindRandomSpot(view_as<int>(nav), vPos);
-            vPos[2] -= 8.0;
-
-            vAng[0] = 0.0;
-            vAng[1] = GetRandomFloat(0.0, 360.0);
-            vAng[2] = 0.0;
-
-            g_vTankPositionsByRound[iRound] = vPos;
-            g_vTankAnglesByRound[iRound] = vAng;
-            g_bTankPositionSavedByRound[iRound] = true;
-        }
-    }
+    // 备用逻辑：如果预生成失败，使用新的随机选择机制
+    float target_percent = GetRandomValidTankPercent();
 
     // 设置Tank的流程百分比
     L4D2Direct_SetVSTankFlowPercent(0, target_percent);
+    L4D2Direct_SetVSTankFlowPercent(1, target_percent);
     PrintToConsoleAll("[TankFight] GenerateAndSetTankPosition - Round: %d, Flow Percent: %.2f%%", iRound, target_percent * 100.0);
 }
 
 int ProcessPredictModel(float vPos[3], float vAng[3])
 {
-    bool bIsSecondHalf = !!GameRules_GetProp("m_bInSecondHalfOfRound", 1);
     int currentRound = g_iTankFightCurrentRound;
 
-    // 如果是第二半场且该轮位置已保存，直接使用保存的位置
-    if (bIsSecondHalf && g_bTankPositionSavedByRound[currentRound])
+    // 始终使用预生成的位置（包括第一个tank）
+    if (g_bTankPositionsPreGenerated && g_bTankPositionSavedByRound[currentRound])
     {
-        vPos = g_vTankPositionsByRound[currentRound];
-        vAng = g_vTankAnglesByRound[currentRound];
+        vPos[0] = g_vTankPositionsByRound[currentRound][0];
+        vPos[1] = g_vTankPositionsByRound[currentRound][1];
+        vPos[2] = g_vTankPositionsByRound[currentRound][2];
+        vAng[0] = g_vTankAnglesByRound[currentRound][0];
+        vAng[1] = g_vTankAnglesByRound[currentRound][1];
+        vAng[2] = g_vTankAnglesByRound[currentRound][2];
+        PrintToConsoleAll("[TankFight] ProcessPredictModel - 使用预生成位置 Round: %d", currentRound);
         return CreateTankGlowModel(vPos, vAng);
     }
 
