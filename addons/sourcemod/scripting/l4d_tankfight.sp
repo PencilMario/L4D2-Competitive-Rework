@@ -48,6 +48,9 @@ CZombieManager ZombieManager;
 int g_iMapTFType = 0;
 int g_iTankFightCurrentRound = 0;  // 当前战斗轮数
 ConVar g_cvTankFightRounds;
+ConVar g_cvTankFightSurvivorScorePerTank;
+ConVar g_cvVsDefibPenalty;
+int g_iOriginalDefibPenalty = 0;  // 保存vs_defib_penalty的原始值
 
 // 保存每一轮Tank的位置用于换边时保持一致
 float g_vTankPositionsByRound[10][3];
@@ -149,6 +152,22 @@ public void OnPluginStart()
                                 FCVAR_SPONLY,
                                 true, 1.0, true, 10.0);
 
+    g_cvTankFightSurvivorScorePerTank = CreateConVar("l4d_tankfight_survivor_score_per_tank",
+                                "0",
+                                "Score bonus for survivors for each tank spawned.\n"
+                            ...	"0 = no bonus, positive numbers add to survivor score",
+                                FCVAR_SPONLY,
+                                true, 0.0);
+
+    g_cvVsDefibPenalty = FindConVar("vs_defib_penalty");
+    if (g_cvVsDefibPenalty != null)
+    {
+        // 保存原始值
+        g_iOriginalDefibPenalty = g_cvVsDefibPenalty.IntValue;
+        // 设置为负的tank分数
+        g_cvVsDefibPenalty.IntValue = -g_cvTankFightSurvivorScorePerTank.IntValue;
+    }
+
     HookEvent("round_start", Event_RoundStart);
     HookEvent("tank_spawn", Event_TankSpawn);
     HookEvent("round_end", RoundEnd_Event);
@@ -193,7 +212,7 @@ int GetAllValidTankPercents(ArrayList outPercents)
     return outPercents.Length;
 }
 
-/**
+/**y
  * 从所有可用进度中随机选择一个
  * @return 返回随机选择的流程百分比
  */
@@ -594,7 +613,16 @@ public Action L4D_OnFirstSurvivorLeftSafeArea(int x){
     PrintToChatAll("特感将在7S以后允许复活！");
     CreateTimer(0.1, Timer_DelaySpawn, false, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
     return Plugin_Continue;
-}	
+}
+
+public void OnPluginEnd()
+{
+    // 还原 vs_defib_penalty 的原始值
+    if (g_cvVsDefibPenalty != null)
+    {
+        g_cvVsDefibPenalty.IntValue = g_iOriginalDefibPenalty;
+    }
+}
 
 public void OnMapStart()
 {
@@ -833,7 +861,7 @@ void FreezePoints()
 void Event_TankSpawn(Event event, const char[] name, bool dontBroadcast)
 {
     if (!L4D_IsVersusMode()) return;
-    //PBONUS_SetDefibPenalty
+    GameRules_SetProp("m_iVersusDefibsUsed", g_iTankFightCurrentRound, 4, GameRules_GetProp("m_bAreTeamsFlipped", 4, 0));
     if (!IsValidEdict(g_iTankGlowModel))
         return;
 
@@ -1139,13 +1167,11 @@ public Action Command_ShowTankPositions(int client, int args)
             float posY = g_vTankPositionsByRound[i][1];
             float posZ = g_vTankPositionsByRound[i][2];
 
-            CPrintToChat(client, "[{green}!{default}] 第 {olive}%d {default}轮 - 流程: {olive}%.2f%% {default}位置: [{olive}%.1f, %.1f, %.1f{default}]",
-                        i + 1, flowPercent, posX, posY, posZ);
+            CPrintToChat(client, "[{green}!{default}] 第 {olive}%d {default}轮 - 流程: {olive}%.2f%% {default}",
+                        i + 1, flowPercent);
         }
     }
 
-    CPrintToChat(client, "[{green}!{default}] 已保存位置数: {olive}%d{default}/{olive}%d", validCount, numRounds);
-    CPrintToChat(client, "[{green}!{default}] =====================================");
 
     return Plugin_Handled;
 }
