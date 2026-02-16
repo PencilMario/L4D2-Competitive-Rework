@@ -87,7 +87,7 @@ jobs:
             output_file="compiled/${filename}.smx"
 
             echo "[$(printf '%3d/%3d' $((compiled_count + errors + 1)) ${#file_list[@]})] Compiling $file"
-            if spcomp -E -w234 -w217 -O2 -v2 -i "${{ env.SCRIPTS_PATH }}/include" "$file" -o "$output_file"; then
+            if spcomp -w234 -w217 -O2 -v2 -i "${{ env.SCRIPTS_PATH }}/include" "$file" -o "$output_file"; then
               compiled_count=$((compiled_count + 1))
             else
               echo "::warning file=$file::Failed to compile plugin: $file"
