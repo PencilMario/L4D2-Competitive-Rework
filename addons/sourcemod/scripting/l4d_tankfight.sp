@@ -73,70 +73,21 @@ static char g_sSurvivorModels_Plugin[][TANK_MODEL_STRLEN] = {
     "N/A" // TankVariant slot
 };
 
-int g_iPredictModel = INVALID_ENT_REFERENCE;
-int g_iPredictSurModel = INVALID_ENT_REFERENCE;
+int g_iTankGlowModel = INVALID_ENT_REFERENCE;
+int g_iSurvivorGlowModel = INVALID_ENT_REFERENCE;
 int g_iRound = 0;
-float g_vModelPos[3], g_vModelAng[3];
-float g_vSmodelPos[3], g_vSmodelAng[3];
+float g_vTankModelPos[3], g_vTankModelAng[3];
+float g_vSurvivorModelPos[3], g_vSurvivorModelAng[3];
 ConVar g_cvTeleport;
+bool g_bMissionFinalMapCache = false;
+bool g_bMissionFinalMapCacheValid = false;
 enum struct TFRoundData{
     float fSurvivorPercentReal; // 实际刷新的位置
-    float fSurvivorPencentTarget; // 目标位置
-    float fMaxPreDamage; // 预克局阶段最大伤害
-    float fMaxPreCooltime; // 预克局阶段最大增加CD
-    int iClientDamageCount; // 预克局阶段单人伤害次数
-    int iClientDamagedTime[MAXPLAYERS]; // 预克局阶段已伤害次数
-    float fPreDamageStartTimeScamp; // 预克局阶段开始时间戳
-    float fPreDamageDuration; // 预克局阶段持续时间
+    float fSurvivorPercentTarget; // 目标位置
 
-
-    // 获取每次应造成的伤害
-    float GetClientPerTimeDamage(){
-        return this.fMaxPreDamage / float(this._CountInfected()) / float(this.iClientDamageCount);
-    }
-
-    // 获取每次应增加的CD
-    float GetClientPerTimeCooltime(){
-        return this.fMaxPreCooltime / float(this._CountInfected()) / float(this.iClientDamageCount);
-    }
-    // 预克局阶段是否结束
-    int isPreDamageStateEnded(){
-        return this.fPreDamageStartTimeScamp + this.fPreDamageDuration < GetEngineTime();
-    }
-
-    /**
-     * 开始预克局阶段
-     * 
-     * @note: 需要提前设置this.fMaxPreDamage和this.fMaxPreCooltime
-     */
-    void StartPreDamageState(){
-        this.fPreDamageStartTimeScamp = GetEngineTime();
-        this.fPreDamageDuration = 10.0;
-        for (int i = 0; i < MAXPLAYERS; i++) {
-            this.iClientDamagedTime[i] = this.iClientDamageCount;
-        }
-    }
-
-    int _CountInfected(){
-        int iCount = 0;
-        for (int i = 1; i <= MaxClients; i++){
-            if (IS_VALID_INFECTED(i) && !IsFakeClient(i)) iCount++;
-        }
-        return iCount;
-    }
-    void SetDmgandDuration(float percent){
-        this.fMaxPreDamage = 210.0 * percent;
-        this.fMaxPreCooltime = 43.75 * percent;
-    }
     void Reset(){
         this.fSurvivorPercentReal = 0.0;
-        this.fSurvivorPencentTarget = 0.0;
-        this.fMaxPreDamage = 0.0;
-        this.fMaxPreCooltime = 0.0;
-        this.iClientDamageCount = 4;
-        for (int i = 0; i < MAXPLAYERS; i++) {
-            this.iClientDamagedTime[i] = this.iClientDamageCount;
-        }
+        this.fSurvivorPercentTarget = 0.0;
     }
 }
 TFRoundData TFData;
@@ -161,6 +112,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     MarkNativeAsOptional("InfoEditor_GetString");
     return APLRes_Success;
 }
+
+// 按E应传送到克局位置
 public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon)
 {
 	if (!IsClientInGame(client) || IsFakeClient(client) || GetClientTeam(client) != L4D2Team_Infected)
@@ -171,7 +124,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 	
     if (buttons & IN_USE)
 	{
-		TeleportEntity(client, g_vSmodelPos, g_vSmodelAng);
+		TeleportEntity(client, g_vSurvivorModelPos, g_vSurvivorModelAng);
         return Plugin_Handled;
 	}
 	return Plugin_Continue;
@@ -192,85 +145,7 @@ public void OnPluginStart()
     HookEvent("tank_spawn", Event_TankSpawn);
     HookEvent("round_end", RoundEnd_Event);
     HookEvent("player_incapacitated", Event_PlayerIncap);
-    RegConsoleCmd("sm_tfpre", CMD_tfpre);
     TFData.Reset();
-}
-public Action CMD_tfpre(int client, int args){
-    if (IsInfected(client)){
-        PreDamageMenu(client);
-    }
-    return Plugin_Handled;
-}
-public void OnPreTFStart(){
-    TFData.Reset();
-    TFData.fSurvivorPencentTarget = L4D2Direct_GetVSTankFlowPercent(0) - 0.12;
-    TFData.fSurvivorPercentReal = L4D2Direct_GetVSTankFlowPercent(0) - 0.12 - 0.24;
-    TFData.SetDmgandDuration(TFData.fSurvivorPencentTarget);
-    TFData.StartPreDamageState();
-    if (TFData.fSurvivorPercentReal < 0.0) TFData.fSurvivorPercentReal = 0.0;
-    for(int i = 1; i <= MaxClients; i++){
-        if (IsClientInGame(i) && IsInfected(i)){
-            CPrintToChat(i, "[{blue}!{default}] 预伤害阶段!");
-            CPrintToChat(i, "你可以在这个阶段调整生还者的血型, 但注意如果生还者因此倒地将会罚时8秒!");
-            CPrintToChat(i, "预伤害阶段将在你能复活时结束, 使用指令 {green}!tfpre{default} 重新呼出菜单");
-            CPrintToChat(i, "本回合最多可造成 {green}%.0f{default} 点伤害, 最多延长 {green}%.1fs{default} 秒复活时间", TFData.fMaxPreDamage, TFData.fMaxPreCooltime);
-            PreDamageMenu(i);
-        }
-    }
-    InitiateCountdown();
-}
-void PreDamageMenu(int client){
-    Menu menu = new Menu(PreDamageMenuHandler);
-    char index[3], buffer[64];
-    menu.SetTitle("预伤害菜单 / 剩余 %i 次 (-%.0f HP/ +%.1f CD)", TFData.iClientDamagedTime[client] ,TFData.GetClientPerTimeDamage(), TFData.GetClientPerTimeCooltime());
-    for (int i = 1; i <= MaxClients; i++){
-        if (!IS_VALID_INGAME(i)) continue;
-        if (IsSurvivor(i) && IsPlayerAlive(i)){
-            Format(index, sizeof(index), "%i", i);
-            Format(buffer, sizeof(buffer), "%N (HP: %i)(%s)", i, GetClientHealth(i), EXPRankNames[L4D2_GetClientExpRankLevel(i)]);
-            menu.AddItem(index, buffer);
-        }
-    }
-    menu.ExitBackButton = true;
-	menu.Display(client, 12);
-}
-
-int PreDamageMenuHandler(Menu menu, MenuAction action, int iClient, int param2)
-{
-	switch (action)
-	{
-		case MenuAction_End:
-		{
-			delete menu;
-		}
-		case MenuAction_Select:
-		{
-            if (TFData.isPreDamageStateEnded()) {
-                PrintToChat(iClient, "预伤害阶段已经过了~");
-                return 0;
-            }
-			char index[12];
-            menu.GetItem(param2, index, sizeof(index));
-            int victim = StringToInt(index);
-            int tank_fru;
-            if (TFData.iClientDamagedTime[iClient]-- > 0){
-                if (IsTank(iClient)) tank_fru = GetTankFrustration(iClient);
-                HurtEntity(victim, /* IsTank(iClient) ? victim :  */iClient, TFData.GetClientPerTimeDamage());
-                if (IsTank(iClient)) SetTankFrustration(iClient, tank_fru);
-                TFData.fPreDamageDuration += TFData.GetClientPerTimeCooltime();
-                CTimer_SetDuration(CountdownPointer(), TFData.fPreDamageDuration);
-                PreDamageMenu(iClient);
-            } else {
-                PrintToChat(iClient, "你的预伤害次数已经用完啦~");
-            }
-		}
-	}
-	return 0;
-}
-
-void HurtEntity(int victim, int client, float damage)
-{
-	SDKHooks_TakeDamage(victim, client, client, damage, DMG_GENERIC);
 }
 public void OnRoundIsLive()
 {
@@ -370,26 +245,19 @@ public void OnUpdateBosses(int iTankFlow, int iWitchFlow)
 
 void RoundEnd_Event(Event event, const char[] name, bool dontBroadcast)
 {
-    //if (t_IsTankAlive != INVALID_HANDLE) KillTimer(t_IsTankAlive);
-    //t_IsTankAlive = INVALID_HANDLE;
 }
 void Event_PlayerIncap(Event event, const char[] name, bool dontBroadcast){
-    int attacker = GetClientOfUserId(event.GetInt("attacker"));
-    if (!TFData.isPreDamageStateEnded() && (IsInfected(attacker) && !IsTank(attacker))){
-        PrintToChatAll("因预伤害阶段特感针对倒地罚时 +8s");
-        TFData.fPreDamageDuration += 8.0;
-    }
 }
 void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
     if (!L4D_IsVersusMode()) return;
-    
+
     if (!GameRules_GetProp("m_bInSecondHalfOfRound", 1))
     {
-        g_vModelPos = NULL_VECTOR;
-        g_vModelAng = NULL_VECTOR;
-        g_vSmodelAng = NULL_VECTOR;
-        g_vSmodelPos = NULL_VECTOR;
+        g_vTankModelPos = NULL_VECTOR;
+        g_vTankModelAng = NULL_VECTOR;
+        g_vSurvivorModelAng = NULL_VECTOR;
+        g_vSurvivorModelPos = NULL_VECTOR;
     }
     
     // Need to delay a bit, seems crashing otherwise.
@@ -402,60 +270,37 @@ void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 public Action SelectSurvivorSpawnPosition(Handle timer){
     if (IsTankInPlay()){
         return Plugin_Stop;
-    } else {
-        TeleportAllSurvivorToPercentFlow(TFData.fSurvivorPercentReal > TFData.fSurvivorPencentTarget ? TFData.fSurvivorPencentTarget : TFData.fSurvivorPercentReal);
-        TFData.fSurvivorPercentReal += 0.06;
-        if (TFData.fSurvivorPercentReal > TFData.fSurvivorPencentTarget){
-            return Plugin_Stop;
-        }
-        CreateTimer(0.3, SelectSurvivorSpawnPosition);
     }
+
+    TeleportAllSurvivorToPercentFlow(TFData.fSurvivorPercentReal);
+    TFData.fSurvivorPercentReal += 0.06;
+    if (TFData.fSurvivorPercentReal > TFData.fSurvivorPercentTarget){
+        return Plugin_Stop;
+    }
+    CreateTimer(0.3, SelectSurvivorSpawnPosition);
     return Plugin_Continue;
-}
-CountdownTimer CountdownPointer()
-{
-	return L4D2Direct_GetScavengeRoundSetupTimer();
-}
-void InitiateCountdown()
-{
-    for (int i = 1; i <= MaxClients; i++) {
-		if (IsClientInGame(i) && !IsFakeClient(i)) {
-			ShowVGUIPanel(i, "ready_countdown", _, true);
-		}
-	}
-	CTimer_Start(CountdownPointer(), TFData.fPreDamageDuration);
-}
-
-bool IsCountdownRunning()
-{
-	return CTimer_HasStarted(CountdownPointer());
-}
-
-bool HasCountdownElapsed()
-{
-	return CTimer_IsElapsed(CountdownPointer());
-}
-
-void StopCountdown()
-{
-	CTimer_Invalidate(CountdownPointer());
 }
 public Action L4D_OnFirstSurvivorLeftSafeArea(int x){
     if (IsInReady()) return Plugin_Continue;
     if (g_iMapTFType == TYPE_STATIC) return Plugin_Continue;
-    OnPreTFStart();
+
+    // Initialize survivor spawn positions
+    TFData.fSurvivorPercentTarget = L4D2Direct_GetVSTankFlowPercent(0) - 0.12;
+    TFData.fSurvivorPercentReal = L4D2Direct_GetVSTankFlowPercent(0) - 0.12 - 0.24;
+    if (TFData.fSurvivorPercentReal < 0.0) TFData.fSurvivorPercentReal = 0.0;
+
     if (!IsInReady()){
-        CreateTimer(0.3, SelectSurvivorSpawnPosition/* , _, TIMER_REPEAT */);
-    }else{
+        CreateTimer(0.3, SelectSurvivorSpawnPosition);
+    } else {
         return Plugin_Continue;
     }
 
-    if (IsValidEdict(g_iPredictSurModel)){
-        RemoveEntity(g_iPredictSurModel);
-        g_iPredictSurModel = INVALID_ENT_REFERENCE;
+    if (IsValidEdict(g_iSurvivorGlowModel)){
+        RemoveEntity(g_iSurvivorGlowModel);
+        g_iSurvivorGlowModel = INVALID_ENT_REFERENCE;
     }
 
-    // 暂时禁止特感复活
+    // Disable special spawns temporarily
     ConVar spawn = FindConVar("director_no_specials");
     spawn.IntValue = 1;
     PrintToChatAll("特感将在12S以后允许复活！");
@@ -465,6 +310,8 @@ public Action L4D_OnFirstSurvivorLeftSafeArea(int x){
 
 public void OnMapStart()
 {
+    g_bMissionFinalMapCacheValid = false;
+
     for (int i = 0; i < sizeof(g_sTankModels); ++i){
         PrecacheModel(g_sTankModels[i]);
         PrecacheModel(g_sSurvivorModels_Plugin[i]);
@@ -497,32 +344,31 @@ Action Timer_AnounceChangeMap(Handle Timer)
 
 Action Timer_DelaySpawn(Handle timer)
 {
-    if (!TFData.isPreDamageStateEnded()){
-        for(int i = 1; i <= MaxClients; i++){
-            if (IsClientInGame(i) && IsInfected(i)){
-                PrintCenterText(i, "剩余复活时间: %.1f 秒", TFData.fPreDamageStartTimeScamp + TFData.fPreDamageDuration - GetEngineTime());
-            }
-        }
-        return Plugin_Continue;
+    static int iCount = 0;
+    iCount++;
+
+    if (iCount >= 120) {
+        iCount = 0;
+        ConVar spawn = FindConVar("director_no_specials");
+        spawn.IntValue = 0;
+        return Plugin_Stop;
     }
-    ConVar spawn = FindConVar("director_no_specials");
-    spawn.IntValue = 0;
-    StopCountdown();
-    HideCountdown();
-    return Plugin_Stop;
+
+    return Plugin_Continue;
 }
 
-void HideCountdown()
-{
-	for (int i = 1; i <= MaxClients; i++) {
-		if (IsClientInGame(i) && !IsFakeClient(i)) {
-			ShowVGUIPanel(i, "ready_countdown", _, false);
-		}
-	}
-}
 bool IsMissionFinalMap()
 {
-    if (L4D_IsMissionFinalMap()) return true;
+    if (g_bMissionFinalMapCacheValid) {
+        return g_bMissionFinalMapCache;
+    }
+
+    if (L4D_IsMissionFinalMap()) {
+        g_bMissionFinalMapCache = true;
+        g_bMissionFinalMapCacheValid = true;
+        return true;
+    }
+
     char g_sMapName[48][32];
     GetCurrentMap(g_sMapName[g_iRound], 32);
     Handle g_hTrieMaps;
@@ -545,11 +391,15 @@ bool IsMissionFinalMap()
 
     // since L4D_IsMissionFinalMap() is bollocksed, simple map string check
     int mapType;
-    if (!GetTrieValue(g_hTrieMaps, g_sMapName[g_iRound], mapType)) {
-        return false;
+    bool bIsFinal = false;
+    if (GetTrieValue(g_hTrieMaps, g_sMapName[g_iRound], mapType)) {
+        bIsFinal = (mapType == MP_FINALE);
     }
 
-    return (mapType == MP_FINALE);
+    delete g_hTrieMaps;
+    g_bMissionFinalMapCache = bIsFinal;
+    g_bMissionFinalMapCacheValid = true;
+    return bIsFinal;
 }
 
 Action ChangtToNewMap(Handle Timer)
@@ -579,23 +429,23 @@ Action Timer_DelayProcess(Handle timer)
 {
     if (!L4D_IsVersusMode()) return Plugin_Stop;
     
-    if (IsValidEdict(g_iPredictModel))
+    if (IsValidEdict(g_iTankGlowModel))
     {
-        RemoveEntity(g_iPredictModel);
-        g_iPredictModel = INVALID_ENT_REFERENCE;
+        RemoveEntity(g_iTankGlowModel);
+        g_iTankGlowModel = INVALID_ENT_REFERENCE;
     }
-    if (IsValidEdict(g_iPredictSurModel))
+    if (IsValidEdict(g_iSurvivorGlowModel))
     {
-        RemoveEntity(g_iPredictSurModel);
-        g_iPredictSurModel = INVALID_ENT_REFERENCE;
+        RemoveEntity(g_iSurvivorGlowModel);
+        g_iSurvivorGlowModel = INVALID_ENT_REFERENCE;
     }
     
-    g_iPredictModel = ProcessPredictModel(g_vModelPos, g_vModelAng);
-    g_iPredictSurModel = ProcessSurPredictModel(g_vSmodelPos, g_vSmodelAng);
-    if (g_iPredictModel != INVALID_ENT_REFERENCE)
-        g_iPredictModel = EntIndexToEntRef(g_iPredictModel);
-    if (g_iPredictSurModel != INVALID_ENT_REFERENCE)
-        g_iPredictSurModel = EntIndexToEntRef(g_iPredictSurModel);
+    g_iTankGlowModel = ProcessPredictModel(g_vTankModelPos, g_vTankModelAng);
+    g_iSurvivorGlowModel = ProcessSurPredictModel(g_vSurvivorModelPos, g_vSurvivorModelAng);
+    if (g_iTankGlowModel != INVALID_ENT_REFERENCE)
+        g_iTankGlowModel = EntIndexToEntRef(g_iTankGlowModel);
+    if (g_iSurvivorGlowModel != INVALID_ENT_REFERENCE)
+        g_iSurvivorGlowModel = EntIndexToEntRef(g_iSurvivorGlowModel);
     
     FreezePoints();
 
@@ -606,7 +456,7 @@ Action Timer_AccessTankWarp(Handle timer, bool isRetry)
 {
     if (!L4D_IsVersusMode()) return Plugin_Stop;
     
-    if (g_bLeft4Dead2 && IsValidEdict(g_iPredictModel))
+    if (g_bLeft4Dead2 && IsValidEdict(g_iTankGlowModel))
     {
         char buffer[256];
         
@@ -636,7 +486,7 @@ Action Timer_AccessTankWarp(Handle timer, bool isRetry)
                 tankid = %d\
             } );\
             ::anv_tankwarps.iTankCount--;",
-            EntRefToEntIndex(g_iPredictModel)
+            EntRefToEntIndex(g_iTankGlowModel)
         );
         
         /**
@@ -669,28 +519,21 @@ void Event_TankSpawn(Event event, const char[] name, bool dontBroadcast)
 {
     if (!L4D_IsVersusMode()) return;
     
-    if (!IsValidEdict(g_iPredictModel))
+    if (!IsValidEdict(g_iTankGlowModel))
         return;
-    
+
     int client = GetClientOfUserId(event.GetInt("userid"));
     if (!client)
         return;
-    
+
     if (IsFakeClient(client))
     {
         if (g_cvTeleport.BoolValue)
-            TeleportEntity(client, g_vModelPos, g_vModelAng, NULL_VECTOR);
+            TeleportEntity(client, g_vTankModelPos, g_vTankModelAng, NULL_VECTOR);
     }
-    
-    RemoveEntity(g_iPredictModel);
-    g_iPredictModel = INVALID_ENT_REFERENCE;
-    if (!TFData.isPreDamageStateEnded()){
-        for (int i = 1; i <= MaxClients; i++) {
-	    	if (IsClientInGame(i) && !IsFakeClient(i)) {
-	    		ShowVGUIPanel(i, "ready_countdown", _, true);
-	    	}
-	    }
-    }
+
+    RemoveEntity(g_iTankGlowModel);
+    g_iTankGlowModel = INVALID_ENT_REFERENCE;
     CreateTimer(0.3, IsTankFightEnd, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 }
 
@@ -793,42 +636,35 @@ TerrorNavArea GetBossSpawnAreaForFlow(float flow)
 
 //=========================================================================================================
 
-int CreateSurvivorGlowModel(const float vPos[3], const float vAng[3])
+//=========================================================================================================
+
+int CreateGlowModel(const float vPos[3], const float vAng[3], const char[] modelPath, const char[] defaultAnim)
 {
     int entity = CreateEntityByName("prop_dynamic");
     if (entity == -1)
         return -1;
-    
-    SetEntityModel(entity, g_sSurvivorModels_Plugin[PickTankVariant()]);
+
+    SetEntityModel(entity, modelPath);
     DispatchKeyValue(entity, "disableshadows", "1");
-    DispatchKeyValue(entity, "DefaultAnim", "Idle_Calm_Pistol");
+    DispatchKeyValue(entity, "DefaultAnim", defaultAnim);
     DispatchSpawn(entity);
-    
+
     SetEntProp(entity, Prop_Send, "m_CollisionGroup", 0);
     SetEntProp(entity, Prop_Send, "m_nSolidType", 0);
     L4D2_SetEntityGlow(entity, L4D2Glow_Constant, 0, 0, {77, 102, 255}, false);
     TeleportEntity(entity, vPos, vAng, NULL_VECTOR);
-    
+
     return entity;
+}
+
+int CreateSurvivorGlowModel(const float vPos[3], const float vAng[3])
+{
+    return CreateGlowModel(vPos, vAng, g_sSurvivorModels_Plugin[PickTankVariant()], "Idle_Calm_Pistol");
 }
 
 int CreateTankGlowModel(const float vPos[3], const float vAng[3])
 {
-    int entity = CreateEntityByName("prop_dynamic");
-    if (entity == -1)
-        return -1;
-    
-    SetEntityModel(entity, g_sTankModels[PickTankVariant()]);
-    DispatchKeyValue(entity, "disableshadows", "1");
-    DispatchKeyValue(entity, "DefaultAnim", "idle");
-    DispatchSpawn(entity);
-    
-    SetEntProp(entity, Prop_Send, "m_CollisionGroup", 0);
-    SetEntProp(entity, Prop_Send, "m_nSolidType", 0);
-    L4D2_SetEntityGlow(entity, L4D2Glow_Constant, 0, 0, {77, 102, 255}, false);
-    TeleportEntity(entity, vPos, vAng, NULL_VECTOR);
-    
-    return entity;
+    return CreateGlowModel(vPos, vAng, g_sTankModels[PickTankVariant()], "idle");
 }
 
 //=========================================================================================================
@@ -853,7 +689,7 @@ int PickTankVariant()
     
     // in case some characteristic configs enables flow tank
     char sCurrentMap[64];
-    GetCurrentMap(sCurrentMap, 6);
+    GetCurrentMap(sCurrentMap, sizeof(sCurrentMap));
     if (strcmp(sCurrentMap, "c7m1_docks") == 0)
         return 1;
     
@@ -875,9 +711,9 @@ void CheatCommand(const char[] sCmd, const char[] sArgs = "")
         }
     }
 }
-float vPos[3], vAng[3];
 void TeleportAllSurvivorToPercentFlow(float TargetPercent)
 {
+    float vPos[3], vAng[3];
     // 从 -12% 反方向获取位置
     for (float p = TargetPercent; p > 0.0; p -= 0.01)
     {
@@ -890,9 +726,9 @@ void TeleportAllSurvivorToPercentFlow(float TargetPercent)
             vAng[0] = 0.0;
             vAng[1] = GetRandomFloat(0.0, 360.0);
             vAng[2] = 0.0;
-            for (int i = 1; i< MaxClients; i++){
+            for (int i = 1; i <= MaxClients; i++){
                 if (IsClientInGame(i) && IsSurvivor(i)){
-                    TeleportEntity(i, (TargetPercent < TFData.fSurvivorPencentTarget) ? vPos : g_vSmodelPos, vAng, NULL_VECTOR);
+                    TeleportEntity(i, vPos, vAng, NULL_VECTOR);
                 }
             }
             break;
