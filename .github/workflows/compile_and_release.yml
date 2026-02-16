@@ -38,31 +38,76 @@ jobs:
           # Clean the compiled directory to ensure all files are recompiled
           rm -f "${{ env.SCRIPTS_PATH }}/compiled"/*.smx
 
+      - name: List and count source files
+        working-directory: ${{ env.SCRIPTS_PATH }}/
+        run: |
+          echo "=========================================="
+          echo "Source File Analysis"
+          echo "=========================================="
+
+          # Count total files
+          total=$(find . -maxdepth 1 -name "*.sp" -type f | wc -l)
+          l4d2_count=$(find . -maxdepth 1 -name "l4d2_*.sp" -type f | wc -l)
+          l4d_count=$(find . -maxdepth 1 -name "l4d_*.sp" -type f | wc -l)
+          other_count=$(find . -maxdepth 1 -name "*.sp" -type f ! -name "l4d*" | wc -l)
+
+          echo "Total .sp files to compile: $total"
+          echo "  - l4d2_* files: $l4d2_count"
+          echo "  - l4d_* files: $l4d_count"
+          echo "  - Other files: $other_count"
+          echo ""
+
+          echo "Files to be compiled:"
+          echo "=========================================="
+          find . -maxdepth 1 -name "*.sp" -type f | sort | nl
+          echo "=========================================="
+
       - name: Compile all plugins
+        working-directory: ${{ env.SCRIPTS_PATH }}/
         run: |
           errors=0
           compiled_count=0
+          file_list=()
+          failed_list=()
 
-          # Find all .sp files directly in scripting directory (not in subdirectories)
-          find . -maxdepth 1 -name "*.sp" -type f | while read -r file; do
+          # Find all .sp files directly in scripting directory
+          while IFS= read -r file; do
+            file_list+=("$file")
+          done < <(find . -maxdepth 1 -name "*.sp" -type f | sort)
+
+          echo "=========================================="
+          echo "Compilation Process"
+          echo "=========================================="
+          echo "Compiling ${#file_list[@]} files..."
+          echo ""
+
+          for file in "${file_list[@]}"; do
             # Get the basename without extension
             filename=$(basename "$file" .sp)
             output_file="compiled/${filename}.smx"
 
-            echo "Compiling $file -> $output_file"
+            echo "[$(printf '%3d/%3d' $((compiled_count + errors + 1)) ${#file_list[@]})] Compiling $file"
             if spcomp -E -w234 -w217 -O2 -v2 -i "${{ env.SCRIPTS_PATH }}/include" "$file" -o "$output_file"; then
               compiled_count=$((compiled_count + 1))
             else
               echo "::warning file=$file::Failed to compile plugin: $file"
+              failed_list+=("$file")
               errors=$((errors + 1))
             fi
           done
 
           echo ""
-          echo "Compilation Summary:"
+          echo "=========================================="
+          echo "Compilation Summary"
+          echo "=========================================="
           echo "Successfully compiled: $compiled_count plugins"
           echo "Failed to compile: $errors plugin(s)"
-        working-directory: ${{ env.SCRIPTS_PATH }}/
+
+          if [ $errors -gt 0 ]; then
+            echo ""
+            echo "Failed files:"
+            printf '  - %s\n' "${failed_list[@]}"
+          fi
 
       - name: Copy compiled plugins to plugins directory
         run: |
