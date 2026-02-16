@@ -43,14 +43,8 @@ jobs:
           errors=0
           compiled_count=0
 
-          # Find all .sp files in scripting directory (including subdirectories)
-          find . -name "*.sp" -type f | while read -r file; do
-            # Skip archive, dev_plugins, and other non-compilable directories
-            if [[ "$file" == *"/archive/"* ]] || [[ "$file" == *"/dev_plugins/"* ]] || [[ "$file" == *"/testsuite/"* ]]; then
-              echo "Skipping archived/test file: $file"
-              continue
-            fi
-
+          # Find all .sp files directly in scripting directory (not in subdirectories)
+          find . -maxdepth 1 -name "*.sp" -type f | while read -r file; do
             # Get the basename without extension
             filename=$(basename "$file" .sp)
             output_file="compiled/${filename}.smx"
