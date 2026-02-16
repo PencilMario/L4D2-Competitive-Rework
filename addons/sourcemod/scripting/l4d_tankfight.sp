@@ -610,7 +610,7 @@ void Event_TankSpawn(Event event, const char[] name, bool dontBroadcast)
     g_iTankGlowModel = INVALID_ENT_REFERENCE;
 
     // 显示当前轮数信息
-    bool bIsSecondHalf = GameRules_GetProp("m_bInSecondHalfOfRound", 1);
+    bool bIsSecondHalf = !!GameRules_GetProp("m_bInSecondHalfOfRound", 1);
     if (bIsSecondHalf && g_bTankPositionSavedByRound[g_iTankFightCurrentRound])
     {
         CPrintToChatAll("[{green}!{default}] Tank 已生成，使用 {green}一致位置 {default}进行第 {olive}%d {default}轮战斗 ({olive}%d{default}/{olive}%d{default})",
@@ -629,6 +629,15 @@ void Event_TankSpawn(Event event, const char[] name, bool dontBroadcast)
 
 
 //=========================================================================================================
+
+/**
+ * 检查Tank的位置百分比是否有效
+ */
+bool IsTankPercentValid(int percent)
+{
+    // 接受1-99之间的任何百分比
+    return percent >= 1 && percent <= 99;
+}
 
 /**
  * 生成并设置Tank的位置百分比
@@ -689,7 +698,7 @@ void GenerateAndSetTankPosition(int iRound, bool bIsSecondHalf)
 
 int ProcessPredictModel(float vPos[3], float vAng[3])
 {
-    bool bIsSecondHalf = GameRules_GetProp("m_bInSecondHalfOfRound", 1);
+    bool bIsSecondHalf = !!GameRules_GetProp("m_bInSecondHalfOfRound", 1);
     int currentRound = g_iTankFightCurrentRound;
 
     // 如果是第二半场且该轮位置已保存，直接使用保存的位置
