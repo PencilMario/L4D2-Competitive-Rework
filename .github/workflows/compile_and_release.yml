@@ -33,13 +33,15 @@ jobs:
           version: "1.12"
 
       - name: Create compile output directory
-        run: mkdir -p "${{ env.SCRIPTS_PATH }}/compiled"
+        run: |
+          mkdir -p "${{ env.SCRIPTS_PATH }}/compiled"
+          # Clean the compiled directory to ensure all files are recompiled
+          rm -f "${{ env.SCRIPTS_PATH }}/compiled"/*.smx
 
       - name: Compile all plugins
         run: |
           errors=0
           compiled_count=0
-          skipped_count=0
 
           # Find all .sp files in scripting directory (including subdirectories)
           find . -name "*.sp" -type f | while read -r file; do
@@ -53,13 +55,6 @@ jobs:
             filename=$(basename "$file" .sp)
             output_file="compiled/${filename}.smx"
 
-            # Check if compiled file already exists
-            if [ -f "$output_file" ]; then
-              echo "Already compiled: $file (skipping)"
-              skipped_count=$((skipped_count + 1))
-              continue
-            fi
-
             echo "Compiling $file -> $output_file"
             if spcomp -E -w234 -w217 -O2 -v2 -i "${{ env.SCRIPTS_PATH }}/include" "$file" -o "$output_file"; then
               compiled_count=$((compiled_count + 1))
@@ -72,7 +67,6 @@ jobs:
           echo ""
           echo "Compilation Summary:"
           echo "Successfully compiled: $compiled_count plugins"
-          echo "Skipped (already compiled): $skipped_count plugins"
           echo "Failed to compile: $errors plugin(s)"
         working-directory: ${{ env.SCRIPTS_PATH }}/
 
