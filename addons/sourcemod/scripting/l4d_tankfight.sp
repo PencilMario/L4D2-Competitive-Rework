@@ -154,6 +154,11 @@ public void OnPluginStart()
     HookEvent("round_end", RoundEnd_Event);
     HookEvent("player_incapacitated", Event_PlayerIncap);
     TFData.Reset();
+
+    // 注册指令
+    RegConsoleCmd("sm_cur", Command_ShowTankPositions);
+    RegConsoleCmd("sm_tank", Command_ShowTankPositions);
+    RegConsoleCmd("sm_witch", Command_ShowTankPositions);
 }
 public void OnRoundIsLive()
 {
@@ -212,6 +217,103 @@ float GetRandomValidTankPercent()
 }
 
 /**
+ * 从所有可用进度中随机选择一个不重复的
+ * @param usedPercents 已使用过的百分比列表
+ * @param tolerance 容差值（防浮点数精度问题）
+ * @return 返回随机选择的流程百分比，如果没有可用的返回-1.0
+ */
+float GetUniqueRandomValidTankPercent(ArrayList usedPercents, float tolerance = 0.001)
+{
+    ArrayList validPercents = new ArrayList();
+    int count = GetAllValidTankPercents(validPercents);
+
+    if (count == 0)
+    {
+        delete validPercents;
+        return -1.0;
+    }
+
+    // 移除已使用过的百分比
+    for (int i = validPercents.Length - 1; i >= 0; i--)
+    {
+        float percent = validPercents.Get(i);
+        bool isUsed = false;
+
+        for (int j = 0; j < usedPercents.Length; j++)
+        {
+            float usedPercent = usedPercents.Get(j);
+            if (FloatAbs(percent - usedPercent) < tolerance)
+            {
+                isUsed = true;
+                break;
+            }
+        }
+
+        if (isUsed)
+        {
+            validPercents.Erase(i);
+        }
+    }
+
+    // 如果没有可用的百分比了
+    if (validPercents.Length == 0)
+    {
+        delete validPercents;
+        return -1.0;
+    }
+
+    int randomIndex = GetRandomInt(0, validPercents.Length - 1);
+    float result = validPercents.Get(randomIndex);
+
+    delete validPercents;
+    return result;
+}
+
+/**
+ * 对Tank位置数据进行排序（按流程百分比升序排列）
+ * 将四个相关联的数组同时排序，保持数据对应关系
+ */
+void SortTankPositions()
+{
+    int numRounds = g_cvTankFightRounds.IntValue;
+    if (numRounds <= 1) return;
+
+    // 冒泡排序
+    for (int i = 0; i < numRounds - 1; i++)
+    {
+        for (int j = 0; j < numRounds - i - 1; j++)
+        {
+            // 只比较已保存的位置
+            if (!g_bTankPositionSavedByRound[j] || !g_bTankPositionSavedByRound[j + 1])
+                continue;
+
+            // 如果当前百分比大于下一个百分比，则交换
+            if (g_fTankFlowPercentByRound[j] > g_fTankFlowPercentByRound[j + 1])
+            {
+                // 交换流程百分比
+                float tempFlow = g_fTankFlowPercentByRound[j];
+                g_fTankFlowPercentByRound[j] = g_fTankFlowPercentByRound[j + 1];
+                g_fTankFlowPercentByRound[j + 1] = tempFlow;
+
+                // 交换Tank位置
+                float tempPos[3];
+                tempPos = g_vTankPositionsByRound[j];
+                g_vTankPositionsByRound[j] = g_vTankPositionsByRound[j + 1];
+                g_vTankPositionsByRound[j + 1] = tempPos;
+
+                // 交换Tank角度
+                float tempAng[3];
+                tempAng = g_vTankAnglesByRound[j];
+                g_vTankAnglesByRound[j] = g_vTankAnglesByRound[j + 1];
+                g_vTankAnglesByRound[j + 1] = tempAng;
+            }
+        }
+    }
+
+    PrintToConsoleAll("[TankFight] Tank位置已按流程百分比排序");
+}
+
+/**
  * 预生成所有Tank战斗轮次的位置
  */
 Action Timer_PreGenerateTankPositions(Handle timer)
@@ -241,9 +343,22 @@ Action Timer_PreGenerateTankPositions(Handle timer)
 
     PrintToConsoleAll("[TankFight] 开始预生成 %d 轮 Tank 位置...", numRounds);
 
+    // 用于记录已使用的百分比，防止重复
+    ArrayList usedPercents = new ArrayList();
+
     for (int round = 0; round < numRounds; round++)
     {
-        float target_percent = GetRandomValidTankPercent();
+        float target_percent = GetUniqueRandomValidTankPercent(usedPercents);
+
+        // 如果没有找到不重复的百分比，使用默认的
+        if (target_percent < 0.0)
+        {
+            target_percent = L4D2Direct_GetVSTankFlowPercent(0);
+            PrintToConsoleAll("[TankFight] Round %d: 警告 - 无可用的不重复位置，使用默认流程百分比 %.2f%%", round, target_percent * 100.0);
+        }
+
+        // 记录已使用的百分比
+        usedPercents.Push(target_percent);
 
         // 保存随机选择的流程百分比
         g_fTankFlowPercentByRound[round] = target_percent;
@@ -272,9 +387,12 @@ Action Timer_PreGenerateTankPositions(Handle timer)
         }
     }
 
+    delete usedPercents;
+
 
     g_bTankPositionsPreGenerated = true;
     CPrintToChatAll("[{green}!{default}] 所有 {olive}%d {default}轮的 Tank 位置已预生成完毕！", numRounds);
+    SortTankPositions();
     SetTankPercent(RoundToFloor(g_fTankFlowPercentByRound[0] * 100.0));
     return Plugin_Stop;
 }
@@ -992,5 +1110,43 @@ void TeleportAllSurvivorToPercentFlow(float TargetPercent)
             break;
         }
     }
+}
+
+/**
+ * 显示本局Tank出现位置的指令处理函数
+ * 支持 sm_cur, sm_tank, sm_witch 三个指令
+ */
+public Action Command_ShowTankPositions(int client, int args)
+{
+    if (!g_bTankPositionsPreGenerated)
+    {
+        CPrintToChat(client, "[{green}!{default}] Tank 位置尚未预生成");
+        return Plugin_Handled;
+    }
+
+    int numRounds = g_cvTankFightRounds.IntValue;
+    CPrintToChat(client, "[{green}!{default}] ========== 本局 Tank 位置信息 ==========");
+    CPrintToChat(client, "[{green}!{default}] 总轮数: {olive}%d", numRounds);
+
+    int validCount = 0;
+    for (int i = 0; i < numRounds; i++)
+    {
+        if (g_bTankPositionSavedByRound[i])
+        {
+            validCount++;
+            float flowPercent = g_fTankFlowPercentByRound[i] * 100.0;
+            float posX = g_vTankPositionsByRound[i][0];
+            float posY = g_vTankPositionsByRound[i][1];
+            float posZ = g_vTankPositionsByRound[i][2];
+
+            CPrintToChat(client, "[{green}!{default}] 第 {olive}%d {default}轮 - 流程: {olive}%.2f%% {default}位置: [{olive}%.1f, %.1f, %.1f{default}]",
+                        i + 1, flowPercent, posX, posY, posZ);
+        }
+    }
+
+    CPrintToChat(client, "[{green}!{default}] 已保存位置数: {olive}%d{default}/{olive}%d", validCount, numRounds);
+    CPrintToChat(client, "[{green}!{default}] =====================================");
+
+    return Plugin_Handled;
 }
 //=========================================================================================================
