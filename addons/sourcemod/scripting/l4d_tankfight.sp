@@ -46,6 +46,13 @@ CZombieManager ZombieManager;
 
 
 int g_iMapTFType = 0;
+int g_iTankFightCurrentRound = 0;  // 当前战斗轮数
+ConVar g_cvTankFightRounds;
+
+// 保存每一轮Tank的位置用于换边时保持一致
+float g_vTankPositionsByRound[10][3];
+float g_vTankAnglesByRound[10][3];
+bool g_bTankPositionSavedByRound[10];
 
 enum /*strMapType*/
 {
@@ -114,7 +121,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 }
 
 // 按E应传送到克局位置
-public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon)
+public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon) 
 {
 	if (!IsClientInGame(client) || IsFakeClient(client) || GetClientTeam(client) != L4D2Team_Infected)
 			return Plugin_Continue;
@@ -133,14 +140,21 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 public void OnPluginStart()
 {
     LoadSDK();
-    
+
     g_cvTeleport = CreateConVar("l4d_predict_glow_tp",
                                 "0",
                                 "Teleports tank to glow position for consistency.\n"
                             ...	"0 = Disable, 1 = Enable",
                                 FCVAR_SPONLY,
                                 true, 0.0, true, 1.0);
-    
+
+    g_cvTankFightRounds = CreateConVar("l4d_tankfight_rounds",
+                                "1",
+                                "Number of tank fight rounds per match.\n"
+                            ...	"1 = 1 round, 2 = 2 rounds, etc.",
+                                FCVAR_SPONLY,
+                                true, 1.0, true, 10.0);
+
     HookEvent("round_start", Event_RoundStart);
     HookEvent("tank_spawn", Event_TankSpawn);
     HookEvent("round_end", RoundEnd_Event);
@@ -149,21 +163,28 @@ public void OnPluginStart()
 }
 public void OnRoundIsLive()
 {
+    g_iTankFightCurrentRound = 0;  // 重置轮数计数器
     CPrintToChatAll("[{green}!{default}] {olive}Tank fight 简要说明");
     CPrintToChatAll("只有克局，克死亡后进入加时阶段。如果所有人都被扶起来且未被控回合结束！");
     CPrintToChatAll("游戏开始后，生还者会被传送到地图上发光的生还者模型");
+    CPrintToChatAll("本场比赛将进行 {olive}%d {default}轮 Tank 战斗", g_cvTankFightRounds.IntValue);
 }
 
 public Action IsTankFightEnd(Handle timer)
-{  
+{
     if (IsTankInGame()) return Plugin_Continue;
     if (!IsCanEndRound()) return Plugin_Continue;
     // 防止影响下一队
     if (IsInReady()) return Plugin_Stop;
     PrintToConsoleAll("EndTankFightRound()");
     EndTankFightRound();
-    TFData.Reset();
-    
+
+    // 仅在真正结束比赛时重置，循环时不重置
+    if (g_iTankFightCurrentRound >= g_cvTankFightRounds.IntValue)
+    {
+        TFData.Reset();
+    }
+
     return Plugin_Stop;
 }
 
@@ -203,7 +224,31 @@ int healthbonus, damageBonus, pillsBonus;
 void EndTankFightRound(){
     // 如果是团灭则不做处理
     if (AllSurInjured()) return;
-    
+
+    g_iTankFightCurrentRound++;
+    CPrintToChatAll("[{green}!{default}] 第 {olive}%d {default}轮结束！", g_iTankFightCurrentRound);
+
+    // 检查是否还有更多轮数
+    if (g_iTankFightCurrentRound < g_cvTankFightRounds.IntValue)
+    {
+        CPrintToChatAll("[{green}!{default}] 准备第 {olive}%d {default}轮 Tank 战斗...", g_iTankFightCurrentRound + 1);
+        // 重置位置和数据
+        g_vTankModelPos = NULL_VECTOR;
+        g_vTankModelAng = NULL_VECTOR;
+        g_vSurvivorModelAng = NULL_VECTOR;
+        g_vSurvivorModelPos = NULL_VECTOR;
+        TFData.Reset();
+
+        // 重新初始化下一轮
+        CreateTimer(2.0, Timer_DelayProcess, .flags = TIMER_FLAG_NO_MAPCHANGE);
+        CreateTimer(5.5, Timer_AccessTankWarp, false, TIMER_FLAG_NO_MAPCHANGE);
+
+        return;
+    }
+
+    // 所有轮次完成，真正结束比赛
+    CPrintToChatAll("[{green}!{default}] 所有 {olive}%d {default}轮 Tank 战斗已结束！", g_iTankFightCurrentRound);
+
     if (g_iMapTFType == TYPE_FINISH){
         healthbonus = SMPlus_GetHealthBonus();
         damageBonus	= SMPlus_GetDamageBonus();
@@ -213,7 +258,7 @@ void EndTankFightRound(){
         int survScore = L4D2Direct_GetVSCampaignScore(SurvivorTeamIndex);
         L4D2Direct_SetVSCampaignScore(SurvivorTeamIndex, survScore + healthbonus + damageBonus + pillsBonus);
         CreateTimer(3.5, AnnounceResult);
-        CheatCommand("scenario_end", "");   
+        CheatCommand("scenario_end", "");
     }else{
         CheatCommand("sm_warpend", "");
     }
@@ -252,17 +297,29 @@ void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
     if (!L4D_IsVersusMode()) return;
 
-    if (!GameRules_GetProp("m_bInSecondHalfOfRound", 1))
+    bool bIsSecondHalf = !!GameRules_GetProp("m_bInSecondHalfOfRound", 1);
+
+    if (!bIsSecondHalf)
     {
+        // 第一半场开始，重置所有位置（新游戏）
         g_vTankModelPos = NULL_VECTOR;
         g_vTankModelAng = NULL_VECTOR;
         g_vSurvivorModelAng = NULL_VECTOR;
         g_vSurvivorModelPos = NULL_VECTOR;
     }
-    
+    else
+    {
+        // 换边开始，重置当前轮数计数（因为要从第一轮重新开始）
+        g_iTankFightCurrentRound = 0;
+        g_vTankModelPos = NULL_VECTOR;
+        g_vTankModelAng = NULL_VECTOR;
+        g_vSurvivorModelAng = NULL_VECTOR;
+        g_vSurvivorModelPos = NULL_VECTOR;
+    }
+
     // Need to delay a bit, seems crashing otherwise.
     CreateTimer(1.0, Timer_DelayProcess, .flags = TIMER_FLAG_NO_MAPCHANGE);
-    
+
     // TODO: Is there a hook?
     CreateTimer(5.0, Timer_AccessTankWarp, false, TIMER_FLAG_NO_MAPCHANGE);
 }
@@ -303,7 +360,7 @@ public Action L4D_OnFirstSurvivorLeftSafeArea(int x){
     // Disable special spawns temporarily
     ConVar spawn = FindConVar("director_no_specials");
     spawn.IntValue = 1;
-    PrintToChatAll("特感将在12S以后允许复活！");
+    PrintToChatAll("特感将在7S以后允许复活！");
     CreateTimer(0.1, Timer_DelaySpawn, false, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
     return Plugin_Continue;
 }	
@@ -333,6 +390,13 @@ public void OnMapEnd()
     strcopy(g_sTankModels[TANK_VARIANT_SLOT], TANK_MODEL_STRLEN, "N/A");
     strcopy(g_sSurvivorModels_Plugin[TANK_VARIANT_SLOT], TANK_MODEL_STRLEN, "N/A");
     g_iRound++;
+    g_iTankFightCurrentRound = 0;
+    for (int i = 0; i < sizeof(g_bTankPositionSavedByRound); i++)
+    {
+        g_bTankPositionSavedByRound[i] = false;
+        g_vTankPositionsByRound[i] = NULL_VECTOR;
+        g_vTankAnglesByRound[i] = NULL_VECTOR;
+    }
 }
 
 Action Timer_AnounceChangeMap(Handle Timer)
@@ -347,7 +411,7 @@ Action Timer_DelaySpawn(Handle timer)
     static int iCount = 0;
     iCount++;
 
-    if (iCount >= 120) {
+    if (iCount >= 70) {
         iCount = 0;
         ConVar spawn = FindConVar("director_no_specials");
         spawn.IntValue = 0;
@@ -439,7 +503,12 @@ Action Timer_DelayProcess(Handle timer)
         RemoveEntity(g_iSurvivorGlowModel);
         g_iSurvivorGlowModel = INVALID_ENT_REFERENCE;
     }
-    
+    if (g_iRound >= 1){
+        TeleportAllSurvivorToPercentFlow(0.1);
+        GenerateAndSetTankPosition(g_iRound, !!GameRules_GetProp("m_bInSecondHalfOfRound", 1));
+        EnableTankSpawn();
+        CreateTimer(0.3, SelectSurvivorSpawnPosition);
+    }
     g_iTankGlowModel = ProcessPredictModel(g_vTankModelPos, g_vTankModelAng);
     g_iSurvivorGlowModel = ProcessSurPredictModel(g_vSurvivorModelPos, g_vSurvivorModelAng);
     if (g_iTankGlowModel != INVALID_ENT_REFERENCE)
@@ -450,6 +519,11 @@ Action Timer_DelayProcess(Handle timer)
     FreezePoints();
 
     return Plugin_Stop;
+}
+
+void EnableTankSpawn(){
+    L4D2Direct_SetVSTankToSpawnThisRound(0, true);
+    L4D2Direct_SetVSTankToSpawnThisRound(1, true);
 }
 
 Action Timer_AccessTankWarp(Handle timer, bool isRetry)
@@ -518,7 +592,7 @@ void FreezePoints()
 void Event_TankSpawn(Event event, const char[] name, bool dontBroadcast)
 {
     if (!L4D_IsVersusMode()) return;
-    
+
     if (!IsValidEdict(g_iTankGlowModel))
         return;
 
@@ -534,17 +608,104 @@ void Event_TankSpawn(Event event, const char[] name, bool dontBroadcast)
 
     RemoveEntity(g_iTankGlowModel);
     g_iTankGlowModel = INVALID_ENT_REFERENCE;
+
+    // 显示当前轮数信息
+    bool bIsSecondHalf = GameRules_GetProp("m_bInSecondHalfOfRound", 1);
+    if (bIsSecondHalf && g_bTankPositionSavedByRound[g_iTankFightCurrentRound])
+    {
+        CPrintToChatAll("[{green}!{default}] Tank 已生成，使用 {green}一致位置 {default}进行第 {olive}%d {default}轮战斗 ({olive}%d{default}/{olive}%d{default})",
+                       g_iTankFightCurrentRound + 1, g_iTankFightCurrentRound + 1, g_cvTankFightRounds.IntValue);
+    }
+    else
+    {
+        CPrintToChatAll("[{green}!{default}] Tank 已生成，进行第 {olive}%d {default}轮战斗 ({olive}%d{default}/{olive}%d{default})",
+                       g_iTankFightCurrentRound + 1, g_iTankFightCurrentRound + 1, g_cvTankFightRounds.IntValue);
+    }
+
     CreateTimer(0.3, IsTankFightEnd, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 }
 
 //=========================================================================================================
 
+
+//=========================================================================================================
+
+/**
+ * 生成并设置Tank的位置百分比
+ * @param iRound 当前轮次
+ * @param bIsSecondHalf 是否为第二半场
+ */
+void GenerateAndSetTankPosition(int iRound, bool bIsSecondHalf)
+{
+    int attempts = 0;
+    int maxAttempts = 50;
+    float target_percent = -1.0;
+
+    // 生成有效的随机百分比
+    while (attempts < maxAttempts)
+    {
+        int target_percent_100 = GetRandomInt(1, 99);
+        target_percent = float(target_percent_100) / 100.0;
+
+        if (IsTankPercentValid(target_percent_100))
+        {
+            break;
+        }
+
+        attempts++;
+    }
+
+    // 如果找不到有效位置，使用默认流程百分比
+    if (target_percent < 0.0)
+    {
+        target_percent = L4D2Direct_GetVSTankFlowPercent(0);
+    }
+
+    // 保存该轮的百分比位置（供换边后使用）
+    if (!bIsSecondHalf && iRound < sizeof(g_vTankPositionsByRound))
+    {
+        // 将百分比转换为具体坐标保存
+        TerrorNavArea nav = GetBossSpawnAreaForFlow(target_percent);
+        if (nav.Valid())
+        {
+            float vPos[3], vAng[3];
+            L4D_FindRandomSpot(view_as<int>(nav), vPos);
+            vPos[2] -= 8.0;
+
+            vAng[0] = 0.0;
+            vAng[1] = GetRandomFloat(0.0, 360.0);
+            vAng[2] = 0.0;
+
+            g_vTankPositionsByRound[iRound] = vPos;
+            g_vTankAnglesByRound[iRound] = vAng;
+            g_bTankPositionSavedByRound[iRound] = true;
+        }
+    }
+
+    // 设置Tank的流程百分比
+    L4D2Direct_SetVSTankFlowPercent(0, target_percent);
+    PrintToConsoleAll("[TankFight] GenerateAndSetTankPosition - Round: %d, Flow Percent: %.2f%%", iRound, target_percent * 100.0);
+}
+
 int ProcessPredictModel(float vPos[3], float vAng[3])
 {
+    bool bIsSecondHalf = GameRules_GetProp("m_bInSecondHalfOfRound", 1);
+    int currentRound = g_iTankFightCurrentRound;
+
+    // 如果是第二半场且该轮位置已保存，直接使用保存的位置
+    if (bIsSecondHalf && g_bTankPositionSavedByRound[currentRound])
+    {
+        vPos = g_vTankPositionsByRound[currentRound];
+        vAng = g_vTankAnglesByRound[currentRound];
+        return CreateTankGlowModel(vPos, vAng);
+    }
+
     if (GetVectorLength(vPos) == 0.0)
     {
         if (L4D2Direct_GetVSTankToSpawnThisRound(0))
         {
+
+            // 根据当前Tank流程百分比获取位置
             for (float p = L4D2Direct_GetVSTankFlowPercent(0); p < 1.0; p += 0.01)
             {
                 TerrorNavArea nav = GetBossSpawnAreaForFlow(p);
@@ -552,20 +713,20 @@ int ProcessPredictModel(float vPos[3], float vAng[3])
                 {
                     L4D_FindRandomSpot(view_as<int>(nav), vPos);
                     vPos[2] -= 8.0; // less floating off ground
-                    
+
                     vAng[0] = 0.0;
                     vAng[1] = GetRandomFloat(0.0, 360.0);
                     vAng[2] = 0.0;
-                    
+
                     break;
                 }
             }
         }
     }
-    
+
     if (GetVectorLength(vPos) == 0.0)
         return -1;
-    
+
     return CreateTankGlowModel(vPos, vAng);
 }
 
@@ -722,7 +883,7 @@ void TeleportAllSurvivorToPercentFlow(float TargetPercent)
         {
             L4D_FindRandomSpot(view_as<int>(nav), vPos);
             vPos[2] -= 8.0; // less floating off ground
-            
+
             vAng[0] = 0.0;
             vAng[1] = GetRandomFloat(0.0, 360.0);
             vAng[2] = 0.0;
@@ -735,3 +896,4 @@ void TeleportAllSurvivorToPercentFlow(float TargetPercent)
         }
     }
 }
+//=========================================================================================================
