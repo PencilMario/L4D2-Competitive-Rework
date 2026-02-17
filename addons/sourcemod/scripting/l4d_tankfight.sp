@@ -1012,6 +1012,20 @@ void SpawnPainPillsAtPosition(const float vPos[3], const float vAng[3])
 }
 
 /**
+ * 给所有生还者补充弹药
+ */
+void GiveAmmoToAllSurvivors()
+{
+    for (int i = 1; i <= MaxClients; i++)
+    {
+        if (IsClientInGame(i) && IsSurvivor(i) && IsPlayerAlive(i))
+        {
+            CheatCommand("give", "ammo");
+        }
+    }
+}
+
+/**
  * 获取生还者模型的刷新位置
  */
 int ProcessSurPredictModel(float vPos[3], float vAng[3])
@@ -1042,10 +1056,11 @@ int ProcessSurPredictModel(float vPos[3], float vAng[3])
     if (GetVectorLength(vPos) == 0.0)
         return -1;
 
-    // 从第二个克开始生成药物
+    // 从第二个克开始生成药物和补充弹药
     if (g_iTankFightCurrentRound >= 1)
     {
         SpawnPainPillsAtPosition(vPos, vAng);
+        GiveAmmoToAllSurvivors();
     }
 
     return CreateSurvivorGlowModel(vPos, vAng);
