@@ -1000,6 +1000,18 @@ int ProcessPredictModel(float vPos[3], float vAng[3])
 }
 
 /**
+ * 在指定位置生成一瓶止痛片
+ */
+void SpawnPainPillsAtPosition(const float vPos[3], const float vAng[3])
+{
+    int entity = CreateEntityByName("item_pain_pills");
+    if (entity == -1) return;
+
+    DispatchSpawn(entity);
+    TeleportEntity(entity, vPos, vAng, NULL_VECTOR);
+}
+
+/**
  * 获取生还者模型的刷新位置
  */
 int ProcessSurPredictModel(float vPos[3], float vAng[3])
@@ -1016,20 +1028,26 @@ int ProcessSurPredictModel(float vPos[3], float vAng[3])
                 {
                     L4D_FindRandomSpot(view_as<int>(nav), vPos);
                     vPos[2] -= 8.0; // less floating off ground
-                    
+
                     vAng[0] = 0.0;
                     vAng[1] = GetRandomFloat(0.0, 360.0);
                     vAng[2] = 0.0;
-                    
+
                     break;
                 }
             }
         }
     }
-    
+
     if (GetVectorLength(vPos) == 0.0)
         return -1;
-    
+
+    // 从第二个克开始生成药物
+    if (g_iTankFightCurrentRound >= 1)
+    {
+        SpawnPainPillsAtPosition(vPos, vAng);
+    }
+
     return CreateSurvivorGlowModel(vPos, vAng);
 }
 
