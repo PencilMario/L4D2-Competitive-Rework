@@ -162,7 +162,7 @@ public void OnPluginStart()
                                 true, 0.0);
 
     g_cvTankFightPainPillsCount = CreateConVar("l4d_tankfight_pain_pills_count",
-                                "2",
+                                "1",
                                 "Number of pain pills to spawn each round.\n"
                             ...	"1 = 1 pain pills, 2 = 2 pain pills, etc.",
                                 FCVAR_SPONLY,
@@ -1041,6 +1041,27 @@ void GiveAmmoToAllSurvivors()
 }
 
 /**
+ * 恢复所有生还者10HP，但不超过最大血量
+ */
+void RestoreHealthToAllSurvivors()
+{
+    for (int i = 1; i <= MaxClients; i++)
+    {
+        if (IsClientInGame(i) && IsSurvivor(i) && IsPlayerAlive(i))
+        {
+            int iCurrentHealth = GetClientHealth(i);
+            int iMaxHealth = 100; // L4D2生还者基础最大血量为100
+            int iNewHealth = iCurrentHealth + 10;
+
+            if (iNewHealth > iMaxHealth)
+                iNewHealth = iMaxHealth;
+
+            SetEntityHealth(i, iNewHealth);
+        }
+    }
+}
+
+/**
  * 获取生还者模型的刷新位置
  */
 int ProcessSurPredictModel(float vPos[3], float vAng[3])
@@ -1080,6 +1101,7 @@ int ProcessSurPredictModel(float vPos[3], float vAng[3])
             SpawnPainPillsAtPosition(vPos, vAng);
         }
         GiveAmmoToAllSurvivors();
+        RestoreHealthToAllSurvivors();
     }
 
     return CreateSurvivorGlowModel(vPos, vAng);
