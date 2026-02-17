@@ -189,6 +189,7 @@ public void OnRoundIsLive()
 
     // 预生成所有轮次的Tank位置
     CreateTimer(0.1, Timer_PreGenerateTankPositions, .flags = TIMER_FLAG_NO_MAPCHANGE);
+    g_cvVsDefibPenalty.IntValue = -g_cvTankFightSurvivorScorePerTank.IntValue;
 }
 
 /**
@@ -478,6 +479,7 @@ void EndTankFightRound(){
     if (g_iTankFightCurrentRound < g_cvTankFightRounds.IntValue)
     {
         CPrintToChatAll("[{green}!{default}] 准备第 {olive}%d {default}轮 Tank 战斗...", g_iTankFightCurrentRound + 1);
+        TeleportAllSurvivorToPercentFlow(0.01);
         // 重置位置和数据
         g_vTankModelPos = NULL_VECTOR;
         g_vTankModelAng = NULL_VECTOR;
@@ -861,7 +863,7 @@ void FreezePoints()
 void Event_TankSpawn(Event event, const char[] name, bool dontBroadcast)
 {
     if (!L4D_IsVersusMode()) return;
-    GameRules_SetProp("m_iVersusDefibsUsed", g_iTankFightCurrentRound, 4, GameRules_GetProp("m_bAreTeamsFlipped", 4, 0));
+    GameRules_SetProp("m_iVersusDefibsUsed", g_iTankFightCurrentRound+1, 4, GameRules_GetProp("m_bAreTeamsFlipped", 4, 0));
     if (!IsValidEdict(g_iTankGlowModel))
         return;
 
