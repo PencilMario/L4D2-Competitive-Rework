@@ -1004,7 +1004,7 @@ int ProcessPredictModel(float vPos[3], float vAng[3])
  */
 void SpawnPainPillsAtPosition(const float vPos[3], const float vAng[3])
 {
-    int entity = CreateEntityByName("item_pain_pills");
+    int entity = CreateEntityByName("weapon_pain_pills");
     if (entity == -1) return;
 
     DispatchSpawn(entity);
@@ -1020,7 +1020,7 @@ void GiveAmmoToAllSurvivors()
     {
         if (IsClientInGame(i) && IsSurvivor(i) && IsPlayerAlive(i))
         {
-            CheatCommand("give", "ammo");
+            CheatCommand("give", "ammo", i);
         }
     }
 }
@@ -1159,20 +1159,32 @@ int PickTankVariant()
     return 2;
 }
 
-void CheatCommand(const char[] sCmd, const char[] sArgs = "")
+void CheatCommand(const char[] sCmd, const char[] sArgs = "", int target = 0)
 {
-    for (int i = 1; i< MaxClients + 1; i++){
-        if (IsClientInGame(i) && !IsFakeClient(i)){
-            int admindata = GetUserFlagBits(i);
-            SetUserFlagBits(i, ADMFLAG_ROOT);
-            int iFlags = GetCommandFlags(sCmd);
-            SetCommandFlags(sCmd, iFlags & ~FCVAR_CHEAT);
-            FakeClientCommand(i, "%s %s", sCmd, sArgs);
-            SetCommandFlags(sCmd, iFlags);
-            SetUserFlagBits(i, admindata);
-            break;
+    int client = target;
+
+    // 如果没有指定target或target无效，找到第一个有效的玩家（默认行为）
+    if (!client || !IsClientInGame(client) || IsFakeClient(client))
+    {
+        for (int i = 1; i <= MaxClients; i++)
+        {
+            if (IsClientInGame(i) && !IsFakeClient(i))
+            {
+                client = i;
+                break;
+            }
         }
     }
+
+    if (!client) return;
+
+    int admindata = GetUserFlagBits(client);
+    SetUserFlagBits(client, ADMFLAG_ROOT);
+    int iFlags = GetCommandFlags(sCmd);
+    SetCommandFlags(sCmd, iFlags & ~FCVAR_CHEAT);
+    FakeClientCommand(client, "%s %s", sCmd, sArgs);
+    SetCommandFlags(sCmd, iFlags);
+    SetUserFlagBits(client, admindata);
 }
 void TeleportAllSurvivorToPercentFlow(float TargetPercent)
 {
