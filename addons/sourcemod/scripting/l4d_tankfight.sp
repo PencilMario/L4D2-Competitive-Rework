@@ -49,6 +49,7 @@ int g_iMapTFType = 0;
 int g_iTankFightCurrentRound = 0;  // 当前战斗轮数
 ConVar g_cvTankFightRounds;
 ConVar g_cvTankFightSurvivorScorePerTank;
+ConVar g_cvTankFightPainPillsCount;
 ConVar g_cvVsDefibPenalty;
 int g_iOriginalDefibPenalty = 0;  // 保存vs_defib_penalty的原始值
 float g_fLastSpecialInfectedDamageTime = 0.0;  // 记录最后一次特感伤害生还者的时间
@@ -159,6 +160,13 @@ public void OnPluginStart()
                             ...	"0 = no bonus, positive numbers add to survivor score",
                                 FCVAR_SPONLY,
                                 true, 0.0);
+
+    g_cvTankFightPainPillsCount = CreateConVar("l4d_tankfight_pain_pills_count",
+                                "2",
+                                "Number of pain pills to spawn each round.\n"
+                            ...	"1 = 1 pain pills, 2 = 2 pain pills, etc.",
+                                FCVAR_SPONLY,
+                                true, 1.0, true, 10.0);
 
     g_cvVsDefibPenalty = FindConVar("vs_defib_penalty");
     if (g_cvVsDefibPenalty != null)
@@ -1011,7 +1019,11 @@ void SpawnPainPillsAtPosition(const float vPos[3], const float vAng[3])
     if (entity == -1) return;
 
     DispatchSpawn(entity);
-    TeleportEntity(entity, vPos, vAng, NULL_VECTOR);
+    float vAdjustedPos[3];
+    vAdjustedPos[0] = vPos[0];
+    vAdjustedPos[1] = vPos[1];
+    vAdjustedPos[2] = vPos[2] + 200.0;
+    TeleportEntity(entity, vAdjustedPos, vAng, NULL_VECTOR);
 }
 
 /**
@@ -1062,7 +1074,11 @@ int ProcessSurPredictModel(float vPos[3], float vAng[3])
     // 从第二个克开始生成药物和补充弹药
     if (g_iTankFightCurrentRound >= 1)
     {
-        SpawnPainPillsAtPosition(vPos, vAng);
+        int iPainPillsCount = g_cvTankFightPainPillsCount.IntValue;
+        for (int i = 0; i < iPainPillsCount; i++)
+        {
+            SpawnPainPillsAtPosition(vPos, vAng);
+        }
         GiveAmmoToAllSurvivors();
     }
 
