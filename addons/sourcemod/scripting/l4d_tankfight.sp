@@ -51,6 +51,7 @@ ConVar g_cvTankFightRounds;
 ConVar g_cvTankFightSurvivorScorePerTank;
 ConVar g_cvVsDefibPenalty;
 int g_iOriginalDefibPenalty = 0;  // 保存vs_defib_penalty的原始值
+float g_fLastSpecialInfectedDamageTime = 0.0;  // 记录最后一次特感伤害生还者的时间
 
 // 保存每一轮Tank的位置用于换边时保持一致
 float g_vTankPositionsByRound[10][3];
@@ -172,10 +173,11 @@ public void OnPluginStart()
     HookEvent("tank_spawn", Event_TankSpawn);
     HookEvent("round_end", RoundEnd_Event);
     HookEvent("player_incapacitated", Event_PlayerIncap);
+    HookEvent("player_hurt", Event_PlayerHurt);
     TFData.Reset();
 
     // 注册指令
-    RegConsoleCmd("sm_cur", Command_ShowTankScore);
+    RegConsoleCmd("sm_health", Command_ShowTankScore);
     RegConsoleCmd("sm_tank", Command_ShowTankPositions);
     RegConsoleCmd("sm_witch", Command_ShowTankPositions);
 }
@@ -421,6 +423,11 @@ public Action IsTankFightEnd(Handle timer)
 {
     if (IsTankInGame()) return Plugin_Continue;
     if (!IsCanEndRound()) return Plugin_Continue;
+
+    // 检查5秒内是否有特感对生还者造成伤害
+    float timeSinceLastDamage = GetGameTime() - g_fLastSpecialInfectedDamageTime;
+    if (timeSinceLastDamage < 5.0) return Plugin_Continue;
+
     // 防止影响下一队
     if (IsInReady()) return Plugin_Stop;
     PrintToConsoleAll("EndTankFightRound()");
@@ -545,9 +552,26 @@ void RoundEnd_Event(Event event, const char[] name, bool dontBroadcast)
 }
 void Event_PlayerIncap(Event event, const char[] name, bool dontBroadcast){
 }
+void Event_PlayerHurt(Event event, const char[] name, bool dontBroadcast)
+{
+    int attacker = GetClientOfUserId(event.GetInt("attacker"));
+    int victim = GetClientOfUserId(event.GetInt("userid"));
+
+    // 检查攻击者是否是特感（不是Tank）
+    if (!IS_VALID_INFECTED(attacker) || !IsSurvivor(victim)) return;
+
+    int zombieClass = GetEntProp(attacker, Prop_Send, "m_zombieClass");
+    if (zombieClass == ZC_TANK) return;  // Tank伤害不计入此检查
+
+    // 记录最后一次特感伤害的时间
+    g_fLastSpecialInfectedDamageTime = GetGameTime();
+}
 void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
     if (!L4D_IsVersusMode()) return;
+
+    // 重置特感伤害时间
+    g_fLastSpecialInfectedDamageTime = GetGameTime();
 
     bool bIsSecondHalf = !!GameRules_GetProp("m_bInSecondHalfOfRound", 1);
 
