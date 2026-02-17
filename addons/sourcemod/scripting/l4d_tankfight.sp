@@ -817,9 +817,9 @@ Action Timer_DelayProcess(Handle timer)
 }
 
 void EnableTankSpawn(){
+    L4D2Direct_SetTankPassedCount(0);
     L4D2Direct_SetVSTankToSpawnThisRound(0, true);
     L4D2Direct_SetVSTankToSpawnThisRound(1, true);
-    L4D2Direct_SetTankPassedCount(1);
 }
 
 Action Timer_AccessTankWarp(Handle timer, bool isRetry)
@@ -889,8 +889,6 @@ void Event_TankSpawn(Event event, const char[] name, bool dontBroadcast)
 {
     if (!L4D_IsVersusMode()) return;
     GameRules_SetProp("m_iVersusDefibsUsed", g_iTankFightCurrentRound+1, 4, GameRules_GetProp("m_bAreTeamsFlipped", 4, 0));
-    if (!IsValidEdict(g_iTankGlowModel))
-        return;
 
     int client = GetClientOfUserId(event.GetInt("userid"));
     if (!client)
@@ -914,9 +912,16 @@ void Event_TankSpawn(Event event, const char[] name, bool dontBroadcast)
         PrintToConsoleAll("[TankFight] Event_TankSpawn - Tank 已传送到预生成位置 Round: %d", currentRound);
     }
 
+    if (IsValidEdict(g_iTankGlowModel))
+        RemoveEntity(g_iTankGlowModel);
 
-    RemoveEntity(g_iTankGlowModel);
     g_iTankGlowModel = INVALID_ENT_REFERENCE;
+
+    // 移除生还者发光模型
+    if (IsValidEdict(g_iSurvivorGlowModel))
+        RemoveEntity(g_iSurvivorGlowModel);
+
+    g_iSurvivorGlowModel = INVALID_ENT_REFERENCE;
 
     CPrintToChatAll("[{green}!{default}] Tank 已生成，进行第 {olive}%d {default}轮战斗 ({olive}%d{default}/{olive}%d{default})",
                        currentRound + 1, currentRound + 1, g_cvTankFightRounds.IntValue);
@@ -1009,7 +1014,14 @@ void SpawnPainPillsAtPosition(const float vPos[3], const float vAng[3])
     if (entity == -1) return;
 
     DispatchSpawn(entity);
-    TeleportEntity(entity, vPos, vAng, NULL_VECTOR);
+
+    // 增加高度200
+    float spawnPos[3];
+    spawnPos[0] = vPos[0];
+    spawnPos[1] = vPos[1];
+    spawnPos[2] = vPos[2] + 100.0;
+
+    TeleportEntity(entity, spawnPos, vAng, NULL_VECTOR);
 }
 
 /**
