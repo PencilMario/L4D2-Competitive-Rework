@@ -13,7 +13,6 @@
 #include <colors>
 #include <witch_and_tankifier>
 #include <l4d2_hybrid_scoremod>
-#include <exp_interface>
 #define PLUGIN_VERSION "1.0.0"
 
 // 基于Target5150/MoYu_Server_Stupid_Plugins的tank发光插件Predict Tank Glow重新修改。
