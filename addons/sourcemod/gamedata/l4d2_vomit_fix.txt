@@ -1,0 +1,58 @@
+"Games"
+{
+    "left4dead2"
+    {
+		"Addresses"
+		{
+			"patch1"
+			{
+				"linux"
+				{
+					"signature"	"vomit_fix"
+					"offset"	"1534"
+				}
+				"windows"
+				{
+					"signature"	"vomit_fix"
+					"offset"	"886"
+				}
+			}
+			"patch2"
+			{
+				"windows"
+				{
+					"signature"	"vomit_fix"
+					"offset"	"1347"
+				}
+			}
+			"frametime"
+			{
+				"linux"
+				{
+					"signature"	"vomit_fix"
+					"offset"	"-20"
+				}
+				"windows"
+				{
+					"signature"	"vomit_fix"
+					"offset"	"-20"
+				}
+			}
+		}
+		"Signatures"
+		{
+			"vomit_fix"
+			{
+				"library"	"server"
+				"linux"		"@_ZN6CVomit13UpdateAbilityEv"
+				"windows"	"*******************\x53\x56\x57\x8b\xf9\x8b\x87\x38\x04\x00\x00"
+			}
+		//	"vomit_fix"
+		//	{
+		//		"library"	"server"
+		//		"linux"		"\xA1****\xF3\x0F\x10\x40\x10\xF3\x0F\x59"
+		//		"windows"	"\xA1****\x89**x89**\xF3\x0F\x10\x40\x10"
+		//	}
+		}
+    }
+}
