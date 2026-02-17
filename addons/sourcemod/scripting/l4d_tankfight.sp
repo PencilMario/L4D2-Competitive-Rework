@@ -1218,8 +1218,6 @@ void TeleportAllSurvivorToPercentFlow(float TargetPercent)
 public Action Command_ShowTankScore(int client, int args)
 {
     int scorePerTank = g_cvTankFightSurvivorScorePerTank.IntValue;
-    int totalTanks = g_iTankFightCurrentRound;
-    int totalScore = scorePerTank * totalTanks;
 
     CPrintToChat(client, "[{green}!{default}] 每只Tank奖励分: {olive}%d", scorePerTank);
 
