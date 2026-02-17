@@ -1152,11 +1152,7 @@ public Action Command_ShowTankScore(int client, int args)
     int totalTanks = g_iTankFightCurrentRound;
     int totalScore = scorePerTank * totalTanks;
 
-    CPrintToChat(client, "[{green}!{default}] ========== Tank 奖励分统计 ==========");
     CPrintToChat(client, "[{green}!{default}] 每只Tank奖励分: {olive}%d", scorePerTank);
-    CPrintToChat(client, "[{green}!{default}] 已刷出Tank数: {olive}%d", totalTanks);
-    CPrintToChat(client, "[{green}!{default}] 总奖励分: {olive}%d", totalScore);
-    CPrintToChat(client, "[{green}!{default}] =====================================");
 
     return Plugin_Continue;
 }
