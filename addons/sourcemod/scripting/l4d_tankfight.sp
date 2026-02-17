@@ -819,6 +819,7 @@ Action Timer_DelayProcess(Handle timer)
 void EnableTankSpawn(){
     L4D2Direct_SetVSTankToSpawnThisRound(0, true);
     L4D2Direct_SetVSTankToSpawnThisRound(1, true);
+    L4D2Direct_SetTankPassedCount(1);
 }
 
 Action Timer_AccessTankWarp(Handle timer, bool isRetry)
