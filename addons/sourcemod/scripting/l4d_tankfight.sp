@@ -175,7 +175,7 @@ public void OnPluginStart()
     TFData.Reset();
 
     // 注册指令
-    RegConsoleCmd("sm_cur", Command_ShowTankPositions);
+    RegConsoleCmd("sm_cur", Command_ShowTankScore);
     RegConsoleCmd("sm_tank", Command_ShowTankPositions);
     RegConsoleCmd("sm_witch", Command_ShowTankPositions);
 }
@@ -1143,8 +1143,27 @@ void TeleportAllSurvivorToPercentFlow(float TargetPercent)
 }
 
 /**
+ * 显示当前每只tank刷出的奖励分的指令处理函数
+ * 支持 sm_cur 指令
+ */
+public Action Command_ShowTankScore(int client, int args)
+{
+    int scorePerTank = g_cvTankFightSurvivorScorePerTank.IntValue;
+    int totalTanks = g_iTankFightCurrentRound;
+    int totalScore = scorePerTank * totalTanks;
+
+    CPrintToChat(client, "[{green}!{default}] ========== Tank 奖励分统计 ==========");
+    CPrintToChat(client, "[{green}!{default}] 每只Tank奖励分: {olive}%d", scorePerTank);
+    CPrintToChat(client, "[{green}!{default}] 已刷出Tank数: {olive}%d", totalTanks);
+    CPrintToChat(client, "[{green}!{default}] 总奖励分: {olive}%d", totalScore);
+    CPrintToChat(client, "[{green}!{default}] =====================================");
+
+    return Plugin_Continue;
+}
+
+/**
  * 显示本局Tank出现位置的指令处理函数
- * 支持 sm_cur, sm_tank, sm_witch 三个指令
+ * 支持 sm_tank, sm_witch 两个指令
  */
 public Action Command_ShowTankPositions(int client, int args)
 {
