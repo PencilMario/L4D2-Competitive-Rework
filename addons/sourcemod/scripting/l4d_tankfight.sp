@@ -502,6 +502,15 @@ void EndTankFightRound(){
         g_vSurvivorModelPos = NULL_VECTOR;
         TFData.Reset();
 
+        // 将所有活着的特感变为幽灵
+        for (int i = 1; i <= MaxClients; i++)
+        {
+            if (IS_VALID_INFECTED(i) && IsPlayerAlive(i))
+            {
+                L4D_BecomeGhost(i);
+            }
+        }
+
         // 重新初始化下一轮
         GenerateAndSetTankPosition(g_iTankFightCurrentRound);
         TFData.fSurvivorPercentTarget = L4D2Direct_GetVSTankFlowPercent(InSecondHalfOfRound()) - 0.12;
