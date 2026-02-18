@@ -1284,25 +1284,25 @@ void CheatCommand(const char[] sCmd, const char[] sArgs = "", int target = 0)
 }
 void TeleportAllSurvivorToPercentFlow(float TargetPercent)
 {
-    float vPos[3], vAng[3];
-    // 从 -12% 反方向获取位置
-    for (float p = TargetPercent; p > 0.0; p -= 0.01)
-    {
-        TerrorNavArea nav = GetBossSpawnAreaForFlow(p);
-        if (nav.Valid())
-        {
-            L4D_FindRandomSpot(view_as<int>(nav), vPos);
-            vPos[2] -= 8.0; // less floating off ground
+    for (int i = 1; i <= MaxClients; i++){
+        if (IsClientInGame(i) && IsSurvivor(i)){
+            float vPos[3], vAng[3];
+            // 为每个生还者单独寻找一个随机位置
+            for (float p = TargetPercent; p > 0.0; p -= 0.01)
+            {
+                TerrorNavArea nav = GetBossSpawnAreaForFlow(p);
+                if (nav.Valid())
+                {
+                    L4D_FindRandomSpot(view_as<int>(nav), vPos);
+                    vPos[2] -= 8.0; // less floating off ground
 
-            vAng[0] = 0.0;
-            vAng[1] = GetRandomFloat(0.0, 360.0);
-            vAng[2] = 0.0;
-            for (int i = 1; i <= MaxClients; i++){
-                if (IsClientInGame(i) && IsSurvivor(i)){
+                    vAng[0] = 0.0;
+                    vAng[1] = GetRandomFloat(0.0, 360.0);
+                    vAng[2] = 0.0;
                     TeleportEntity(i, vPos, vAng, NULL_VECTOR);
+                    break;
                 }
             }
-            break;
         }
     }
 }
