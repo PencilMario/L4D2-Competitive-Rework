@@ -98,6 +98,14 @@ for dir in "${directories[@]}"; do
         \cp -r "$project_path/scripts/"* "$dir/scripts/";
         \cp -r "$project_path/cfg/"* "$dir/cfg/";
         chmod 777 "$dir/"
+
+        # 执行自定义配置脚本
+        if [ -f "$HOME/custom_config.sh" ]; then
+            bash "$HOME/custom_config.sh"
+        else
+            echo "Warning: $HOME/custom_config.sh does not exist"
+        fi
+
         echo "Updated | $dir"
     else
         echo "Unexist | $dir "
