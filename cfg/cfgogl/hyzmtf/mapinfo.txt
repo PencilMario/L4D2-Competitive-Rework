@@ -189,6 +189,14 @@
 				"max"		"100"
 			}
 		}
+		"tank_ban_flow"
+		{
+			"after rooftop"
+			{
+				"min"		"60"
+				"max"		"100"
+			}
+		}
 	}
 	"c2m5_concert"
 	{
