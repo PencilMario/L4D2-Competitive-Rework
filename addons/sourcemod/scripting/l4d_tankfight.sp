@@ -246,12 +246,13 @@ float GetRandomValidTankPercent()
 }
 
 /**
- * 从所有可用进度中随机选择一个不重复的
+ * 从所有可用进度中随机选择一个不重复且避免相邻的位置
  * @param usedPercents 已使用过的百分比列表
  * @param tolerance 容差值（防浮点数精度问题）
+ * @param adjacencyThreshold 相邻距离阈值（default 0.05 = 5%）
  * @return 返回随机选择的流程百分比，如果没有可用的返回-1.0
  */
-float GetUniqueRandomValidTankPercent(ArrayList usedPercents, float tolerance = 0.001)
+float GetUniqueRandomValidTankPercent(ArrayList usedPercents, float tolerance = 0.001, float adjacencyThreshold = 0.05)
 {
     ArrayList validPercents = new ArrayList();
     int count = GetAllValidTankPercents(validPercents);
@@ -262,39 +263,82 @@ float GetUniqueRandomValidTankPercent(ArrayList usedPercents, float tolerance = 
         return -1.0;
     }
 
-    // 移除已使用过的百分比
-    for (int i = validPercents.Length - 1; i >= 0; i--)
+    // 第一步：移除已使用过的百分比和相邻的位置
+    ArrayList candidatePercents = new ArrayList();
+
+    for (int i = 0; i < validPercents.Length; i++)
     {
         float percent = validPercents.Get(i);
-        bool isUsed = false;
+        bool isUsedOrAdjacent = false;
 
+        // 检查是否已使用或与已使用位置相邻
         for (int j = 0; j < usedPercents.Length; j++)
         {
             float usedPercent = usedPercents.Get(j);
-            if (FloatAbs(percent - usedPercent) < tolerance)
+            float diff = FloatAbs(percent - usedPercent);
+
+            // 如果与已使用位置的距离小于阈值，则认为是相邻或重复
+            if (diff < adjacencyThreshold)
             {
-                isUsed = true;
+                isUsedOrAdjacent = true;
                 break;
             }
         }
 
-        if (isUsed)
+        if (!isUsedOrAdjacent)
         {
-            validPercents.Erase(i);
+            candidatePercents.Push(percent);
         }
     }
 
-    // 如果没有可用的百分比了
-    if (validPercents.Length == 0)
+    float result = -1.0;
+
+    // 如果有避开相邻的选择，优先使用
+    if (candidatePercents.Length > 0)
     {
-        delete validPercents;
-        return -1.0;
+        int randomIndex = GetRandomInt(0, candidatePercents.Length - 1);
+        result = candidatePercents.Get(randomIndex);
+        PrintToConsoleAll("[TankFight] 选择了非相邻位置：%.2f%%", result * 100.0);
+    }
+    else
+    {
+        // 如果没有完全避开相邻的选择，只移除已使用的位置
+        PrintToConsoleAll("[TankFight] 警告：没有非相邻的位置可用，降级为只避免重复");
+
+        ArrayList fallbackPercents = new ArrayList();
+        for (int i = 0; i < validPercents.Length; i++)
+        {
+            float percent = validPercents.Get(i);
+            bool isUsed = false;
+
+            for (int j = 0; j < usedPercents.Length; j++)
+            {
+                float usedPercent = usedPercents.Get(j);
+                if (FloatAbs(percent - usedPercent) < tolerance)
+                {
+                    isUsed = true;
+                    break;
+                }
+            }
+
+            if (!isUsed)
+            {
+                fallbackPercents.Push(percent);
+            }
+        }
+
+        if (fallbackPercents.Length > 0)
+        {
+            int randomIndex = GetRandomInt(0, fallbackPercents.Length - 1);
+            result = fallbackPercents.Get(randomIndex);
+            PrintToConsoleAll("[TankFight] 选择了备用位置（可能相邻）：%.2f%%", result * 100.0);
+        }
+
+        delete fallbackPercents;
     }
 
-    int randomIndex = GetRandomInt(0, validPercents.Length - 1);
-    float result = validPercents.Get(randomIndex);
-
     delete validPercents;
+    delete candidatePercents;
     return result;
 }
 
@@ -370,20 +414,21 @@ Action Timer_PreGenerateTankPositions(Handle timer)
         return Plugin_Stop;
     }
 
-    PrintToConsoleAll("[TankFight] 开始预生成 %d 轮 Tank 位置...", numRounds);
+    PrintToConsoleAll("[TankFight] 开始预生成 %d 轮 Tank 位置（优先避免相邻位置）...", numRounds);
 
-    // 用于记录已使用的百分比，防止重复
+    // 用于记录已使用的百分比，防止重复，优先避免相邻
     ArrayList usedPercents = new ArrayList();
 
     for (int round = 0; round < numRounds; round++)
     {
-        float target_percent = GetUniqueRandomValidTankPercent(usedPercents);
+        // adjacencyThreshold=0.05 表示5%的阈值，优先避免相邻，但如果必要允许相邻
+        float target_percent = GetUniqueRandomValidTankPercent(usedPercents, 0.001, 0.05);
 
-        // 如果没有找到不重复的百分比，使用默认的
+        // 如果没有找到任何有效的百分比，使用默认的
         if (target_percent < 0.0)
         {
             target_percent = L4D2Direct_GetVSTankFlowPercent(0);
-            PrintToConsoleAll("[TankFight] Round %d: 警告 - 无可用的不重复位置，使用默认流程百分比 %.2f%%", round, target_percent * 100.0);
+            PrintToConsoleAll("[TankFight] Round %d: 警告 - 无可用位置，使用默认流程百分比 %.2f%%", round, target_percent * 100.0);
         }
 
         // 记录已使用的百分比
@@ -515,7 +560,7 @@ void EndTankFightRound(){
         TFData.fSurvivorPercentTarget = L4D2Direct_GetVSTankFlowPercent(InSecondHalfOfRound()) - 0.12;
         TFData.fSurvivorPercentReal = L4D2Direct_GetVSTankFlowPercent(InSecondHalfOfRound()) - 0.24;
         PrintToConsoleAll("TFData.fSurvivorPercent: %f/%f", TFData.fSurvivorPercentTarget, TFData.fSurvivorPercentReal);
-        CPrintToChatAll("[{green}!{default}] Tank生成位置：%f", L4D2Direct_GetVSTankFlowPercent(InSecondHalfOfRound()));
+        CPrintToChatAll("[{green}!{default}] Tank生成位置：%.0f%%", L4D2Direct_GetVSTankFlowPercent(InSecondHalfOfRound()) * 100.0);
         CreateTimer(5.0, Timer_DelayProcess, .flags = TIMER_FLAG_NO_MAPCHANGE);
         //CreateTimer(10.5, Timer_AccessTankWarp, false, TIMER_FLAG_NO_MAPCHANGE);
         return;
@@ -542,7 +587,9 @@ void EndTankFightRound(){
 
 Action AnnounceResult(Handle timer)
 {
-    CPrintToChatAll("[{green}!{default}] 生还者本关得分：{olive}+%i", healthbonus + damageBonus + pillsBonus);
+    CPrintToChatAll("════════════════════════════════════════");
+    CPrintToChatAll("[{gold}★{default}] {gold}生还者奖励分：{lightgreen}+%i{default} {gold}★{default}", healthbonus + damageBonus + pillsBonus);
+    CPrintToChatAll("════════════════════════════════════════");
     return Plugin_Stop;
 }
 
