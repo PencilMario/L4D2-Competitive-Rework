@@ -17,12 +17,42 @@ public Plugin myinfo = {
 	version = PLUGIN_VERSION,
 	url = PLUGIN_URL
 };
+//StringToInt64
 // 设置cookies的方式：
 //
 //
 /*
+	
 	ValidateAddress(g_pServer, "g_pServer");
 	ValidateNatives(g_hSDK_CBaseServer_SetReservationCookie, "CBaseServer::SetReservationCookie");
+ */
+
+/**
+ * #define GAMEDATA_1							"left4dhooks.l4d1"
+	#define GAMEDATA_2							"left4dhooks.l4d2"
+
+ * 
+ * 	BuildPath(Path_SM, sPath, sizeof(sPath), "gamedata/%s.txt", g_bLeft4Dead2 ? GAMEDATA_2 : GAMEDATA_1);
+	if( FileExists(sPath) == false ) SetFailState("\n==========\nMissing required file: \"%s\".\nRead installation instructions again.\n==========", sPath);
+	SDKCall(g_hSDK_CBaseServer_SetReservationCookie, g_pServer, 0, 0, "Unreserved by Left 4 DHooks");
+*/
+/*
+
+	GameData hGameData = g_hGameData;
+
+ * 	StartPrepSDKCall(SDKCall_Static); // Since SM 1.11 can use "SDKCall_Server" (but that crashes the server)
+	if( PrepSDKCall_SetFromConf(hGameData, SDKConf_Signature, "CBaseServer::SetReservationCookie") == false )
+	{
+		LogError("Failed to find signature: \"CBaseServer::SetReservationCookie\" (%s)", g_sSystem);
+	} else {
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+		PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
+		g_hSDK_CBaseServer_SetReservationCookie = EndPrepSDKCall();
+		if( g_hSDK_CBaseServer_SetReservationCookie == null )
+			LogError("Failed to create SDKCall: \"CBaseServer::SetReservationCookie\" (%s)", g_sSystem);
+	}
  */
 public void OnPluginStart() {
 	CreateConVar("l4d_unreserve_version", PLUGIN_VERSION, "Version of the Lobby Unreserve plugin.", FCVAR_NOTIFY|FCVAR_DONTRECORD);
