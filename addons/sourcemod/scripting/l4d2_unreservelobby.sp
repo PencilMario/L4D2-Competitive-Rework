@@ -10,7 +10,6 @@ ConVar g_cvUnreserve, g_cvGameMode, g_cvCookie, g_cvLobbyOnly, g_cvMaxPlayers, g
 bool g_bUnreserve;
 
 int g_iLobbySlot;
-
 public Plugin myinfo = {
 	name = PLUGIN_NAME,
 	author = PLUGIN_AUTHOR,
@@ -18,7 +17,13 @@ public Plugin myinfo = {
 	version = PLUGIN_VERSION,
 	url = PLUGIN_URL
 };
-
+// 设置cookies的方式：
+//
+//
+/*
+	ValidateAddress(g_pServer, "g_pServer");
+	ValidateNatives(g_hSDK_CBaseServer_SetReservationCookie, "CBaseServer::SetReservationCookie");
+ */
 public void OnPluginStart() {
 	CreateConVar("l4d_unreserve_version", PLUGIN_VERSION, "Version of the Lobby Unreserve plugin.", FCVAR_NOTIFY|FCVAR_DONTRECORD);
 	g_cvUnreserve = CreateConVar("l4d_unreserve_full", "1", "Automatically unreserve server after a full lobby joins", FCVAR_SPONLY|FCVAR_NOTIFY);
