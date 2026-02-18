@@ -1174,8 +1174,7 @@ TerrorNavArea GetBossSpawnAreaForFlow(float flow)
     ArrayList aList = new ArrayList();
     while( !nav.IsValidForWanderingPopulation()
         || nav.m_isUnderwater
-        || (nav.GetCenter(vPos), vPos[2] += 10.0, !ZombieManager.IsSpaceForZombieHere(vPos))
-        || nav.m_activeSurvivors )
+        || (nav.GetCenter(vPos), vPos[2] += 10.0, !ZombieManager.IsSpaceForZombieHere(vPos)) )
     {
         if (aList.FindValue(nav) != -1)
         {
