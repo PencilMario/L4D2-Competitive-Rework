@@ -587,9 +587,8 @@ void EndTankFightRound(){
 
 Action AnnounceResult(Handle timer)
 {
-    CPrintToChatAll("════════════════════════════════════════");
-    CPrintToChatAll("[{gold}★{default}] {gold}生还者奖励分：{lightgreen}+%i{default} {gold}★{default}", healthbonus + damageBonus + pillsBonus);
-    CPrintToChatAll("════════════════════════════════════════");
+    CPrintToChatAll("=============================");
+    CPrintToChatAll("[{green}★{default}] {green}生还者奖励分：{lightgreen}+%i{default} {green}★{default}", healthbonus + damageBonus + pillsBonus);
     return Plugin_Stop;
 }
 
