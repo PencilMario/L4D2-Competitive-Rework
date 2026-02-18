@@ -1,1 +1,0 @@
-su steam -l -c "screen -d -m -S anti_server_ddos sudo bash /home/steam/L4D2-Competitive-Rework/fuck_hackers.sh"
