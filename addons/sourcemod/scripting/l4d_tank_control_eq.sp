@@ -2,11 +2,11 @@
 #pragma newdecls required
 
 #include <colors>
+#include <readyup>
 #include <sourcemod>
 #include <left4dhooks>
 
 #define TEAM_SPECTATOR          1
-#define TEAM_SURVIVOR           2
 #define TEAM_INFECTED           3
 #define ZOMBIECLASS_TANK        8
 #define IS_SPECTATOR(%1)        (GetClientTeam(%1) == TEAM_SPECTATOR)
@@ -37,15 +37,9 @@ float
 
 int dcedTankFrustration = -1;
 
-int g_iTankControlPass[MAXPLAYERS + 1] = { 1, ... };
-
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
     CreateNative("GetTankSelection", Native_GetTankSelection);
-    CreateNative("GetTankPassedCount", Native_GetTankPassedCount);
-    CreateNative("ForceSelectNextTank", Native_ForceSelectNextTank);
-    CreateNative("RemoveFromTankQueue", Native_RemoveFromTankQueue);
-    CreateNative("AddToTankHistory", Native_AddToTankHistory);
 
     hForwardOnTryOfferingTankBot = new GlobalForward("TankControl_OnTryOfferingTankBot", ET_Ignore, Param_String);
     hForwardOnTankSelection = new GlobalForward("TankControl_OnTankSelection", ET_Ignore, Param_String);
@@ -58,9 +52,9 @@ int Native_GetTankSelection(Handle plugin, int numParams) { return getInfectedPl
 public Plugin myinfo = 
 {
     name = "L4D2 Tank Control",
-    author = "arti, (Contributions by: Sheo, Sir, Altair-Sossai, Hana, NepKey(纳百技))",
+    author = "arti, (Contributions by: Sheo, Sir, Altair-Sossai)",
     description = "Distributes the role of the tank evenly throughout the team, allows for overrides. (Includes forwards)",
-    version = "0.0.30",
+    version = "0.0.27",
     url = "https://github.com/SirPlease/L4D2-Competitive-Rework"
 }
 
@@ -95,14 +89,6 @@ public void OnPluginStart()
     hTankDebug  = CreateConVar("tankcontrol_debug", "0", "Whether or not to debug to console");
 }
 
-public void OnMapStart()
-{
-    for (int i = 1; i <= MaxClients; i++)
-    {
-        g_iTankControlPass[i] = 1;
-    }
-}
-
 
 /*=========================================================================
 |                            Left4Dhooks                                  |
@@ -114,23 +100,13 @@ public void L4D2_OnTankPassControl(int iOldTank, int iNewTank, int iPassCount)
     /*
     * As the Player switches to AI on disconnect/team switch, we have to make sure we're only checking this if the old Tank was AI.
     * Then apply the previous' Tank's Frustration and Grace Period (if it still had Grace)
+    * We'll also be keeping the same Tank pass, which resolves Tanks that dc on 1st pass resulting into the Tank instantly going to 2nd pass.
     */
     if (dcedTankFrustration != -1 && IsFakeClient(iOldTank))
     {
         SetTankFrustration(iNewTank, dcedTankFrustration);
         CTimer_Start(GetFrustrationTimer(iNewTank), fTankGrace);
-    }
-    
-    // Transfer tank control pass count from old tank to new tank
-    // This ensures proper pass counting when tank is transferred via other plugins (like tank pass)
-    if (!IsFakeClient(iOldTank) && !IsFakeClient(iNewTank))
-    {
-        g_iTankControlPass[iNewTank] = g_iTankControlPass[iOldTank];
-        // Don't reset old tank's count - keep it for potential future tank assignments
-        
-        if (hTankDebug.BoolValue)
-            PrintToConsoleAll("[TC] Tank pass count transferred: %N (%d) -> %N (%d)", 
-                iOldTank, g_iTankControlPass[iOldTank], iNewTank, g_iTankControlPass[iNewTank]);
+        L4D2Direct_SetTankPassedCount(L4D2Direct_GetTankPassedCount() - 1);
     }
 
     gotTankAt = GetGameTime();
@@ -146,29 +122,22 @@ public Action L4D_OnTryOfferingTankBot(int tank_index, bool &enterStatis)
     // Reset the tank's frustration if need be
     if (!IsFakeClient(tank_index)) 
     {
-        if (g_iTankControlPass[tank_index] < 2)
+        PrintHintText(tank_index, "%t", "HintText");
+        for (int i = 1; i <= MaxClients; i++) 
         {
-            PrintHintText(tank_index, "%t", "HintText");
-            for (int i = 1; i <= MaxClients; i++) 
-            {
-                if (!IS_VALID_INFECTED(i) && !IS_VALID_SPECTATOR(i))
-                    continue;
+            if (!IS_VALID_INFECTED(i) && !IS_VALID_SPECTATOR(i))
+                continue;
 
-                if (tank_index == i) 
-                    CPrintToChat(i, "%t %t", "TagRage", "RefilledBot");
-                else 
-                    CPrintToChat(i, "%t %t", "TagRage", "Refilled", tank_index);
-            }
-            
-            SetTankFrustration(tank_index, 100);
-            g_iTankControlPass[tank_index]++;
-            return Plugin_Handled;
+            if (tank_index == i) 
+                CPrintToChat(i, "%t %t", "TagRage", "RefilledBot");
+            else 
+                CPrintToChat(i, "%t %t", "TagRage", "Refilled", tank_index);
         }
-        else
-        {
-            L4D_ReplaceWithBot(tank_index);
-            return Plugin_Handled;
-        }
+        
+        SetTankFrustration(tank_index, 100);
+        L4D2Direct_SetTankPassedCount(L4D2Direct_GetTankPassedCount() + 1);
+
+        return Plugin_Handled;
     }
 
     // Allow third party plugins to override tank selection
@@ -185,27 +154,17 @@ public Action L4D_OnTryOfferingTankBot(int tank_index, bool &enterStatis)
     if (StrEqual(queuedTankSteamId, ""))
         chooseTank(0);
     
-    // Store current tank before processing
-    char currentTankSteamId[64];
-    strcopy(currentTankSteamId, sizeof(currentTankSteamId), queuedTankSteamId);
-    
     // Mark the player as having had tank
-    if (!StrEqual(currentTankSteamId, ""))
+    if (!StrEqual(queuedTankSteamId, ""))
     {
-        setTankTickets(currentTankSteamId, 20000);
+        setTankTickets(queuedTankSteamId, 20000);
 
-        if (h_whosHadTank.FindString(currentTankSteamId) == -1)
-            h_whosHadTank.PushString(currentTankSteamId);
+        if (h_whosHadTank.FindString(queuedTankSteamId) == -1)
+            h_whosHadTank.PushString(queuedTankSteamId);
 
-        int index = h_tankQueue.FindString(currentTankSteamId);
+        int index = h_tankQueue.FindString(queuedTankSteamId);
         if (index != -1)
             h_tankQueue.Erase(index);
-        
-        chooseTank(0);
-        
-        if (hTankDebug.BoolValue)
-            PrintToConsoleAll("[TC] Current tank assigned to %s, next tank selected: %s", 
-                currentTankSteamId, queuedTankSteamId);
     }
     
     return Plugin_Continue;
@@ -456,82 +415,18 @@ void PlayerDeath_Event(Event hEvent, const char[] eName, bool dontBroadcast)
  */
 Action Tank_Cmd(int client, int args)
 {
-    // Only output if client is in-game
-    if (!IsClientInGame(client))
+    // Only output if client is in-game and we have a queued tank
+    if (!IsClientInGame(client) || StrEqual(queuedTankSteamId, ""))
         return Plugin_Handled;
-
-    int clientTeam = GetClientTeam(client);
-    int length = h_whosHadTank.Length;
     
-    if (clientTeam != TEAM_INFECTED && clientTeam != TEAM_SPECTATOR)
-    {
-        return Plugin_Handled;
-    }
-    
-    if (length > 0)
-    {
-        int roleTankPlayer, order = 1;
-        static char sSteamId[64];
-        bool foundTeammates = false;
-        
-        if (clientTeam == TEAM_INFECTED)
-            CPrintToChat(client, "{red}<{default}Tank Selection{red}> {olive}已扮演过坦克的玩家:");
-        else // TEAM_SPECTATOR
-            CPrintToChat(client, "{lightgreen}<{default}Tank Selection{lightgreen}> {olive}所有已扮演过坦克的玩家:");
-        
-        for (int index = 0; index < length; index++)
-        {
-            h_whosHadTank.GetString(index, sSteamId, sizeof(sSteamId));
-            roleTankPlayer = getInfectedPlayerBySteamId(sSteamId);
-            
-            if (roleTankPlayer > 0)
-            {
-                int playerTeam = GetClientTeam(roleTankPlayer);
-                
-                if (clientTeam == TEAM_SPECTATOR || (clientTeam == TEAM_INFECTED && playerTeam == TEAM_INFECTED))
-                {
-                    foundTeammates = true;
-                    
-                    if (clientTeam == TEAM_SPECTATOR)
-                    {
-                        if (playerTeam == TEAM_SURVIVOR)
-                            CPrintToChat(client, "{default}%d. {blue}%N {olive}", order++, roleTankPlayer);
-                        else if (playerTeam == TEAM_INFECTED)
-                            CPrintToChat(client, "{default}%d. {red}%N {olive}", order++, roleTankPlayer);
-                        else
-                            CPrintToChat(client, "{default}%d. {lightgreen}%N", order++, roleTankPlayer);
-                    }
-                    else
-                    {
-                        CPrintToChat(client, "{default}%d. {red}%N", order++, roleTankPlayer);
-                    }
-                }
-            }
-        }
-        
-        if (!foundTeammates)
-        {
-            if (clientTeam == TEAM_INFECTED)
-                CPrintToChat(client, "{red}<{default}Tank Selection{red}> {olive}暂无玩家扮演过坦克");
-        }
-    }
-    else
-    {
-        CPrintToChat(client, "{red}<{default}Tank Selection{red}> {olive}本局暂无玩家扮演过坦克");
-    }
+    int tankClientId = getInfectedPlayerBySteamId(queuedTankSteamId);
 
-    // Only output next tank if we have a queued tank
-    if (!StrEqual(queuedTankSteamId, ""))
+    if (tankClientId != -1 && (hTankPrint.BoolValue || IS_INFECTED(client) || IS_SPECTATOR(client)))
     {
-        int tankClientId = getInfectedPlayerBySteamId(queuedTankSteamId);
-
-        if (tankClientId != -1 && (hTankPrint.BoolValue || IS_INFECTED(client) || IS_SPECTATOR(client)))
-        {
-            if (client == tankClientId) 
-                CPrintToChat(client, "%t %t", "TagSelection", "YouBecomeTank");
-            else 
-                CPrintToChat(client, "%t %t", "TagSelection", "BecomeTank", tankClientId);
-        }
+        if (client == tankClientId) 
+            CPrintToChat(client, "%t %t", "TagSelection", "YouBecomeTank");
+        else 
+            CPrintToChat(client, "%t %t", "TagSelection", "BecomeTank", tankClientId);
     }
     
     return Plugin_Handled;
@@ -839,73 +734,14 @@ void ShuffleArray(ArrayList arrayList, int start, int end)
  */
 stock void LoadTranslation(const char[] translation)
 {
-    char
-        sPath[PLATFORM_MAX_PATH],
-        sName[64];
+	char
+		sPath[PLATFORM_MAX_PATH],
+		sName[64];
 
-    Format(sName, sizeof(sName), "translations/%s.txt", translation);
-    BuildPath(Path_SM, sPath, sizeof(sPath), sName);
-    if (!FileExists(sPath))
-        SetFailState("Missing translation file %s.txt", translation);
+	Format(sName, sizeof(sName), "translations/%s.txt", translation);
+	BuildPath(Path_SM, sPath, sizeof(sPath), sName);
+	if (!FileExists(sPath))
+		SetFailState("Missing translation file %s.txt", translation);
 
-    LoadTranslations(translation);
-}
-
-public int Native_ForceSelectNextTank(Handle plugin, int numParams)
-{
-    chooseTank(0);
-    return getInfectedPlayerBySteamId(queuedTankSteamId);
-}
-
-public int Native_RemoveFromTankQueue(Handle plugin, int numParams)
-{
-    int client = GetNativeCell(1);
-    if (client <= 0 || client > MaxClients || !IsClientInGame(client))
-        return 0;
-    
-    char steamId[64];
-    GetClientAuthId(client, AuthId_Steam2, steamId, sizeof(steamId));
-    
-    int index = h_tankQueue.FindString(steamId);
-    if (index != -1)
-    {
-        h_tankQueue.Erase(index);
-        
-        if (hTankDebug.BoolValue)
-            PrintToConsoleAll("[TC] Removed %N (%s) from tank queue", client, steamId);
-        
-        return 1;
-    }
-    
-    return 0;
-}
-
-public int Native_GetTankPassedCount(Handle plugin, int numParams)
-{
-    int client = GetNativeCell(1);
-    if (client < 1 || client > MaxClients || !IsClientInGame(client) || IsFakeClient(client))
-        return 0;
-    return g_iTankControlPass[client];
-}
-
-public int Native_AddToTankHistory(Handle plugin, int numParams)
-{
-    int client = GetNativeCell(1);
-    if (client <= 0 || client > MaxClients || !IsClientInGame(client))
-        return 0;
-    
-    char steamId[64];
-    GetClientAuthId(client, AuthId_Steam2, steamId, sizeof(steamId));
-    
-    if (h_whosHadTank.FindString(steamId) == -1)
-    {
-        h_whosHadTank.PushString(steamId);
-        
-        if (hTankDebug.BoolValue)
-            PrintToConsoleAll("[TC] Added %N (%s) to tank history", client, steamId);
-        
-        return 1;
-    }
-    
-    return 0;
+	LoadTranslations(translation);
 }
