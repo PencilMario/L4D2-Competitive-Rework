@@ -465,9 +465,7 @@ Action Timer_PreGenerateTankPositions(Handle timer)
     g_bTankPositionsPreGenerated = true;
     CPrintToChatAll("[{green}!{default}] 所有 {olive}%d {default}轮的 Tank 位置已预生成完毕！", numRounds);
     SortTankPositions();
-    //SetTankPercent(RoundToFloor(g_fTankFlowPercentByRound[0] * 100.0));
-    L4D2Direct_SetVSTankFlowPercent(0, g_fTankFlowPercentByRound[0]);
-    L4D2Direct_SetVSTankFlowPercent(1, g_fTankFlowPercentByRound[0]);
+    SetTankPercent(RoundToFloor(g_fTankFlowPercentByRound[0] * 100.0));
     return Plugin_Stop;
 }
 
@@ -656,10 +654,10 @@ void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
     }
 
     // 预生成所有轮次的Tank位置
-    CreateTimer(1.0, Timer_PreGenerateTankPositions, .flags = TIMER_FLAG_NO_MAPCHANGE);
+    CreateTimer(0.1, Timer_PreGenerateTankPositions, .flags = TIMER_FLAG_NO_MAPCHANGE);
 
     // Need to delay a bit, seems crashing otherwise.
-    CreateTimer(2.0, Timer_DelayProcess, .flags = TIMER_FLAG_NO_MAPCHANGE);
+    CreateTimer(1.0, Timer_DelayProcess, .flags = TIMER_FLAG_NO_MAPCHANGE);
 
     // TODO: Is there a hook?
     CreateTimer(5.0, Timer_AccessTankWarp, false, TIMER_FLAG_NO_MAPCHANGE);
