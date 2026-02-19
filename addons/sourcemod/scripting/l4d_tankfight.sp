@@ -247,6 +247,7 @@ float GetRandomValidTankPercent()
 
 /**
  * 从所有可用进度中随机选择一个不重复且避免相邻的位置
+ * 优先：避免相邻 -> 向两个方向寻找 -> 选择距离最远的位置
  * @param usedPercents 已使用过的百分比列表
  * @param tolerance 容差值（防浮点数精度问题）
  * @param adjacencyThreshold 相邻距离阈值（default 0.05 = 5%）
@@ -263,7 +264,7 @@ float GetUniqueRandomValidTankPercent(ArrayList usedPercents, float tolerance = 
         return -1.0;
     }
 
-    // 第一步：移除已使用过的百分比和相邻的位置
+    // 第一步：尝试找出完全避开相邻的候选位置
     ArrayList candidatePercents = new ArrayList();
 
     for (int i = 0; i < validPercents.Length; i++)
@@ -302,39 +303,70 @@ float GetUniqueRandomValidTankPercent(ArrayList usedPercents, float tolerance = 
     }
     else
     {
-        // 如果没有完全避开相邻的选择，只移除已使用的位置
-        PrintToConsoleAll("[TankFight] 警告：没有非相邻的位置可用，降级为只避免重复");
+        // 如果没有完全避开相邻的选择，尝试向两个方向寻找可用的进度
+        PrintToConsoleAll("[TankFight] 警告：没有非相邻的位置可用，尝试向两个方向寻找");
 
-        ArrayList fallbackPercents = new ArrayList();
+        // 收集所有未被使用的位置及其到最近已使用位置的最小距离
+        ArrayList directionalCandidates = new ArrayList();
+        ArrayList distancesToNearest = new ArrayList();
+
         for (int i = 0; i < validPercents.Length; i++)
         {
             float percent = validPercents.Get(i);
-            bool isUsed = false;
+            bool isExactlyUsed = false;
+            float minDistToUsed = 1.0;  // 最大可能距离
 
             for (int j = 0; j < usedPercents.Length; j++)
             {
                 float usedPercent = usedPercents.Get(j);
-                if (FloatAbs(percent - usedPercent) < tolerance)
+                float diff = FloatAbs(percent - usedPercent);
+
+                if (diff < tolerance)
                 {
-                    isUsed = true;
+                    isExactlyUsed = true;
                     break;
+                }
+
+                if (diff < minDistToUsed)
+                {
+                    minDistToUsed = diff;
                 }
             }
 
-            if (!isUsed)
+            // 只收集未被完全使用的位置
+            if (!isExactlyUsed)
             {
-                fallbackPercents.Push(percent);
+                directionalCandidates.Push(percent);
+                distancesToNearest.Push(minDistToUsed);
             }
         }
 
-        if (fallbackPercents.Length > 0)
+        // 如果找到任何可用位置
+        if (directionalCandidates.Length > 0)
         {
-            int randomIndex = GetRandomInt(0, fallbackPercents.Length - 1);
-            result = fallbackPercents.Get(randomIndex);
-            PrintToConsoleAll("[TankFight] 选择了备用位置（可能相邻）：%.2f%%", result * 100.0);
+            // 找出距离最远的位置
+            float maxDistance = -1.0;
+            int maxIndex = -1;
+
+            for (int i = 0; i < distancesToNearest.Length; i++)
+            {
+                float dist = distancesToNearest.Get(i);
+                if (dist > maxDistance)
+                {
+                    maxDistance = dist;
+                    maxIndex = i;
+                }
+            }
+
+            if (maxIndex >= 0)
+            {
+                result = directionalCandidates.Get(maxIndex);
+                PrintToConsoleAll("[TankFight] 选择了距离已使用位置最远的进度：%.2f%%（距离：%.4f）", result * 100.0, maxDistance);
+            }
         }
 
-        delete fallbackPercents;
+        delete directionalCandidates;
+        delete distancesToNearest;
     }
 
     delete validPercents;
