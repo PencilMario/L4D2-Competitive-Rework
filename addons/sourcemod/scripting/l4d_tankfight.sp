@@ -702,8 +702,6 @@ public Action SelectSurvivorSpawnPosition(Handle timer){
     }
     TFData.fSurvivorPercentReal += 0.02;
     if (TFData.fSurvivorPercentReal > TFData.fSurvivorPercentTarget){
-        // 传送至生还者高亮模型的位置
-        TeleportAllSurvivorToModelPosition();
         return Plugin_Stop;
     }
     CreateTimer(0.3, SelectSurvivorSpawnPosition);
@@ -1337,21 +1335,6 @@ void TeleportAllSurvivorToPercentFlow(float TargetPercent)
     }
 }
 
-/**
- * 传送所有生还者到生还者高亮模型的位置
- */
-void TeleportAllSurvivorToModelPosition()
-{
-    // 检查生还者模型位置是否有效
-    if (GetVectorLength(g_vSurvivorModelPos) > 0.0)
-    {
-        for (int i = 1; i <= MaxClients; i++){
-            if (IsClientInGame(i) && IsSurvivor(i)){
-                TeleportEntity(i, g_vSurvivorModelPos, g_vSurvivorModelAng, NULL_VECTOR);
-            }
-        }
-    }
-}
 
 /**
  * 显示当前每只tank刷出的奖励分的指令处理函数
