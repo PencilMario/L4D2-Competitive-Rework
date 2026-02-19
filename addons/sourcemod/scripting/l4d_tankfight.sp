@@ -196,8 +196,6 @@ public void OnRoundIsLive()
     CPrintToChatAll("游戏开始后，生还者会被传送到地图上发光的生还者模型");
     CPrintToChatAll("本场比赛将进行 {olive}%d {default}轮 Tank 战斗", g_cvTankFightRounds.IntValue);
 
-    // 预生成所有轮次的Tank位置
-    CreateTimer(0.1, Timer_PreGenerateTankPositions, .flags = TIMER_FLAG_NO_MAPCHANGE);
     g_cvVsDefibPenalty.IntValue = -g_cvTankFightSurvivorScorePerTank.IntValue;
 }
 
@@ -654,6 +652,9 @@ void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
         g_vSurvivorModelAng = NULL_VECTOR;
         g_vSurvivorModelPos = NULL_VECTOR;
     }
+
+    // 预生成所有轮次的Tank位置
+    CreateTimer(0.1, Timer_PreGenerateTankPositions, .flags = TIMER_FLAG_NO_MAPCHANGE);
 
     // Need to delay a bit, seems crashing otherwise.
     CreateTimer(1.0, Timer_DelayProcess, .flags = TIMER_FLAG_NO_MAPCHANGE);
