@@ -1363,7 +1363,7 @@ public Action Command_ShowTankPositions(int client, int args)
 
     int numRounds = g_cvTankFightRounds.IntValue;
     CPrintToChat(client, "[{green}!{default}] ========== 本局 Tank 位置信息 ==========");
-    CPrintToChat(client, "[{green}!{default}] 总轮数: {olive}%d", numRounds);
+    CPrintToChat(client, "[{green}!{default}] 轮数: {olive}%d / %d", g_iTankFightCurrentRound, numRounds);
 
     int validCount = 0;
     for (int i = 0; i < numRounds; i++)
