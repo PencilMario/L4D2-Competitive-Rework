@@ -1106,7 +1106,7 @@ void SpawnPainPillsAtPosition(const float vPos[3], const float vAng[3])
     float vAdjustedPos[3];
     vAdjustedPos[0] = vPos[0];
     vAdjustedPos[1] = vPos[1];
-    vAdjustedPos[2] = vPos[2] + 200.0;
+    vAdjustedPos[2] = vPos[2] + 40.0;
     TeleportEntity(entity, vAdjustedPos, vAng, NULL_VECTOR);
 }
 
