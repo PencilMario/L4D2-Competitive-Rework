@@ -60,6 +60,11 @@ float g_fTankFlowPercentByRound[10];  // 保存每一轮随机选择的流程百
 bool g_bTankPositionSavedByRound[10];
 bool g_bTankPositionsPreGenerated = false;  // 标记位置是否已预生成
 
+// 准备面板显示Tank位置
+Handle g_hTankPositionFooterTimer = null;
+bool g_bAllowTankPositionFooter = false;
+ConVar g_cvTankPositionReadyFooter;
+
 enum /*strMapType*/
 {
     MP_FINALE
@@ -166,6 +171,11 @@ public void OnPluginStart()
                             ...	"1 = 1 pain pills, 2 = 2 pain pills, etc.",
                                 FCVAR_SPONLY,
                                 true, 1.0, true, 10.0);
+
+    g_cvTankPositionReadyFooter = CreateConVar("l4d_tankfight_ready_footer",
+                                "1",
+                                "Enable tank position to be added to readyup panel as footer (if available).",
+                                FCVAR_NOTIFY, true, 0.0, true, 1.0);
 
     g_cvVsDefibPenalty = FindConVar("vs_defib_penalty");
     if (g_cvVsDefibPenalty != null)
@@ -668,6 +678,16 @@ void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
     // 先生成tank的位置，然后再delay process
     CreateTimer(1.0, Timer_PreGenerateTankPositions, .flags = TIMER_FLAG_NO_MAPCHANGE);
 
+    // 初始化footer显示标志
+    if (g_cvTankPositionReadyFooter.BoolValue)
+    {
+        g_bAllowTankPositionFooter = true;
+    }
+    else
+    {
+        g_bAllowTankPositionFooter = false;
+    }
+
     // Need to delay a bit, seems crashing otherwise.
     CreateTimer(1.2, Timer_DelayProcess, .flags = TIMER_FLAG_NO_MAPCHANGE);
 
@@ -865,7 +885,7 @@ Action ChangtToNewMap(Handle Timer)
 Action Timer_DelayProcess(Handle timer)
 {
     if (!L4D_IsVersusMode()) return Plugin_Stop;
-    
+
     if (IsValidEdict(g_iTankGlowModel))
     {
         RemoveEntity(g_iTankGlowModel);
@@ -885,8 +905,11 @@ Action Timer_DelayProcess(Handle timer)
         g_iTankGlowModel = EntIndexToEntRef(g_iTankGlowModel);
     if (g_iSurvivorGlowModel != INVALID_ENT_REFERENCE)
         g_iSurvivorGlowModel = EntIndexToEntRef(g_iSurvivorGlowModel);
-    
+
     FreezePoints();
+
+    // 更新准备面板的Tank位置信息
+    UpdateTankPositionReadyFooter();
 
     return Plugin_Stop;
 }
@@ -1379,5 +1402,91 @@ public Action Command_ShowTankPositions(int client, int args)
 
 
     return Plugin_Handled;
+}
+//=========================================================================================================
+
+/**
+ * 更新准备面板的Tank位置信息
+ */
+void UpdateTankPositionReadyFooter()
+{
+    if (GetFeatureStatus(FeatureType_Native, "AddStringToReadyFooter") == FeatureStatus_Available)
+    {
+        if (g_hTankPositionFooterTimer != null)
+        {
+            delete g_hTankPositionFooterTimer;
+            g_hTankPositionFooterTimer = null;
+        }
+
+        g_hTankPositionFooterTimer = CreateTimer(7.0, Timer_AddTankPositionFooter, _, TIMER_FLAG_NO_MAPCHANGE);
+    }
+}
+
+/**
+ * 定时器回调：将Tank位置添加到准备面板
+ */
+public Action Timer_AddTankPositionFooter(Handle timer)
+{
+    g_hTankPositionFooterTimer = null;
+
+    if (!g_bAllowTankPositionFooter)
+        return Plugin_Stop;
+
+    char msg[65];
+    if (GetTankPositionString(msg, sizeof(msg)))
+    {
+        g_bAllowTankPositionFooter = !(AddStringToReadyFooter(msg) != -1);
+    }
+
+    return Plugin_Stop;
+}
+
+/**
+ * 获取所有Tank位置的字符串
+ * @param msg 输出字符串
+ * @param maxlength 字符串最大长度（必须<=65）
+ * @return 如果成功返回true，否则返回false
+ */
+bool GetTankPositionString(char[] msg, int maxlength)
+{
+    int numRounds = g_cvTankFightRounds.IntValue;
+    int validCount = 0;
+
+    // 检查是否有有效的位置
+    for (int i = 0; i < numRounds; i++)
+    {
+        if (g_bTankPositionSavedByRound[i])
+        {
+            validCount++;
+        }
+    }
+
+    if (validCount == 0)
+    {
+        return false;
+    }
+
+    strcopy(msg, maxlength, "Tank:");
+
+    // 添加所有有效的百分比
+    for (int i = 0; i < numRounds; i++)
+    {
+        if (g_bTankPositionSavedByRound[i])
+        {
+            float flowPercent = g_fTankFlowPercentByRound[i] * 100.0;
+            char buffer[16];
+            Format(buffer, sizeof(buffer), " %.0f%%", flowPercent);
+
+            // 检查是否会超出长度限制
+            if (strlen(msg) + strlen(buffer) >= maxlength - 1)
+            {
+                break;
+            }
+
+            StrCat(msg, maxlength, buffer);
+        }
+    }
+
+    return true;
 }
 //=========================================================================================================
