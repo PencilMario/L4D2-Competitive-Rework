@@ -571,7 +571,14 @@ void EndTankFightRound(){
         {
             if (IS_VALID_INFECTED(i) && IsPlayerAlive(i))
             {
-                L4D_BecomeGhost(i);
+                // 在变为幽灵前，先设置状态标志
+                static int s_iOffs_m_bPZAbortedControl = -1;
+                if (s_iOffs_m_bPZAbortedControl == -1)
+                    s_iOffs_m_bPZAbortedControl = FindSendPropInfo("CTerrorPlayer", "m_bSurvivorGlowEnabled") + 1;
+
+                SetEntData(i, s_iOffs_m_bPZAbortedControl, 1, 1);
+
+                L4D_State_Transition(i, STATE_GHOST);
             }
         }
 
@@ -676,7 +683,7 @@ void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
     }
 
     // 先生成tank的位置，然后再delay process
-    CreateTimer(1.0, Timer_PreGenerateTankPositions, .flags = TIMER_FLAG_NO_MAPCHANGE);
+    CreateTimer(1.1, Timer_PreGenerateTankPositions, .flags = TIMER_FLAG_NO_MAPCHANGE);
 
     // 初始化footer显示标志
     if (g_cvTankPositionReadyFooter.BoolValue)
@@ -689,7 +696,7 @@ void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
     }
 
     // Need to delay a bit, seems crashing otherwise.
-    CreateTimer(1.2, Timer_DelayProcess, .flags = TIMER_FLAG_NO_MAPCHANGE);
+    CreateTimer(1.3, Timer_DelayProcess, .flags = TIMER_FLAG_NO_MAPCHANGE);
 
     // TODO: Is there a hook?
     CreateTimer(5.0, Timer_AccessTankWarp, false, TIMER_FLAG_NO_MAPCHANGE);
