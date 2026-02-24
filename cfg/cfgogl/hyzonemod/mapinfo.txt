@@ -35,6 +35,12 @@
 				"min"		"85"
 				"max"		"100"
 			}
+			"tankfight"
+			{
+				"min"		"79"
+				"max"		"100"
+
+			}
 		}
 	}
 	"c1m2_streets"

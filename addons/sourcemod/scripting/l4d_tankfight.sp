@@ -222,28 +222,6 @@ int GetAllValidTankPercents(ArrayList outPercents)
     return outPercents.Length;
 }
 
-/**y
- * 从所有可用进度中随机选择一个
- * @return 返回随机选择的流程百分比
- */
-float GetRandomValidTankPercent()
-{
-    ArrayList validPercents = new ArrayList();
-    int count = GetAllValidTankPercents(validPercents);
-
-    if (count == 0)
-    {
-        // 如果没有有效位置，返回默认百分比
-        delete validPercents;
-        return L4D2Direct_GetVSTankFlowPercent(0);
-    }
-
-    int randomIndex = GetRandomInt(0, count - 1);
-    float result = validPercents.Get(randomIndex);
-
-    delete validPercents;
-    return result;
-}
 
 /**
  * 从所有可用进度中随机选择一个不重复且避免相邻的位置
@@ -687,8 +665,11 @@ void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
         g_vSurvivorModelPos = NULL_VECTOR;
     }
 
+    // 先生成tank的位置，然后再delay process
+    CreateTimer(1.0, Timer_PreGenerateTankPositions, .flags = TIMER_FLAG_NO_MAPCHANGE);
+
     // Need to delay a bit, seems crashing otherwise.
-    CreateTimer(1.0, Timer_DelayProcess, .flags = TIMER_FLAG_NO_MAPCHANGE);
+    CreateTimer(1.2, Timer_DelayProcess, .flags = TIMER_FLAG_NO_MAPCHANGE);
 
     // TODO: Is there a hook?
     CreateTimer(5.0, Timer_AccessTankWarp, false, TIMER_FLAG_NO_MAPCHANGE);
@@ -1038,8 +1019,27 @@ void GenerateAndSetTankPosition(int iRound)
         return;
     }
 
-    // 备用逻辑：如果预生成失败，使用新的随机选择机制
-    float target_percent = GetRandomValidTankPercent();
+    // 备用逻辑：如果预生成失败，使用新的随机选择机制（避免重复位置）
+    ArrayList usedPercents = new ArrayList();
+
+    // 将g_fTankFlowPercentByRound中的非0值推到ArrayList
+    for (int i = 0; i < sizeof(g_fTankFlowPercentByRound); i++)
+    {
+        if (g_fTankFlowPercentByRound[i] > 0.0)
+        {
+            usedPercents.Push(g_fTankFlowPercentByRound[i]);
+        }
+    }
+
+    float target_percent = GetUniqueRandomValidTankPercent(usedPercents);
+
+    // 如果没有找到任何有效的百分比，使用默认的
+    if (target_percent < 0.0)
+    {
+        target_percent = L4D2Direct_GetVSTankFlowPercent(0);
+    }
+
+    delete usedPercents;
 
     // 设置Tank的流程百分比
     L4D2Direct_SetVSTankFlowPercent(0, target_percent);
