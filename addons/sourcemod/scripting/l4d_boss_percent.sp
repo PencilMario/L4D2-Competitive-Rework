@@ -56,11 +56,13 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 ConVar g_hCvarGlobalPercent;    // Determines if Percents will be displayed to entire team when boss percentage command is used
 ConVar g_hCvarTankPercent;      // Determines if Tank Percents will be displayed on ready-up and when boss percentage command is used
 ConVar g_hCvarWitchPercent;     // Determines if Witch Percents will be displayed on ready-up and when boss percentage command is used
+ConVar g_hCvarAddToReadyUp;     // Determines if boss percentages will be added to ready-up footer
 
 // ConVar Storages
 bool g_bCvarGlobalPercent;
 bool g_bCvarTankPercent;
 bool g_bCvarWitchPercent;
+bool g_bCvarAddToReadyUp;
 
 // Handles
 Handle g_hUpdateFooterTimer;
@@ -94,10 +96,12 @@ public void OnPluginStart()
 	g_hCvarGlobalPercent = CreateConVar("l4d_global_percent", "0", "Display boss percentages to entire team when using commands");    // Sets if Percents will be displayed to entire team when boss percentage command is used
 	g_hCvarTankPercent   = CreateConVar("l4d_tank_percent", "1", "Display Tank flow percentage in chat");                             // Sets if Tank Percents will be displayed on ready-up and when boss percentage command is used
 	g_hCvarWitchPercent  = CreateConVar("l4d_witch_percent", "1", "Display Witch flow percentage in chat");                           // Sets if Witch Percents will be displayed on ready-up and when boss percentage command is used
+	g_hCvarAddToReadyUp  = CreateConVar("l4d_boss_percent_add_to_readyup", "1", "Add boss percentages to ready-up footer");                        // Sets if boss percentages will be added to ready-up footer
 
 	g_hCvarGlobalPercent.AddChangeHook(OnConVarChanged);
 	g_hCvarTankPercent.AddChangeHook(OnConVarChanged);
 	g_hCvarWitchPercent.AddChangeHook(OnConVarChanged);
+	g_hCvarAddToReadyUp.AddChangeHook(OnConVarChanged);
 
 	GetCvars();
 
@@ -122,6 +126,7 @@ void GetCvars()
 	g_bCvarGlobalPercent = g_hCvarGlobalPercent.BoolValue;
 	g_bCvarTankPercent   = g_hCvarTankPercent.BoolValue;
 	g_bCvarWitchPercent  = g_hCvarWitchPercent.BoolValue;
+	g_bCvarAddToReadyUp  = g_hCvarAddToReadyUp.BoolValue;
 }
 
 /* ========================================================
@@ -601,8 +606,8 @@ Action Timer_UpdateReadyUpFooter(Handle timer)
 {
 	g_hUpdateFooterTimer = null;
 
-	// Check to see if Ready Up plugin is available
-	if (g_ReadyUpAvailable)
+	// Check to see if Ready Up plugin is available and if adding to ready-up is enabled
+	if (g_ReadyUpAvailable && g_bCvarAddToReadyUp)
 	{
 		// Create some variables
 		char p_sTankString[32];     // Private Variable - Where our formatted Tank string will be kept
