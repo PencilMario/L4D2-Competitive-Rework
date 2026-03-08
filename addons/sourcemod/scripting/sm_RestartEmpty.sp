@@ -30,6 +30,9 @@ ConVar g_ConVarForceRebootHourStart;
 ConVar g_ConVarForceRebootHourEnd;
 ConVar g_ConVarDeltaUTC;
 ConVar g_ConVarStartRandomMap;
+ConVar g_ConVarCheckPlugins;
+ConVar g_ConVarMinPlugins;
+ConVar g_ConVarCheckInterval;
 
 bool g_bCvarEnabled;
 bool g_bStartRandomMap;
@@ -48,6 +51,10 @@ int g_iPluginRunDate;
 char g_sMapListPath[PLATFORM_MAX_PATH];
 char g_sLogPath[PLATFORM_MAX_PATH];
 Handle hPluginMe;
+bool g_bCheckPlugins;
+int g_iMinPlugins;
+int g_iCheckInterval;
+Handle g_hCheckPluginsTimer;
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
@@ -68,7 +75,7 @@ int GetPluginWorkDurationHours()
 public void OnPluginStart()
 {
 	CreateConVar("sm_restart_empty_version", PLUGIN_VERSION, "Plugin Version", CVAR_FLAGS | FCVAR_DONTRECORD);
-	
+
 	( g_ConVarEnable 				= CreateConVar("sm_restart_empty_enable", 					"1", 	"Enable plugin (1 - On / 0 - Off)", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
 	( g_ConVarMethod 				= CreateConVar("sm_restart_empty_method", 					"2", 	"When server is empty, what to do? 1 - _restart, 2 - crash (use if method # 1 is not work), 3 - just change map", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
 	( g_ConVarDelay 				= CreateConVar("sm_restart_empty_delay", 					"1.0", 	"Grace period (in sec.) waiting for new player to join until actually decide to restart the server", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
@@ -80,19 +87,22 @@ public void OnPluginStart()
 	( g_ConVarForceRebootHourEnd 	= CreateConVar("sm_restart_empty_force_hour_end", 			"-1", 	"End hour for force rebooting (if last reboot happened > 24 hours ago) and somebody leaves during this hour (paired with \"*_start\" ConVar) (-1 to disable)", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
 	( g_ConVarDeltaUTC 				= CreateConVar("sm_restart_empty_utc_delta", 				"0.0", 	"If your server has incorrect time, you can set UTC correction hours here (they will be appended to a server time)", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
 	( g_ConVarStartRandomMap 		= CreateConVar("sm_restart_empty_server_start_changemap", 	"0", 	"When server restarted, change map to the random one from the file: data/restart_empty_maps.txt (1 - Yes / 0 - No)", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
-	
+	( g_ConVarCheckPlugins 			= CreateConVar("sm_restart_empty_check_plugins", 			"1", 	"Check loaded plugins count every 30 minutes and restart if less than min plugins (1 - On / 0 - Off)", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
+	( g_ConVarMinPlugins 			= CreateConVar("sm_restart_empty_min_plugins", 				"5", 	"Minimum number of loaded plugins required, restart if less (default: 5)", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
+	( g_ConVarCheckInterval 		= CreateConVar("sm_restart_empty_check_interval", 			"1800", "Check interval in seconds for plugin count check (default: 1800 = 30 minutes)", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
+
 	AutoExecConfig(true, "sm_restart_empty");
-	
+
 	g_ConVarHibernate = FindConVar("sv_hibernate_when_empty");
-	
+
 	BuildPath(Path_SM, g_sMapListPath, 	sizeof(g_sMapListPath), "data/restart_empty_maps.txt");
 	BuildPath(Path_SM, g_sLogPath, 		sizeof(g_sLogPath), 	"logs/restart.log");
-	
+
 	RemoveCrashLog(); // if "CRASH" folder exists, removes last crash that happen due to server restart
-	
+
 	RegAdminCmd("sm_restarter_ctime", 		CmdTime, 		ADMFLAG_ROOT, "Check the server time taking into account UTC delta ConVar");
 	RegAdminCmd("sm_restarter_accelerator", CmdAccelerator, ADMFLAG_ROOT, "Show auto-detected order number of Accelerator extension");
-	
+
 	GetCvars();
 }
 
@@ -136,27 +146,45 @@ void GetCvars()
 	g_iCVarForceRebootHourEnd = g_ConVarForceRebootHourEnd.IntValue;
 	g_fCvarDeltaUTC = g_ConVarDeltaUTC.FloatValue;
 	g_bStartRandomMap = g_ConVarStartRandomMap.BoolValue;
-	
+	g_bCheckPlugins = g_ConVarCheckPlugins.BoolValue;
+	g_iMinPlugins = g_ConVarMinPlugins.IntValue;
+	g_iCheckInterval = g_ConVarCheckInterval.IntValue;
+
 	InitHook();
+	InitPluginCheckTimer();
 }
 
 void InitHook()
 {
 	static bool bHooked;
-	
+
 	if( g_bCvarEnabled )
 	{
 		if( !bHooked )
 		{
-			HookEvent("player_disconnect", Event_PlayerDisconnect, EventHookMode_Pre);	
+			HookEvent("player_disconnect", Event_PlayerDisconnect, EventHookMode_Pre);
 			bHooked = true;
 		}
 	} else {
 		if( bHooked )
 		{
-			UnhookEvent("player_disconnect", Event_PlayerDisconnect, EventHookMode_Pre);	
+			UnhookEvent("player_disconnect", Event_PlayerDisconnect, EventHookMode_Pre);
 			bHooked = false;
 		}
+	}
+}
+
+void InitPluginCheckTimer()
+{
+	if( g_hCheckPluginsTimer != null )
+	{
+		KillTimer(g_hCheckPluginsTimer);
+		g_hCheckPluginsTimer = null;
+	}
+
+	if( g_bCheckPlugins )
+	{
+		g_hCheckPluginsTimer = CreateTimer(float(g_iCheckInterval), Timer_CheckPluginCount, _, TIMER_REPEAT);
 	}
 }
 
@@ -171,6 +199,15 @@ public void OnConfigsExecuted()
 	{
 		g_iHybernateInitial = g_ConVarHibernate.IntValue;
 		g_ConVarHibernate.SetInt(0);
+	}
+}
+
+public void OnPluginEnd()
+{
+	if( g_hCheckPluginsTimer != null )
+	{
+		KillTimer(g_hCheckPluginsTimer);
+		g_hCheckPluginsTimer = null;
 	}
 }
 
@@ -267,6 +304,42 @@ Action Timer_CheckPlayers(Handle timer, int UserId)
 	{
 		StartRebootSequence();
 	}
+	return Plugin_Continue;
+}
+
+int GetLoadedPluginCount()
+{
+	int iCount = 0;
+	Handle hPlugin;
+	Handle hIter = GetPluginIterator();
+
+	if( hIter )
+	{
+		while( MorePlugins(hIter) )
+		{
+			hPlugin = ReadPlugin(hIter);
+			if( hPlugin != INVALID_HANDLE )
+			{
+				iCount++;
+			}
+		}
+		CloseHandle(hIter);
+	}
+	return iCount;
+}
+
+Action Timer_CheckPluginCount(Handle timer)
+{
+	int iPluginCount = GetLoadedPluginCount();
+
+	LogToFileEx(g_sLogPath, "[PluginCheck] Current loaded plugins: %d (minimum required: %d)", iPluginCount, g_iMinPlugins);
+
+	if( iPluginCount < g_iMinPlugins )
+	{
+		LogToFileEx(g_sLogPath, "[PluginCheck] Plugin count (%d) is below minimum (%d). Initiating server restart...", iPluginCount, g_iMinPlugins);
+		StartRebootSequence();
+	}
+
 	return Plugin_Continue;
 }
 
