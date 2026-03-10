@@ -187,7 +187,13 @@ void InitPluginCheckTimer()
 		g_hCheckPluginsTimer = CreateTimer(float(g_iCheckInterval), Timer_CheckPluginCount, _, TIMER_REPEAT);
 	}
 }
-
+public void OnAllPluginsLoaded(){
+	// Perform initial plugin count check immediately after loading
+	if( g_bCheckPlugins )
+	{
+		Timer_CheckPluginCount(null);
+	}
+}
 public void OnConfigsExecuted()
 {
 	if( g_bStartRandomMap && !g_bServerStarted)
@@ -200,6 +206,7 @@ public void OnConfigsExecuted()
 		g_iHybernateInitial = g_ConVarHibernate.IntValue;
 		g_ConVarHibernate.SetInt(0);
 	}
+
 }
 
 public void OnPluginEnd()
