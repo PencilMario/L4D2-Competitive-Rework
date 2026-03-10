@@ -262,9 +262,9 @@ public int MenuConfirmHandler(Menu menu, MenuAction action, int param1, int para
 		if (g_cvarBroadcastHops.BoolValue) {
 			char clientName[MAX_NAME_LENGTH];
 			GetClientName(param1, clientName, sizeof(clientName));
-			CPrintToChatAll("\x01[\x03hop\x01] %t", "HopNotification", clientName, g_sServer[param1]);
-			CPrintToChat(param1, "\x01[\x03hop\x01] 请返回主界面后, 在{olive}控制台{default}使用指令{lightgreen}askconnect_accept{default}连接服务器");
-			CPrintToChat(param1, "直接输入也可以，但可能会直接返回主界面");
+			CPrintToChat(param1, "\x01[\x03hop\x01] %t", "HopNotification", clientName, g_sServer[param1]);
+			CPrintToChat(param1, "\x01[\x03hop\x01] 请退出服务器后, 在{olive}控制台{default}使用指令{lightgreen}askconnect_accept{default}连接服务器");
+			CPrintToChat(param1, "直接输入也可以，但可能无法连接");
 		}
 	}
 	g_sAddress[param1][0] = '\0';
