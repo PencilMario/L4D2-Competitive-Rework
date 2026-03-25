@@ -191,7 +191,7 @@ Action Timer_PredictTrajectory(Handle timer, int userid) {
         // Draw square
         for (int i = 0; i < 4; i++) {
             TE_SetupBeamPoints(corners[i], corners[(i+1)%4], g_BeamSprite, g_HaloSprite, 0, 10, 0.1, 2.0, 2.0, 1, 0.0, color, 0);
-            TE_SendToTeam(client);
+            TE_SendToTeam(client, true);
         }
     }
 
@@ -229,7 +229,7 @@ void DrawParabolaLongLife(float startPos[3], float vel[3], float gravScale, int 
         }
 
         TE_SetupBeamPoints(lastPos, pos, g_BeamSprite, g_HaloSprite, 0, 0, life, 2.0, 2.0, 1, 0.0, beamColor, 0);
-        TE_SendToTeam(tank);
+        TE_SendToTeam(tank, false);
     }
 
     // Draw start point marker
@@ -258,7 +258,7 @@ void DrawParabolaLongLife(float startPos[3], float vel[3], float gravScale, int 
 
         for (int i = 0; i < 4; i++) {
             TE_SetupBeamPoints(corners[i], corners[(i+1)%4], g_BeamSprite, g_HaloSprite, 0, 10, life, 2.0, 2.0, 1, 0.0, COLOR_CYAN, 0);
-            TE_SendToTeam(tank);
+            TE_SendToTeam(tank, true);
         }
     }
 
@@ -363,16 +363,16 @@ void DrawParabola(float startPos[3], float vel[3], float gravScale = 1.0, int ta
         beamColor = willHit ? COLOR_HIT : COLOR_NORMAL;
 
         TE_SetupBeamPoints(lastPos, pos, g_BeamSprite, g_HaloSprite, 0, 0, beamLife, 2.0, 2.0, 1, 0.0, beamColor, 0);
-        TE_SendToTeam(tank);
+        TE_SendToTeam(tank, false);
     }
 
     if (hasImpact) {
         float distance = GetVectorDistance(startPos, impactPos);
-        DrawImpactMarker(impactPos, beamLife, willHit, distance, tank);
+        DrawImpactMarker(impactPos, beamLife, willHit, distance, tank, true);
     }
 }
 
-void DrawImpactMarker(float pos[3], float life, bool isHit, float distance, int tank = 0) {
+void DrawImpactMarker(float pos[3], float life, bool isHit, float distance, int tank = 0, bool isMarker = false) {
     int color[4];
     color = isHit ? COLOR_HIT : COLOR_CYAN;
 
@@ -384,14 +384,14 @@ void DrawImpactMarker(float pos[3], float life, bool isHit, float distance, int 
     top = pos;
     top[2] += height;
     TE_SetupBeamPoints(pos, top, g_BeamSprite, g_HaloSprite, 0, 0, life, 3.0, 3.0, 1, 0.0, color, 0);
-    TE_SendToTeam(tank);
+    TE_SendToTeam(tank, isMarker);
 
     // circle on ground using BeamRingPoint
     float groundPos[3];
     groundPos = pos;
     groundPos[2] += 2.0;
-    TE_SetupBeamRingPoint(groundPos, 10.0, 30.0, g_BeamSprite, g_HaloSprite, 0, 10, life, 3.0, 0.0, color, 10, 0);
-    TE_SendToTeam(tank);
+    TE_SetupBeamRingPoint(groundPos, 10.0, 60.0, g_BeamSprite, g_HaloSprite, 0, 10, life, 3.0, 0.0, color, 10, 0);
+    TE_SendToTeam(tank, isMarker);
 }
 
 bool TraceFilter_World(int entity, int mask) {
@@ -418,7 +418,7 @@ float GetDistanceToSegment(float point[3], float segStart[3], float segEnd[3]) {
     return GetVectorDistance(point, proj);
 }
 
-void TE_SendToTeam(int tank = 0) {
+void TE_SendToTeam(int tank = 0, bool isMarker = false) {
     int visibleTeam = g_cvVisibleTeam.IntValue;
     int interval = g_cvOtherPlayerInterval.IntValue;
 
@@ -445,8 +445,8 @@ void TE_SendToTeam(int tank = 0) {
         else if (team == 3 && (visibleTeam & 4)) canSee = true;
 
         if (canSee) {
-            // Always send to tank player, throttle others
-            if (i == tank || (tank > 0 && g_iFrameCount[tank] % interval == 0)) {
+            // Always send markers (start square, impact indicator), throttle trajectory lines
+            if (i == tank || isMarker || (tank > 0 && g_iFrameCount[tank] % interval == 0)) {
                 clients[count++] = i;
             }
         }
