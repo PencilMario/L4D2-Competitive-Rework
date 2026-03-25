@@ -554,6 +554,11 @@ void EndTankFightRound(){
     g_iTankFightCurrentRound++;
     CPrintToChatAll("[{green}!{default}] 第 {olive}%d {default}轮结束！", g_iTankFightCurrentRound);
 
+    // 禁特感复活5秒
+    ConVar spawn = FindConVar("director_no_specials");
+    spawn.IntValue = 1;
+    CreateTimer(5.0, Timer_EnableSpecialSpawn, _, TIMER_FLAG_NO_MAPCHANGE);
+
     // 检查是否还有更多轮数
     if (g_iTankFightCurrentRound < g_cvTankFightRounds.IntValue)
     {
@@ -819,6 +824,13 @@ Action Timer_DelaySpawn(Handle timer)
     }
 
     return Plugin_Continue;
+}
+
+Action Timer_EnableSpecialSpawn(Handle timer)
+{
+    ConVar spawn = FindConVar("director_no_specials");
+    spawn.IntValue = 0;
+    return Plugin_Stop;
 }
 
 bool IsMissionFinalMap()
@@ -1393,7 +1405,7 @@ public Action Command_ShowTankPositions(int client, int args)
 
     int numRounds = g_cvTankFightRounds.IntValue;
     CPrintToChat(client, "[{green}!{default}] ========== 本局 Tank 位置信息 ==========");
-    CPrintToChat(client, "[{green}!{default}] 轮数: {olive}%d / %d", g_iTankFightCurrentRound, numRounds);
+    CPrintToChat(client, "[{green}!{default}] 轮数: {olive}%d / %d", g_iTankFightCurrentRound+1, numRounds);
 
     int validCount = 0;
     for (int i = 0; i < numRounds; i++)
