@@ -24,11 +24,9 @@ public void OnMapStart()
         config.GetString(cfgName, sizeof(cfgName));
         Format(g_sName, sizeof(g_sName), "%s", cfgName);
     }
-    GetCurrentMap(g_sMapName, sizeof(g_sMapName));
 }
 
 public void OnGameFrame()
 {
     SteamWorks_SetGameDescription(g_sName);
-    SteamWorks_SetMapName(g_sMapName);
 }
