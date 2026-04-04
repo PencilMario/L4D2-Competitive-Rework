@@ -441,44 +441,45 @@ Action Timer_PreGenerateTankPositions(Handle timer)
 
     for (int round = 0; round < numRounds; round++)
     {
-        // adjacencyThreshold=0.05 表示5%的阈值，优先避免相邻，但如果必要允许相邻
-        float target_percent = GetUniqueRandomValidTankPercent(usedPercents, 0.001, 0.05);
-
-        // 如果没有找到任何有效的百分比，使用默认的
-        if (target_percent < 0.0)
+        bool bSaved = false;
+        // 最多尝试10次，每次换一个百分比，直到找到有效导航区域
+        for (int attempt = 0; attempt < 10 && !bSaved; attempt++)
         {
-            target_percent = L4D2Direct_GetVSTankFlowPercent(0);
-            PrintToConsoleAll("[TankFight] Round %d: 警告 - 无可用位置，使用默认流程百分比 %.2f%%", round, target_percent * 100.0);
-        }
+            float target_percent = GetUniqueRandomValidTankPercent(usedPercents, 0.001, attempt < 5 ? 0.05 : 0.0);
 
-        // 记录已使用的百分比
-        usedPercents.Push(target_percent);
+            if (target_percent < 0.0)
+            {
+                target_percent = L4D2Direct_GetVSTankFlowPercent(0);
+                PrintToConsoleAll("[TankFight] Round %d: 警告 - 无可用位置，使用默认流程百分比 %.2f%%", round, target_percent * 100.0);
+            }
 
-        // 保存随机选择的流程百分比
-        g_fTankFlowPercentByRound[round] = target_percent;
+            TerrorNavArea nav = GetBossSpawnAreaForFlow(target_percent);
+            if (!nav.Valid())
+            {
+                PrintToConsoleAll("[TankFight] Round %d: 尝试 %d - %.2f%% 导航区域无效，重试", round, attempt + 1, target_percent * 100.0);
+                // 将无效百分比也加入已用列表，避免重复尝试
+                usedPercents.Push(target_percent);
+                continue;
+            }
 
-        // 将百分比转换为具体坐标保存
-        TerrorNavArea nav = GetBossSpawnAreaForFlow(target_percent);
-        if (nav.Valid())
-        {
+            usedPercents.Push(target_percent);
+            g_fTankFlowPercentByRound[round] = target_percent;
+
             float vPos[3], vAng[3];
             L4D_FindRandomSpot(view_as<int>(nav), vPos);
             vPos[2] -= 8.0;
-
-            vAng[0] = 0.0;
             vAng[1] = GetRandomFloat(0.0, 360.0);
-            vAng[2] = 0.0;
 
             g_vTankPositionsByRound[round] = vPos;
             g_vTankAnglesByRound[round] = vAng;
             g_bTankPositionSavedByRound[round] = true;
+            bSaved = true;
 
             PrintToConsoleAll("[TankFight] Round %d: 位置已预生成，Flow: %.2f%%", round, target_percent * 100.0);
         }
-        else
-        {
-            PrintToConsoleAll("[TankFight] Round %d: 警告 - 无法找到有效位置", round);
-        }
+
+        if (!bSaved)
+            PrintToConsoleAll("[TankFight] Round %d: 警告 - 10次尝试后仍无法找到有效位置", round);
     }
 
     delete usedPercents;
@@ -1407,15 +1408,17 @@ public Action Command_ShowTankPositions(int client, int args)
     CPrintToChat(client, "[{green}!{default}] ========== 本局 Tank 位置信息 ==========");
     CPrintToChat(client, "[{green}!{default}] 轮数: {olive}%d / %d", g_iTankFightCurrentRound+1, numRounds);
 
-    int validCount = 0;
     for (int i = 0; i < numRounds; i++)
     {
         if (g_bTankPositionSavedByRound[i])
         {
-            validCount++;
             float flowPercent = g_fTankFlowPercentByRound[i] * 100.0;
             CPrintToChat(client, "[{green}!{default}] 第 {olive}%d {default}轮 - 流程: {olive}%.2f%% {default}",
                         i + 1, flowPercent);
+        }
+        else
+        {
+            CPrintToChat(client, "[{green}!{default}] 第 {olive}%d {default}轮 - {red}位置未生成{default}", i + 1);
         }
     }
 
