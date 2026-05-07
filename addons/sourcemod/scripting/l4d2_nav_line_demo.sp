@@ -73,7 +73,7 @@ public void OnPluginStart()
     g_cvBeamWidth = CreateConVar("l4d2_navline_width", "3.0", "Temp beam width.", FCVAR_NOTIFY, true, 0.5, true, 32.0);
     g_cvBeamColor = CreateConVar("l4d2_navline_color", "0 255 128 220", "Route color as R G B A.", FCVAR_NOTIFY);
     g_cvMaxAreas = CreateConVar("l4d2_navline_max_areas", "2048", "Safety cap for escape-step traversal.", FCVAR_NOTIFY, true, 16.0, true, 8192.0);
-    g_cvRenderRange = CreateConVar("l4d2_navline_render_range", "2000.0", "Only render route segments near a player within this distance.", FCVAR_NOTIFY, true, 1.0);
+    g_cvRenderRange = CreateConVar("l4d2_navline_render_range", "1250.0", "Only render route segments near a player within this distance.", FCVAR_NOTIFY, true, 1.0);
 
     RegAdminCmd("sm_navline", Command_ToggleRoute, ADMFLAG_ROOT, "Toggle the cached demo NAV line display.");
     RegAdminCmd("sm_navline_clear", Command_ClearRoute, ADMFLAG_ROOT, "Clear the demo NAV line.");
@@ -304,6 +304,22 @@ void DrawRoute()
     float life = g_cvDrawInterval.FloatValue + 0.1;
     float width = g_cvBeamWidth.FloatValue;
     float renderRangeSq = g_cvRenderRange.FloatValue * g_cvRenderRange.FloatValue;
+
+    for (int client = 1; client <= MaxClients; client++)
+    {
+        if (!IsClientInGame(client) || IsFakeClient(client))
+            continue;
+
+        DrawRouteForClient(client, renderRangeSq, life, width, color);
+    }
+}
+
+void DrawRouteForClient(int client, float renderRangeSq, float life, float width, const int color[4])
+{
+    float clientPos[3];
+    GetClientAbsOrigin(client, clientPos);
+
+    ArrayList segments = new ArrayList(2);
     float start[3], end[3];
 
     for (int i = 0; i < g_hRoutePoints.Length - 1; i++)
@@ -311,32 +327,44 @@ void DrawRoute()
         g_hRoutePoints.GetArray(i, start, sizeof(start));
         g_hRoutePoints.GetArray(i + 1, end, sizeof(end));
 
-        int clients[MAXPLAYERS];
-        int clientCount = GetClientsNearSegment(start, end, renderRangeSq, clients, sizeof(clients));
-        if (clientCount == 0)
+        float distanceSq = GetPointSegmentDistanceSquared(clientPos, start, end);
+        if (distanceSq > renderRangeSq)
             continue;
+
+        int item[2];
+        item[0] = i;
+        item[1] = view_as<int>(distanceSq);
+        segments.PushArray(item, sizeof(item));
+    }
+
+    segments.SortCustom(SortSegmentsByDistanceAsc);
+
+    for (int i = 0; i < segments.Length; i++)
+    {
+        int segmentIndex = segments.Get(i, 0);
+        g_hRoutePoints.GetArray(segmentIndex, start, sizeof(start));
+        g_hRoutePoints.GetArray(segmentIndex + 1, end, sizeof(end));
 
         TE_SetupBeamPoints(start, end, g_iBeamSprite, g_iHaloSprite, 0, 0, life, width, width, 1, 0.0, color, 0);
-        TE_Send(clients, clientCount);
+        TE_SendToClient(client);
     }
+
+    delete segments;
 }
 
-int GetClientsNearSegment(const float start[3], const float end[3], float rangeSq, int[] clients, int maxClients)
+public int SortSegmentsByDistanceAsc(int index1, int index2, Handle array, Handle hndl)
 {
-    int count = 0;
-    float clientPos[3];
+    ArrayList segments = view_as<ArrayList>(array);
+    float distance1 = view_as<float>(segments.Get(index1, 1));
+    float distance2 = view_as<float>(segments.Get(index2, 1));
 
-    for (int client = 1; client <= MaxClients && count < maxClients; client++)
-    {
-        if (!IsClientInGame(client))
-            continue;
+    if (distance1 < distance2)
+        return -1;
 
-        GetClientAbsOrigin(client, clientPos);
-        if (GetPointSegmentDistanceSquared(clientPos, start, end) <= rangeSq)
-            clients[count++] = client;
-    }
+    if (distance1 > distance2)
+        return 1;
 
-    return count;
+    return 0;
 }
 
 float GetPointSegmentDistanceSquared(const float point[3], const float start[3], const float end[3])
