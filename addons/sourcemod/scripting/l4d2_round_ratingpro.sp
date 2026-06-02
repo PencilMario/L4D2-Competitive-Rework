@@ -3,6 +3,7 @@
 
 #include <sourcemod>
 #include <sdktools>
+#include <colors>
 #include <l4d2_skill_detect>
 
 #define PLUGIN_VERSION "1.0.0"
@@ -62,7 +63,7 @@ int g_iTankDeath[MAXPLAYERS + 1];
 public void OnPluginStart()
 {
 	g_hEnabled = CreateConVar("sm_round_ratingpro_enabled", "1", "Enable round-end RatingPro estimate announcement.", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_hDelay = CreateConVar("sm_round_ratingpro_delay", "1.0", "Delay after round_end before announcing the best round RatingPro client.", FCVAR_NONE, true, 0.0, true, 15.0);
+	g_hDelay = CreateConVar("sm_round_ratingpro_delay", "3.0", "Delay after round_end before announcing the best round RatingPro client.", FCVAR_NONE, true, 0.0, true, 15.0);
 	g_hMinRaw = CreateConVar("sm_round_ratingpro_min_raw", "1.0", "Minimum weighted raw score required before announcing a winner.", FCVAR_NONE, true, 0.0, true, 10.0);
 	CreateConVar("sm_round_ratingpro_version", PLUGIN_VERSION, "L4D2 Round RatingPro version.", FCVAR_NOTIFY | FCVAR_DONTRECORD);
 
@@ -352,18 +353,14 @@ public Action Timer_PrintBestRating(Handle timer)
 
 	if (!BuildRawRanges(outputMin, outputMax, defenseMin, defenseMax, focusMin, focusMax, infectorMin, infectorMax, tankMin, tankMax))
 	{
-		PrintToChatAll("[RatingPro] 本章节没有足够数据生成最佳表现。");
+		CPrintToChatAll("{blue}[{green}RatingPro{blue}]{default} 本章节没有足够数据生成最佳表现。");
+		PrintAllClientRatingDetailsNoData();
 		return Plugin_Stop;
 	}
 
 	int bestClient = 0;
 	float bestRating = 0.0;
 	float bestRaw = 0.0;
-	float bestOutput = 0.0;
-	float bestDefense = 0.0;
-	float bestFocus = 0.0;
-	float bestInfector = 0.0;
-	float bestTank = 0.0;
 
 	for (int client = 1; client <= MaxClients; client++)
 	{
@@ -385,26 +382,64 @@ public Action Timer_PrintBestRating(Handle timer)
 			bestClient = client;
 			bestRating = rating;
 			bestRaw = raw;
-			bestOutput = output;
-			bestDefense = defense;
-			bestFocus = focus;
-			bestInfector = infector;
-			bestTank = tank;
 		}
 	}
 
 	if (bestClient == 0 || bestRaw < g_hMinRaw.FloatValue)
 	{
-		PrintToChatAll("[RatingPro] 本章节没有足够数据生成最佳表现。");
+		CPrintToChatAll("{blue}[{green}RatingPro{blue}]{default} 本章节没有足够数据生成最佳表现。");
+		PrintAllClientRatingDetails(outputMin, outputMax, defenseMin, defenseMax, focusMin, focusMax, infectorMin, infectorMax, tankMin, tankMax);
 		return Plugin_Stop;
 	}
 
 	char name[MAX_NAME_LENGTH];
 	GetBestClientName(bestClient, name, sizeof(name));
-	PrintToChatAll("[RatingPro] 章节最佳: %s rating %.1f",
+	CPrintToChatAll("{blue}[{green}RatingPro{blue}]{default} 章节最佳: {olive}%s{default} rating {green}%.1f",
 		name, bestRating);
+	PrintAllClientRatingDetails(outputMin, outputMax, defenseMin, defenseMax, focusMin, focusMax, infectorMin, infectorMax, tankMin, tankMax);
 
 	return Plugin_Stop;
+}
+
+void PrintAllClientRatingDetailsNoData()
+{
+	for (int client = 1; client <= MaxClients; client++)
+	{
+		if (!IsHumanClient(client))
+		{
+			continue;
+		}
+
+		CPrintToChat(client, "{blue}[{green}RatingPro{blue}]{default} 本章节没有足够数据生成你的 RatingPro。");
+	}
+}
+
+void PrintAllClientRatingDetails(float outputMin, float outputMax, float defenseMin, float defenseMax, float focusMin, float focusMax, float infectorMin, float infectorMax, float tankMin, float tankMax)
+{
+	for (int client = 1; client <= MaxClients; client++)
+	{
+		if (!IsHumanClient(client))
+		{
+			continue;
+		}
+
+		if (!IsEligibleForRating(client))
+		{
+			CPrintToChat(client, "{blue}[{green}RatingPro{blue}]{default} 本章节没有足够数据生成你的 RatingPro。");
+			continue;
+		}
+
+		float output = NormalizeRaw(GetOutputRaw(client), outputMin, outputMax);
+		float defense = NormalizeRaw(GetDefenseRaw(client), defenseMin, defenseMax);
+		float focus = NormalizeRaw(GetFocusRaw(client), focusMin, focusMax);
+		float infector = NormalizeRaw(GetInfectorRaw(client), infectorMin, infectorMax);
+		float tank = NormalizeRaw(GetTankRaw(client), tankMin, tankMax);
+		float raw = GetWeightedRaw(output, defense, focus, infector, tank);
+		float rating = raw * RATING_SLOPE + RATING_INTERCEPT;
+
+		CPrintToChat(client, "{blue}[{green}RatingPro{blue}]{default} 你的评分 {green}%.1f{default} 综合 {olive}%.1f{default} | 输出 %.1f 防守 %.1f 关键操作 %.1f 特感进攻 %.1f Tank表现 %.1f",
+			rating, raw, output, defense, focus, infector, tank);
+	}
 }
 
 void ResetRoundStats()
