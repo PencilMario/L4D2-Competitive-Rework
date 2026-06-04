@@ -13,8 +13,9 @@
 
 #define ZC_TANK 8
 
-#define RATING_SLOPE 0.4542
-#define RATING_INTERCEPT 4.1473
+#define RATING_SLOPE 0.7
+#define RATING_INTERCEPT 2.5
+#define TANK_NO_DATA_SCORE 4.6
 
 public Plugin myinfo =
 {
@@ -373,7 +374,7 @@ public Action Timer_PrintBestRating(Handle timer)
 		float defense = NormalizeRaw(GetDefenseRaw(client), defenseMin, defenseMax);
 		float focus = NormalizeRaw(GetFocusRaw(client), focusMin, focusMax);
 		float infector = NormalizeRaw(GetInfectorRaw(client), infectorMin, infectorMax);
-		float tank = NormalizeRaw(GetTankRaw(client), tankMin, tankMax);
+		float tank = NormalizeTankRaw(GetTankRaw(client), tankMin, tankMax);
 		float raw = GetWeightedRaw(output, defense, focus, infector, tank);
 		float rating = raw * RATING_SLOPE + RATING_INTERCEPT;
 
@@ -433,7 +434,7 @@ void PrintAllClientRatingDetails(float outputMin, float outputMax, float defense
 		float defense = NormalizeRaw(GetDefenseRaw(client), defenseMin, defenseMax);
 		float focus = NormalizeRaw(GetFocusRaw(client), focusMin, focusMax);
 		float infector = NormalizeRaw(GetInfectorRaw(client), infectorMin, infectorMax);
-		float tank = NormalizeRaw(GetTankRaw(client), tankMin, tankMax);
+		float tank = NormalizeTankRaw(GetTankRaw(client), tankMin, tankMax);
 		float raw = GetWeightedRaw(output, defense, focus, infector, tank);
 		float rating = raw * RATING_SLOPE + RATING_INTERCEPT;
 
@@ -612,9 +613,20 @@ float NormalizeRaw(float raw, float minValue, float maxValue)
 	return (raw - minValue) / (maxValue - minValue) * 10.0;
 }
 
+float NormalizeTankRaw(float raw, float tankMin, float tankMax)
+{
+	if (raw <= 0.0)
+	{
+		return TANK_NO_DATA_SCORE;
+	}
+
+	return NormalizeRaw(raw, tankMin, tankMax);
+}
+
 bool BuildRawRanges(float &outputMin, float &outputMax, float &defenseMin, float &defenseMax, float &focusMin, float &focusMax, float &infectorMin, float &infectorMax, float &tankMin, float &tankMax)
 {
 	bool found = false;
+	bool foundTank = false;
 
 	for (int client = 1; client <= MaxClients; client++)
 	{
@@ -639,22 +651,34 @@ bool BuildRawRanges(float &outputMin, float &outputMax, float &defenseMin, float
 			focusMax = focus;
 			infectorMin = infector;
 			infectorMax = infector;
-			tankMin = tank;
-			tankMax = tank;
 			found = true;
-			continue;
+		}
+		else
+		{
+			if (output < outputMin) outputMin = output;
+			if (output > outputMax) outputMax = output;
+			if (defense < defenseMin) defenseMin = defense;
+			if (defense > defenseMax) defenseMax = defense;
+			if (focus < focusMin) focusMin = focus;
+			if (focus > focusMax) focusMax = focus;
+			if (infector < infectorMin) infectorMin = infector;
+			if (infector > infectorMax) infectorMax = infector;
 		}
 
-		if (output < outputMin) outputMin = output;
-		if (output > outputMax) outputMax = output;
-		if (defense < defenseMin) defenseMin = defense;
-		if (defense > defenseMax) defenseMax = defense;
-		if (focus < focusMin) focusMin = focus;
-		if (focus > focusMax) focusMax = focus;
-		if (infector < infectorMin) infectorMin = infector;
-		if (infector > infectorMax) infectorMax = infector;
-		if (tank < tankMin) tankMin = tank;
-		if (tank > tankMax) tankMax = tank;
+		if (tank > 0.0)
+		{
+			if (!foundTank)
+			{
+				tankMin = tank;
+				tankMax = tank;
+				foundTank = true;
+			}
+			else
+			{
+				if (tank < tankMin) tankMin = tank;
+				if (tank > tankMax) tankMax = tank;
+			}
+		}
 	}
 
 	return found;
