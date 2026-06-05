@@ -356,6 +356,7 @@ public Action Timer_PrintBestRating(Handle timer)
 	{
 		CPrintToChatAll("{blue}[{green}RatingPro{blue}]{default} 本章节没有足够数据生成最佳表现。");
 		PrintAllClientRatingDetailsNoData();
+		PrintAllClientRatingDetailsToConsoleNoData();
 		return Plugin_Stop;
 	}
 
@@ -390,6 +391,7 @@ public Action Timer_PrintBestRating(Handle timer)
 	{
 		CPrintToChatAll("{blue}[{green}RatingPro{blue}]{default} 本章节没有足够数据生成最佳表现。");
 		PrintAllClientRatingDetails(outputMin, outputMax, defenseMin, defenseMax, focusMin, focusMax, infectorMin, infectorMax, tankMin, tankMax);
+		PrintAllClientRatingDetailsToConsole(outputMin, outputMax, defenseMin, defenseMax, focusMin, focusMax, infectorMin, infectorMax, tankMin, tankMax);
 		return Plugin_Stop;
 	}
 
@@ -398,6 +400,7 @@ public Action Timer_PrintBestRating(Handle timer)
 	CPrintToChatAll("{blue}[{green}RatingPro{blue}]{default} 章节最佳: {olive}%s{default} rating {green}%.1f",
 		name, bestRating);
 	PrintAllClientRatingDetails(outputMin, outputMax, defenseMin, defenseMax, focusMin, focusMax, infectorMin, infectorMax, tankMin, tankMax);
+	PrintAllClientRatingDetailsToConsole(outputMin, outputMax, defenseMin, defenseMax, focusMin, focusMax, infectorMin, infectorMax, tankMin, tankMax);
 
 	return Plugin_Stop;
 }
@@ -440,6 +443,67 @@ void PrintAllClientRatingDetails(float outputMin, float outputMax, float defense
 
 		CPrintToChat(client, "{blue}[{green}RatingPro{blue}]{default} 你的评分 {green}%.1f{default} 综合 {olive}%.1f{default} | 输出 %.1f 防守 %.1f 关键操作 %.1f 特感进攻 %.1f Tank表现 %.1f",
 			rating, raw, output, defense, focus, infector, tank);
+	}
+}
+
+void PrintAllClientRatingDetailsToConsoleNoData()
+{
+	PrintToServer("[RatingPro] No enough round data to generate RatingPro details.");
+
+	for (int client = 1; client <= MaxClients; client++)
+	{
+		if (!IsHumanClient(client))
+		{
+			continue;
+		}
+
+		char name[MAX_NAME_LENGTH];
+		GetBestClientName(client, name, sizeof(name));
+		PrintToServer("[RatingPro] #%d %s team=%d: no enough RatingPro data.", client, name, GetClientTeam(client));
+	}
+}
+
+void PrintAllClientRatingDetailsToConsole(float outputMin, float outputMax, float defenseMin, float defenseMax, float focusMin, float focusMax, float infectorMin, float infectorMax, float tankMin, float tankMax)
+{
+	PrintToServer("[RatingPro] Round player details:");
+
+	for (int client = 1; client <= MaxClients; client++)
+	{
+		if (!IsHumanClient(client))
+		{
+			continue;
+		}
+
+		char name[MAX_NAME_LENGTH];
+		GetBestClientName(client, name, sizeof(name));
+
+		if (!IsEligibleForRating(client))
+		{
+			PrintToServer("[RatingPro] #%d %s team=%d: no enough RatingPro data.", client, name, GetClientTeam(client));
+			continue;
+		}
+
+		float outputRaw = GetOutputRaw(client);
+		float defenseRaw = GetDefenseRaw(client);
+		float focusRaw = GetFocusRaw(client);
+		float infectorRaw = GetInfectorRaw(client);
+		float tankRaw = GetTankRaw(client);
+		float output = NormalizeRaw(outputRaw, outputMin, outputMax);
+		float defense = NormalizeRaw(defenseRaw, defenseMin, defenseMax);
+		float focus = NormalizeRaw(focusRaw, focusMin, focusMax);
+		float infector = NormalizeRaw(infectorRaw, infectorMin, infectorMax);
+		float tank = NormalizeTankRaw(tankRaw, tankMin, tankMax);
+		float raw = GetWeightedRaw(output, defense, focus, infector, tank);
+		float rating = raw * RATING_SLOPE + RATING_INTERCEPT;
+
+		PrintToServer("[RatingPro] #%d %s team=%d rating=%.1f raw=%.1f normalized(output=%.1f defense=%.1f focus=%.1f infector=%.1f tank=%.1f)",
+			client, name, GetClientTeam(client), rating, raw, output, defense, focus, infector, tank);
+		PrintToServer("[RatingPro] #%d %s raw(output=%.1f defense=%.1f focus=%.1f infector=%.1f tank=%.1f)",
+			client, name, outputRaw, defenseRaw, focusRaw, infectorRaw, tankRaw);
+		PrintToServer("[RatingPro] #%d %s survivor(siDmg=%d ciKill=%d tankDmg=%d dmgTaken=%d incaps=%d deaths=%d ff=%d tankupDmg=%d tankupKill=%d skeet=%d level=%d pop=%d tongueCut=%d crown=%d)",
+			client, name, g_iSiDamage[client], g_iCiKilled[client], g_iTankDamage[client], g_iDmgTaken[client], g_iIncaps[client], g_iDied[client], g_iFfGiven[client], g_iSiDamageTankup[client], g_iSiKilledTankup[client], g_iSkeets[client], g_iLevels[client], g_iPops[client], g_iTongueCuts[client], g_iCrowns[client]);
+		PrintToServer("[RatingPro] #%d %s infected(dmg=%d booms=%d deathCharges=%d tankDmgUpright=%d punch=%d rock=%d hittable=%d incap=%d death=%d)",
+			client, name, g_iInfDmgTotal[client], g_iInfBooms[client], g_iInfDeathCharges[client], g_iTankDmgUpright[client], g_iTankPunch[client], g_iTankRock[client], g_iTankHittable[client], g_iTankIncap[client], g_iTankDeath[client]);
 	}
 }
 
