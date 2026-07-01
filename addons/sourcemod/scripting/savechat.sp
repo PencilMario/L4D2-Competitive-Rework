@@ -64,6 +64,8 @@ public Plugin:myinfo =
 public OnPluginStart()
 {
 	new String:date[21]
+	char port[16];
+	port[0] = '\0';
 
 	/* Register CVars */
 	CreateConVar("sm_savechat_version", PLUGIN_VERSION, "Save Player Chat Messages Plugin", 
@@ -78,13 +80,39 @@ public OnPluginStart()
 	/* Format date for log filename */
 	FormatTime(date, sizeof(date), "%y%m%d", -1)
 
+	ConVar hostport = FindConVar("hostport");
+	if (hostport != INVALID_HANDLE)
+	{
+		hostport.GetString(port, sizeof(port));
+	}
 
-	Format(chatFile, 48, "Chat%s", date);
+	if (strlen(port) > 0)
+	{
+		Format(chatFile, 48, "%s_Chat%s", port, date);
+	}
+	else
+	{
+		Format(chatFile, 48, "Chat%s", date);
+	}
 	log = new Logger(chatFile, LoggerType_NewLogFile);
 	exp = new Logger(chatFile, LoggerType_NewLogFile);
-	Format(chatFile, 48, "Player%s", date);
+	if (strlen(port) > 0)
+	{
+		Format(chatFile, 48, "%s_Player%s", port, date);
+	}
+	else
+	{
+		Format(chatFile, 48, "Player%s", date);
+	}
 	player = new Logger(chatFile, LoggerType_NewLogFile);
-	Format(chatFile, 48, "Command%s", date);
+	if (strlen(port) > 0)
+	{
+		Format(chatFile, 48, "%s_Command%s", port, date);
+	}
+	else
+	{
+		Format(chatFile, 48, "Command%s", date);
+	}
 	exp.SetLogPrefix("exp_interface");
 	player.SetLogPrefix("Player");
 }
