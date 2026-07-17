@@ -2332,7 +2332,6 @@
 		"start_extra_dist"	"150.000000"
 		"end_dist"			"100.000000"
 		"max_distance"		"500"
-		"max_distance"		"500"
 	}
 	"l4d2_fallindeath02"
 	{
@@ -3064,6 +3063,21 @@
 		{
 			"pain_pills"	"4"
 		}
+		"witch_ban_flow"
+		{
+			"Early"
+			{
+				"min"		"0"
+				"max"		"30"
+			}
+		}
+	}
+	"dc2025_5"
+	{
+		"ItemLimits"
+		{
+			"pain_pills" "6"
+ 		}
 	}
 
 //-------- ↓↓↓ you can add custom info here ↓↓↓
