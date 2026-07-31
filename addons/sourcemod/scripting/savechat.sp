@@ -50,7 +50,7 @@ char g_FlagNames[FLAG_STRINGS][20] =
 
 static String:chatFile[128]
 new Handle:sc_record_detail = INVALID_HANDLE
-Logger log, exp, player;
+Logger log, player;
 bool g_SkipOnce;
 public Plugin:myinfo = 
 {
@@ -95,7 +95,6 @@ public OnPluginStart()
 		Format(chatFile, 48, "Chat%s", date);
 	}
 	log = new Logger(chatFile, LoggerType_NewLogFile);
-	exp = new Logger(chatFile, LoggerType_NewLogFile);
 	if (strlen(port) > 0)
 	{
 		Format(chatFile, 48, "%s_Player%s", port, date);
@@ -113,7 +112,6 @@ public OnPluginStart()
 	{
 		Format(chatFile, 48, "Command%s", date);
 	}
-	exp.SetLogPrefix("exp_interface");
 	player.SetLogPrefix("Player");
 }
 
