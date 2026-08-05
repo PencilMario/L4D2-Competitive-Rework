@@ -11,10 +11,10 @@ bool isFamilyShared[MAXPLAYERS];
 
 public void OnPluginStart(){
     CreateTimer(2.0, Timer_CheckAllPlayer);
-    enable = CreateConVar("exp_limit_enabled", "0");
-    min = CreateConVar("exp_limit_min", "75");
-    max = CreateConVar("exp_limit_max", "7355608");
-    sharedmin = CreateConVar("exp_limit_min_fs", "1350");
+    enable = CreateConVar("exp_limit_enabled", "0", "是否启用经验分限制（0：关闭，1：启用）");
+    min = CreateConVar("exp_limit_min", "75", "普通玩家进入生还者或感染者队伍所需的最低经验分");
+    max = CreateConVar("exp_limit_max", "7355608", "玩家进入生还者或感染者队伍允许的最高经验分");
+    sharedmin = CreateConVar("exp_limit_min_fs", "1350", "家庭共享玩家进入生还者或感染者队伍所需的最低经验分");
 }
 
 public Action Timer_CheckAllPlayer(Handle timer){
