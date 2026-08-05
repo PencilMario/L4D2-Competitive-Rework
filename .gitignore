@@ -26,8 +26,6 @@ $RECYCLE.BIN/
 /.vscode
 
 
-addons/sourcemod/configs/databases.cfg
-addons/sourcemod/configs/databases.cfg
 addons/sourcemod/scripting/l4d_pig_infected_notify.sp
 addons/sourcemod/logs
 .vscode
