@@ -49,6 +49,7 @@ int g_iTankFightCurrentRound = 0;  // 当前战斗轮数
 ConVar g_cvTankFightRounds;
 ConVar g_cvTankFightSurvivorScorePerTank;
 ConVar g_cvTankFightPainPillsCount;
+ConVar g_cvTankFightSurvivorHealthRestore;
 ConVar g_cvVsDefibPenalty;
 int g_iOriginalDefibPenalty = 0;  // 保存vs_defib_penalty的原始值
 float g_fLastSpecialInfectedDamageTime = 0.0;  // 记录最后一次特感伤害生还者的时间
@@ -171,6 +172,12 @@ public void OnPluginStart()
                             ...	"1 = 1 pain pills, 2 = 2 pain pills, etc.",
                                 FCVAR_SPONLY,
                                 true, 1.0, true, 10.0);
+
+    g_cvTankFightSurvivorHealthRestore = CreateConVar("l4d_tankfight_survivor_health_restore",
+                                "10",
+                                "Amount of health to restore to each survivor after a tank fight round.",
+                                FCVAR_SPONLY,
+                                true, 0.0);
 
     g_cvTankPositionReadyFooter = CreateConVar("l4d_tankfight_ready_footer",
                                 "1",
@@ -1165,10 +1172,12 @@ void GiveAmmoToAllSurvivors()
             CheatCommand("give", "ammo", i);
         }
     }
+
+    CPrintToChatAll("[{green}!{default}] 子弹已重新补充！");
 }
 
 /**
- * 恢复所有生还者10HP，但不超过最大血量
+ * 恢复所有生还者指定数量的HP，但不超过最大血量
  */
 void RestoreHealthToAllSurvivors()
 {
@@ -1178,7 +1187,7 @@ void RestoreHealthToAllSurvivors()
         {
             int iCurrentHealth = GetClientHealth(i);
             int iMaxHealth = 100; // L4D2生还者基础最大血量为100
-            int iNewHealth = iCurrentHealth + 10;
+            int iNewHealth = iCurrentHealth + g_cvTankFightSurvivorHealthRestore.IntValue;
 
             if (iNewHealth > iMaxHealth)
                 iNewHealth = iMaxHealth;
