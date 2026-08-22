@@ -1,0 +1,112 @@
+"Phrases"
+{
+    "IntroTitle"
+    {
+        "en"        "[{green}!{default}] {olive}Tank Fight Overview"
+    }
+    "IntroRule"
+    {
+        "en"        "Tank-only rounds. After the Tank dies, overtime begins. The round ends when all survivors are revived and no longer controlled!"
+    }
+    "IntroTeleport"
+    {
+        "en"        "After the game starts, survivors will be teleported to the glowing survivor model on the map."
+    }
+    "IntroRounds"
+    {
+        "#format"   "{1:d}"
+        "en"        "This match will have {olive}%d{default} Tank Fight rounds."
+    }
+    "SavedPositions"
+    {
+        "#format"   "{1:d}"
+        "en"        "[{green}!{default}] Using saved {olive}%d{default} Tank position(s)."
+    }
+    "PositionsReady"
+    {
+        "#format"   "{1:d}"
+        "en"        "[{green}!{default}] All {olive}%d{default} Tank positions have been pre-generated!"
+    }
+    "RoundEnded"
+    {
+        "#format"   "{1:d}"
+        "en"        "[{green}!{default}] Tank Fight round {olive}%d{default} ended!"
+    }
+    "NextRound"
+    {
+        "#format"   "{1:d}"
+        "en"        "[{green}!{default}] Preparing Tank Fight round {olive}%d{default}..."
+    }
+    "TankPosition"
+    {
+        "#format"   "{1:.0f}"
+        "en"        "[{green}!{default}] Tank spawn flow: {olive}%.0f%%{default}"
+    }
+    "AllRoundsEnded"
+    {
+        "#format"   "{1:d}"
+        "en"        "[{green}!{default}] All {olive}%d{default} Tank Fight rounds have ended!"
+    }
+    "ScoreSeparator"
+    {
+        "en"        "============================="
+    }
+    "SurvivorBonus"
+    {
+        "#format"   "{1:i}"
+        "en"        "[{green}★{default}] {green}Survivor bonus score: {lightgreen}+%i{default} {green}★{default}"
+    }
+    "SpecialSpawnDelay"
+    {
+        "en"        "[{green}!{default}] Special Infected will be allowed to spawn again in 7 seconds!"
+    }
+    "UnsupportedMap"
+    {
+        "en"        "[{green}!{default}] Tank Fight is not supported on this map. The map will change automatically in 20 seconds!"
+    }
+    "NoDistanceScore"
+    {
+        "en"        "[{green}!{default}] Tank Fight mode does not award distance score!"
+    }
+    "TankSpawned"
+    {
+        "#format"   "{1:d},{2:d},{3:d}"
+        "en"        "[{green}!{default}] Tank spawned. Fighting round {olive}%d{default} ({olive}%d{default}/{olive}%d{default})"
+    }
+    "AmmoRestored"
+    {
+        "en"        "[{green}!{default}] Survivor ammo has been refilled!"
+    }
+    "ScorePerTank"
+    {
+        "#format"   "{1:d}"
+        "en"        "[{green}!{default}] Survivor bonus per Tank: {olive}%d"
+    }
+    "PositionsNotReady"
+    {
+        "en"        "[{green}!{default}] Tank positions have not been pre-generated yet."
+    }
+    "PositionsHeader"
+    {
+        "en"        "[{green}!{default}] ========== Tank Fight positions this round =========="
+    }
+    "RoundCount"
+    {
+        "#format"   "{1:d},{2:d}"
+        "en"        "[{green}!{default}] Rounds: {olive}%d / %d"
+    }
+    "RoundFlow"
+    {
+        "#format"   "{1:d},{2:.2f}"
+        "en"        "[{green}!{default}] Round {olive}%d{default} - flow: {olive}%.2f%%{default}"
+    }
+    "RoundMissing"
+    {
+        "#format"   "{1:d}"
+        "en"        "[{green}!{default}] Round {olive}%d{default} - {red}position not generated{default}"
+    }
+    "TankFooter"
+    {
+        "en"        "Tank:"
+    }
+}

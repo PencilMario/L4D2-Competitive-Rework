@@ -150,6 +150,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 public void OnPluginStart()
 {
     LoadSDK();
+    LoadTranslations("l4d_tankfight.phrases");
 
 
     g_cvTankFightRounds = CreateConVar("l4d_tankfight_rounds",
@@ -208,10 +209,10 @@ public void OnPluginStart()
 public void OnRoundIsLive()
 {
     g_iTankFightCurrentRound = 0;  // 重置轮数计数器
-    CPrintToChatAll("[{green}!{default}] {olive}Tank fight 简要说明");
-    CPrintToChatAll("只有克局，克死亡后进入加时阶段。如果所有人都被扶起来且未被控回合结束！");
-    CPrintToChatAll("游戏开始后，生还者会被传送到地图上发光的生还者模型");
-    CPrintToChatAll("本场比赛将进行 {olive}%d {default}轮 Tank 战斗", g_cvTankFightRounds.IntValue);
+    CPrintToChatAll("%t", "IntroTitle");
+    CPrintToChatAll("%t", "IntroRule");
+    CPrintToChatAll("%t", "IntroTeleport");
+    CPrintToChatAll("%t", "IntroRounds", g_cvTankFightRounds.IntValue);
 
     // 预生成所有轮次的Tank位置
     CreateTimer(0.1, Timer_PreGenerateTankPositions, .flags = TIMER_FLAG_NO_MAPCHANGE);
@@ -437,7 +438,7 @@ Action Timer_PreGenerateTankPositions(Handle timer)
                     g_vTankPositionsByRound[i][0], g_vTankPositionsByRound[i][1], g_vTankPositionsByRound[i][2]);
             }
         }
-        CPrintToChatAll("[{green}!{default}] 使用已保存的 {olive}%d {default}轮 Tank 位置", validCount);
+        CPrintToChatAll("%t", "SavedPositions", validCount);
         return Plugin_Stop;
     }
 
@@ -493,7 +494,7 @@ Action Timer_PreGenerateTankPositions(Handle timer)
 
 
     g_bTankPositionsPreGenerated = true;
-    CPrintToChatAll("[{green}!{default}] 所有 {olive}%d {default}轮的 Tank 位置已预生成完毕！", numRounds);
+    CPrintToChatAll("%t", "PositionsReady", numRounds);
     SortTankPositions();
     SetTankPercent(RoundToFloor(g_fTankFlowPercentByRound[0] * 100.0));
     return Plugin_Stop;
@@ -560,7 +561,7 @@ void EndTankFightRound(){
     if (AllSurInjured()) return;
 
     g_iTankFightCurrentRound++;
-    CPrintToChatAll("[{green}!{default}] 第 {olive}%d {default}轮结束！", g_iTankFightCurrentRound);
+    CPrintToChatAll("%t", "RoundEnded", g_iTankFightCurrentRound);
 
     // 禁特感复活5秒
     ConVar spawn = FindConVar("director_no_specials");
@@ -570,7 +571,7 @@ void EndTankFightRound(){
     // 检查是否还有更多轮数
     if (g_iTankFightCurrentRound < g_cvTankFightRounds.IntValue)
     {
-        CPrintToChatAll("[{green}!{default}] 准备第 {olive}%d {default}轮 Tank 战斗...", g_iTankFightCurrentRound + 1);
+        CPrintToChatAll("%t", "NextRound", g_iTankFightCurrentRound + 1);
         TeleportAllSurvivorToPercentFlow(0.01);
         // 重置位置和数据
         g_vTankModelPos = NULL_VECTOR;
@@ -600,14 +601,14 @@ void EndTankFightRound(){
         TFData.fSurvivorPercentTarget = L4D2Direct_GetVSTankFlowPercent(InSecondHalfOfRound()) - 0.12;
         TFData.fSurvivorPercentReal = L4D2Direct_GetVSTankFlowPercent(InSecondHalfOfRound()) - 0.24;
         PrintToConsoleAll("TFData.fSurvivorPercent: %f/%f", TFData.fSurvivorPercentTarget, TFData.fSurvivorPercentReal);
-        CPrintToChatAll("[{green}!{default}] Tank生成位置：%.0f%%", L4D2Direct_GetVSTankFlowPercent(InSecondHalfOfRound()) * 100.0);
+        CPrintToChatAll("%t", "TankPosition", L4D2Direct_GetVSTankFlowPercent(InSecondHalfOfRound()) * 100.0);
         CreateTimer(5.0, Timer_DelayProcess, .flags = TIMER_FLAG_NO_MAPCHANGE);
         //CreateTimer(10.5, Timer_AccessTankWarp, false, TIMER_FLAG_NO_MAPCHANGE);
         return;
     }
 
     // 所有轮次完成，真正结束比赛
-    CPrintToChatAll("[{green}!{default}] 所有 {olive}%d {default}轮 Tank 战斗已结束！", g_iTankFightCurrentRound);
+    CPrintToChatAll("%t", "AllRoundsEnded", g_iTankFightCurrentRound);
 
     if (g_iMapTFType == TYPE_FINISH){
         healthbonus = SMPlus_GetHealthBonus();
@@ -627,8 +628,8 @@ void EndTankFightRound(){
 
 Action AnnounceResult(Handle timer)
 {
-    CPrintToChatAll("=============================");
-    CPrintToChatAll("[{green}★{default}] {green}生还者奖励分：{lightgreen}+%i{default} {green}★{default}", healthbonus + damageBonus + pillsBonus);
+    CPrintToChatAll("%t", "ScoreSeparator");
+    CPrintToChatAll("%t", "SurvivorBonus", healthbonus + damageBonus + pillsBonus);
     return Plugin_Stop;
 }
 
@@ -751,7 +752,7 @@ public Action L4D_OnFirstSurvivorLeftSafeArea(int x){
     // Disable special spawns temporarily
     ConVar spawn = FindConVar("director_no_specials");
     spawn.IntValue = 1;
-    PrintToChatAll("特感将在7S以后允许复活！");
+    CPrintToChatAll("%t", "SpecialSpawnDelay");
     CreateTimer(0.1, Timer_DelaySpawn, false, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
     return Plugin_Continue;
 }
@@ -814,7 +815,7 @@ public void OnMapEnd()
 
 Action Timer_AnounceChangeMap(Handle Timer)
 {
-    CPrintToChatAll("[{green}!{default}] Tank Fight模式不支持当前地图，在20秒后将自动换图！");
+    CPrintToChatAll("%t", "UnsupportedMap");
     CreateTimer(20.0, ChangtToNewMap, _,TIMER_FLAG_NO_MAPCHANGE);
     return Plugin_Stop;
 }
@@ -1006,7 +1007,7 @@ Action Timer_AccessTankWarp(Handle timer, bool isRetry)
 
 void FreezePoints()
 {
-    CPrintToChatAll("[{green}!{default}] Tank Fight 模式下没有路程分！");
+    CPrintToChatAll("%t", "NoDistanceScore");
     L4D_SetVersusMaxCompletionScore(0);
 }
 
@@ -1043,7 +1044,7 @@ void Event_TankSpawn(Event event, const char[] name, bool dontBroadcast)
     RemoveEntity(g_iTankGlowModel);
     g_iTankGlowModel = INVALID_ENT_REFERENCE;
 
-    CPrintToChatAll("[{green}!{default}] Tank 已生成，进行第 {olive}%d {default}轮战斗 ({olive}%d{default}/{olive}%d{default})",
+    CPrintToChatAll("%t", "TankSpawned",
                        currentRound + 1, currentRound + 1, g_cvTankFightRounds.IntValue);
 
 
@@ -1173,7 +1174,7 @@ void GiveAmmoToAllSurvivors()
         }
     }
 
-    CPrintToChatAll("[{green}!{default}] 子弹已重新补充！");
+    CPrintToChatAll("%t", "AmmoRestored");
 }
 
 /**
@@ -1396,7 +1397,7 @@ public Action Command_ShowTankScore(int client, int args)
 {
     int scorePerTank = g_cvTankFightSurvivorScorePerTank.IntValue;
 
-    CPrintToChat(client, "[{green}!{default}] 每只Tank奖励分: {olive}%d", scorePerTank);
+    CPrintToChat(client, "%t", "ScorePerTank", scorePerTank);
 
     return Plugin_Continue;
 }
@@ -1409,25 +1410,24 @@ public Action Command_ShowTankPositions(int client, int args)
 {
     if (!g_bTankPositionsPreGenerated)
     {
-        CPrintToChat(client, "[{green}!{default}] Tank 位置尚未预生成");
+        CPrintToChat(client, "%t", "PositionsNotReady");
         return Plugin_Handled;
     }
 
     int numRounds = g_cvTankFightRounds.IntValue;
-    CPrintToChat(client, "[{green}!{default}] ========== 本局 Tank 位置信息 ==========");
-    CPrintToChat(client, "[{green}!{default}] 轮数: {olive}%d / %d", g_iTankFightCurrentRound+1, numRounds);
+    CPrintToChat(client, "%t", "PositionsHeader");
+    CPrintToChat(client, "%t", "RoundCount", g_iTankFightCurrentRound+1, numRounds);
 
     for (int i = 0; i < numRounds; i++)
     {
         if (g_bTankPositionSavedByRound[i])
         {
             float flowPercent = g_fTankFlowPercentByRound[i] * 100.0;
-            CPrintToChat(client, "[{green}!{default}] 第 {olive}%d {default}轮 - 流程: {olive}%.2f%% {default}",
-                        i + 1, flowPercent);
+            CPrintToChat(client, "%t", "RoundFlow", i + 1, flowPercent);
         }
         else
         {
-            CPrintToChat(client, "[{green}!{default}] 第 {olive}%d {default}轮 - {red}位置未生成{default}", i + 1);
+            CPrintToChat(client, "%t", "RoundMissing", i + 1);
         }
     }
 
@@ -1497,7 +1497,8 @@ bool GetTankPositionString(char[] msg, int maxlength)
         return false;
     }
 
-    strcopy(msg, maxlength, "Tank:");
+    SetGlobalTransTarget(LANG_SERVER);
+    FormatEx(msg, maxlength, "%t", "TankFooter");
 
     // 添加所有有效的百分比
     for (int i = 0; i < numRounds; i++)

@@ -1,0 +1,112 @@
+"Phrases"
+{
+    "IntroTitle"
+    {
+        "chi"        "[{green}!{default}] {olive}Tank Fight 简要说明"
+    }
+    "IntroRule"
+    {
+        "chi"        "只有 Tank 回合。Tank 死亡后进入加时阶段；当所有生还者都被扶起且没有受到控制时，本回合结束！"
+    }
+    "IntroTeleport"
+    {
+        "chi"        "游戏开始后，生还者将被传送到地图上发光的生还者模型处。"
+    }
+    "IntroRounds"
+    {
+        "#format"   "{1:d}"
+        "chi"        "本场比赛将进行 {olive}%d{default} 轮 Tank 战斗。"
+    }
+    "SavedPositions"
+    {
+        "#format"   "{1:d}"
+        "chi"        "[{green}!{default}] 使用已保存的 {olive}%d{default} 轮 Tank 位置。"
+    }
+    "PositionsReady"
+    {
+        "#format"   "{1:d}"
+        "chi"        "[{green}!{default}] 所有 {olive}%d{default} 轮 Tank 位置已预生成完毕！"
+    }
+    "RoundEnded"
+    {
+        "#format"   "{1:d}"
+        "chi"        "[{green}!{default}] 第 {olive}%d{default} 轮 Tank 战斗结束！"
+    }
+    "NextRound"
+    {
+        "#format"   "{1:d}"
+        "chi"        "[{green}!{default}] 准备第 {olive}%d{default} 轮 Tank 战斗……"
+    }
+    "TankPosition"
+    {
+        "#format"   "{1:.0f}"
+        "chi"        "[{green}!{default}] Tank 生成位置：{olive}%.0f%%{default}"
+    }
+    "AllRoundsEnded"
+    {
+        "#format"   "{1:d}"
+        "chi"        "[{green}!{default}] 所有 {olive}%d{default} 轮 Tank 战斗已结束！"
+    }
+    "ScoreSeparator"
+    {
+        "chi"        "============================="
+    }
+    "SurvivorBonus"
+    {
+        "#format"   "{1:i}"
+        "chi"        "[{green}★{default}] {green}生还者奖励分：{lightgreen}+%i{default} {green}★{default}"
+    }
+    "SpecialSpawnDelay"
+    {
+        "chi"        "[{green}!{default}] 特感将在 7 秒后允许复活！"
+    }
+    "UnsupportedMap"
+    {
+        "chi"        "[{green}!{default}] Tank Fight 模式不支持当前地图，地图将在 20 秒后自动切换！"
+    }
+    "NoDistanceScore"
+    {
+        "chi"        "[{green}!{default}] Tank Fight 模式下不计算路程分！"
+    }
+    "TankSpawned"
+    {
+        "#format"   "{1:d},{2:d},{3:d}"
+        "chi"        "[{green}!{default}] Tank 已生成，进行第 {olive}%d{default} 轮战斗（{olive}%d{default}/{olive}%d{default}）"
+    }
+    "AmmoRestored"
+    {
+        "chi"        "[{green}!{default}] 生还者弹药已重新补充！"
+    }
+    "ScorePerTank"
+    {
+        "#format"   "{1:d}"
+        "chi"        "[{green}!{default}] 每只 Tank 奖励分：{olive}%d"
+    }
+    "PositionsNotReady"
+    {
+        "chi"        "[{green}!{default}] Tank 位置尚未预生成。"
+    }
+    "PositionsHeader"
+    {
+        "chi"        "[{green}!{default}] ========== 本局 Tank 位置信息 =========="
+    }
+    "RoundCount"
+    {
+        "#format"   "{1:d},{2:d}"
+        "chi"        "[{green}!{default}] 轮数：{olive}%d / %d"
+    }
+    "RoundFlow"
+    {
+        "#format"   "{1:d},{2:.2f}"
+        "chi"        "[{green}!{default}] 第 {olive}%d{default} 轮 - 流程：{olive}%.2f%%{default}"
+    }
+    "RoundMissing"
+    {
+        "#format"   "{1:d}"
+        "chi"        "[{green}!{default}] 第 {olive}%d{default} 轮 - {red}位置未生成{default}"
+    }
+    "TankFooter"
+    {
+        "chi"        "Tank："
+    }
+}
