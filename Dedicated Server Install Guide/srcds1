@@ -7,7 +7,7 @@ SRCDS_USER="steam"
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
 
 # The path to the game, only change this if you have a different installation path than in the guide.
-DIR=/home/steam/Steam/steamapps/common/l4d2
+DIR=/home/$SRCDS_USER/Steam/steamapps/common/l4d2
 DAEMON="$DIR/srcds_run"
 
 # Change all Parameters to your needs.
@@ -34,9 +34,10 @@ DAEMON="$DIR/srcds_run"
 
 # The current settings will start the Server on 100 Tick on Dead Center 1.
 SVNUM=1
-PORT=53333
+IP=1.3.3.7
+PORT=27015
 NAME=L4D2_Server$SVNUM
-PARAMS="-game left4dead2 -sv_lan 0 -ip 0.0.0.0 -port $PORT +sv_clockcorrection_msecs 25 -timeout 10 -tickrate 100 +map c2m1_highway versus -maxplayers 32 +sv_setmax 32 +servercfgfile server1.cfg"
+PARAMS="-game left4dead2 -ip $IP -port $PORT +sv_clockcorrection_msecs 20 -timeout 10 -tickrate 100 +map c1m1_hotel -maxplayers 32 +servercfgfile server$SVNUM.cfg"
 DESC="L4D2 Dedicated Server #$SVNUM on port $PORT"
 
 
