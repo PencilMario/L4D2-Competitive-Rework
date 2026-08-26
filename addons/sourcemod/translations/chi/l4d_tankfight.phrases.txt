@@ -15,37 +15,37 @@
     "IntroRounds"
     {
         "#format"   "{1:d}"
-        "chi"        "本场比赛将进行 {olive}%d{default} 轮 Tank 战斗。"
+        "chi"        "本场比赛将进行 {olive}{1}{default} 轮 Tank 战斗。"
     }
     "SavedPositions"
     {
         "#format"   "{1:d}"
-        "chi"        "[{green}!{default}] 使用已保存的 {olive}%d{default} 轮 Tank 位置。"
+        "chi"        "[{green}!{default}] 使用已保存的 {olive}{1}{default} 轮 Tank 位置。"
     }
     "PositionsReady"
     {
         "#format"   "{1:d}"
-        "chi"        "[{green}!{default}] 所有 {olive}%d{default} 轮 Tank 位置已预生成完毕！"
+        "chi"        "[{green}!{default}] 所有 {olive}{1}{default} 轮 Tank 位置已预生成完毕！"
     }
     "RoundEnded"
     {
         "#format"   "{1:d}"
-        "chi"        "[{green}!{default}] 第 {olive}%d{default} 轮 Tank 战斗结束！"
+        "chi"        "[{green}!{default}] 第 {olive}{1}{default} 轮 Tank 战斗结束！"
     }
     "NextRound"
     {
         "#format"   "{1:d}"
-        "chi"        "[{green}!{default}] 准备第 {olive}%d{default} 轮 Tank 战斗……"
+        "chi"        "[{green}!{default}] 准备第 {olive}{1}{default} 轮 Tank 战斗……"
     }
     "TankPosition"
     {
         "#format"   "{1:.0f}"
-        "chi"        "[{green}!{default}] Tank 生成位置：{olive}%.0f%%{default}"
+        "chi"        "[{green}!{default}] Tank 生成位置：{olive}{1}%{default}"
     }
     "AllRoundsEnded"
     {
         "#format"   "{1:d}"
-        "chi"        "[{green}!{default}] 所有 {olive}%d{default} 轮 Tank 战斗已结束！"
+        "chi"        "[{green}!{default}] 所有 {olive}{1}{default} 轮 Tank 战斗已结束！"
     }
     "ScoreSeparator"
     {
@@ -54,7 +54,7 @@
     "SurvivorBonus"
     {
         "#format"   "{1:i}"
-        "chi"        "[{green}★{default}] {green}生还者奖励分：{lightgreen}+%i{default} {green}★{default}"
+        "chi"        "[{green}★{default}] {green}生还者奖励分：{lightgreen}+{1}{default} {green}★{default}"
     }
     "SpecialSpawnDelay"
     {
@@ -71,7 +71,7 @@
     "TankSpawned"
     {
         "#format"   "{1:d},{2:d},{3:d}"
-        "chi"        "[{green}!{default}] Tank 已生成，进行第 {olive}%d{default} 轮战斗（{olive}%d{default}/{olive}%d{default}）"
+        "chi"        "[{green}!{default}] Tank 已生成，进行第 {olive}{1}{default} 轮战斗（{olive}{2}{default}/{olive}{3}{default}）"
     }
     "AmmoRestored"
     {
@@ -80,7 +80,7 @@
     "ScorePerTank"
     {
         "#format"   "{1:d}"
-        "chi"        "[{green}!{default}] 每只 Tank 奖励分：{olive}%d"
+        "chi"        "[{green}!{default}] 每只 Tank 奖励分：{olive}{1}"
     }
     "PositionsNotReady"
     {
@@ -93,17 +93,17 @@
     "RoundCount"
     {
         "#format"   "{1:d},{2:d}"
-        "chi"        "[{green}!{default}] 轮数：{olive}%d / %d"
+        "chi"        "[{green}!{default}] 轮数：{olive}{1} / {2}"
     }
     "RoundFlow"
     {
         "#format"   "{1:d},{2:.2f}"
-        "chi"        "[{green}!{default}] 第 {olive}%d{default} 轮 - 流程：{olive}%.2f%%{default}"
+        "chi"        "[{green}!{default}] 第 {olive}{1}{default} 轮 - 流程：{olive}{2}%{default}"
     }
     "RoundMissing"
     {
         "#format"   "{1:d}"
-        "chi"        "[{green}!{default}] 第 {olive}%d{default} 轮 - {red}位置未生成{default}"
+        "chi"        "[{green}!{default}] 第 {olive}{1}{default} 轮 - {red}位置未生成{default}"
     }
     "TankFooter"
     {

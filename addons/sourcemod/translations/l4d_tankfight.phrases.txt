@@ -15,37 +15,37 @@
     "IntroRounds"
     {
         "#format"   "{1:d}"
-        "en"        "This match will have {olive}%d{default} Tank Fight rounds."
+        "en"        "This match will have {olive}{1}{default} Tank Fight rounds."
     }
     "SavedPositions"
     {
         "#format"   "{1:d}"
-        "en"        "[{green}!{default}] Using saved {olive}%d{default} Tank position(s)."
+        "en"        "[{green}!{default}] Using saved {olive}{1}{default} Tank position(s)."
     }
     "PositionsReady"
     {
         "#format"   "{1:d}"
-        "en"        "[{green}!{default}] All {olive}%d{default} Tank positions have been pre-generated!"
+        "en"        "[{green}!{default}] All {olive}{1}{default} Tank positions have been pre-generated!"
     }
     "RoundEnded"
     {
         "#format"   "{1:d}"
-        "en"        "[{green}!{default}] Tank Fight round {olive}%d{default} ended!"
+        "en"        "[{green}!{default}] Tank Fight round {olive}{1}{default} ended!"
     }
     "NextRound"
     {
         "#format"   "{1:d}"
-        "en"        "[{green}!{default}] Preparing Tank Fight round {olive}%d{default}..."
+        "en"        "[{green}!{default}] Preparing Tank Fight round {olive}{1}{default}..."
     }
     "TankPosition"
     {
         "#format"   "{1:.0f}"
-        "en"        "[{green}!{default}] Tank spawn flow: {olive}%.0f%%{default}"
+        "en"        "[{green}!{default}] Tank spawn flow: {olive}{1}%{default}"
     }
     "AllRoundsEnded"
     {
         "#format"   "{1:d}"
-        "en"        "[{green}!{default}] All {olive}%d{default} Tank Fight rounds have ended!"
+        "en"        "[{green}!{default}] All {olive}{1}{default} Tank Fight rounds have ended!"
     }
     "ScoreSeparator"
     {
@@ -54,7 +54,7 @@
     "SurvivorBonus"
     {
         "#format"   "{1:i}"
-        "en"        "[{green}★{default}] {green}Survivor bonus score: {lightgreen}+%i{default} {green}★{default}"
+        "en"        "[{green}★{default}] {green}Survivor bonus score: {lightgreen}+{1}{default} {green}★{default}"
     }
     "SpecialSpawnDelay"
     {
@@ -71,7 +71,7 @@
     "TankSpawned"
     {
         "#format"   "{1:d},{2:d},{3:d}"
-        "en"        "[{green}!{default}] Tank spawned. Fighting round {olive}%d{default} ({olive}%d{default}/{olive}%d{default})"
+        "en"        "[{green}!{default}] Tank spawned. Fighting round {olive}{1}{default} ({olive}{2}{default}/{olive}{3}{default})"
     }
     "AmmoRestored"
     {
@@ -80,7 +80,7 @@
     "ScorePerTank"
     {
         "#format"   "{1:d}"
-        "en"        "[{green}!{default}] Survivor bonus per Tank: {olive}%d"
+        "en"        "[{green}!{default}] Survivor bonus per Tank: {olive}{1}"
     }
     "PositionsNotReady"
     {
@@ -93,17 +93,17 @@
     "RoundCount"
     {
         "#format"   "{1:d},{2:d}"
-        "en"        "[{green}!{default}] Rounds: {olive}%d / %d"
+        "en"        "[{green}!{default}] Rounds: {olive}{1} / {2}"
     }
     "RoundFlow"
     {
         "#format"   "{1:d},{2:.2f}"
-        "en"        "[{green}!{default}] Round {olive}%d{default} - flow: {olive}%.2f%%{default}"
+        "en"        "[{green}!{default}] Round {olive}{1}{default} - flow: {olive}{2}%{default}"
     }
     "RoundMissing"
     {
         "#format"   "{1:d}"
-        "en"        "[{green}!{default}] Round {olive}%d{default} - {red}position not generated{default}"
+        "en"        "[{green}!{default}] Round {olive}{1}{default} - {red}position not generated{default}"
     }
     "TankFooter"
     {

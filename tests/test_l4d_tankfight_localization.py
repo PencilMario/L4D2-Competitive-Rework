@@ -86,6 +86,17 @@ def format_tokens(value: str) -> list[str]:
     return re.findall(r"(?<!%)%(?:\.[0-9]+)?[dif]", value)
 
 
+def declared_format_indices(block: str) -> list[str]:
+    match = re.search(r'^\s*"#format"\s+"([^"]+)"\s*$', block, re.MULTILINE)
+    if not match:
+        return []
+    return re.findall(r"\{([1-9][0-9]*):[^}]+\}", match.group(1))
+
+
+def positional_tokens(value: str) -> list[str]:
+    return re.findall(r"(?<!%)\{([1-9][0-9]*)(?::[^}]*)?\}", value)
+
+
 class TankFightLocalizationContractTests(unittest.TestCase):
     def test_english_and_chinese_catalogs_have_the_same_complete_key_set(self):
         english = parse_phrase_blocks(read_required(ENGLISH_PATH))
@@ -102,6 +113,22 @@ class TankFightLocalizationContractTests(unittest.TestCase):
                 format_tokens(chinese_value),
                 key,
             )
+
+    def test_phrase_values_use_source_mod_positional_tokens(self):
+        for path, language in ((ENGLISH_PATH, "en"), (CHINESE_PATH, "chi")):
+            phrases = parse_phrase_blocks(read_required(path))
+            for key, block in phrases.items():
+                value = language_value(block, language)
+                self.assertEqual(
+                    format_tokens(value),
+                    [],
+                    f"{path} {key} still uses printf-style placeholders",
+                )
+                self.assertEqual(
+                    positional_tokens(value),
+                    declared_format_indices(block),
+                    f"{path} {key} has mismatched positional placeholders",
+                )
 
     def test_plugin_loads_and_references_every_phrase_key(self):
         source = PLUGIN_PATH.read_text(encoding="utf-8-sig")
