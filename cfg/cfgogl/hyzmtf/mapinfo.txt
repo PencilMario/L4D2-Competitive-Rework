@@ -217,7 +217,7 @@
 			"Before ferry (bugged spawn)"
 			{
 				"min"		"45"
-				"max"		"62"
+				"max"		"100"
 			}
 		}
 	}
