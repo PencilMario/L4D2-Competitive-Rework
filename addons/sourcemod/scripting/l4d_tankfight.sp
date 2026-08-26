@@ -1397,7 +1397,7 @@ public Action Command_ShowTankScore(int client, int args)
 {
     int scorePerTank = g_cvTankFightSurvivorScorePerTank.IntValue;
 
-    CPrintToChat(client, "%t", "ScorePerTank", scorePerTank);
+    CPrintToChat(client, "%T", "ScorePerTank", client, scorePerTank);
 
     return Plugin_Continue;
 }
@@ -1410,24 +1410,24 @@ public Action Command_ShowTankPositions(int client, int args)
 {
     if (!g_bTankPositionsPreGenerated)
     {
-        CPrintToChat(client, "%t", "PositionsNotReady");
+        CPrintToChat(client, "%T", "PositionsNotReady", client);
         return Plugin_Handled;
     }
 
     int numRounds = g_cvTankFightRounds.IntValue;
-    CPrintToChat(client, "%t", "PositionsHeader");
-    CPrintToChat(client, "%t", "RoundCount", g_iTankFightCurrentRound+1, numRounds);
+    CPrintToChat(client, "%T", "PositionsHeader", client);
+    CPrintToChat(client, "%T", "RoundCount", client, g_iTankFightCurrentRound+1, numRounds);
 
     for (int i = 0; i < numRounds; i++)
     {
         if (g_bTankPositionSavedByRound[i])
         {
             float flowPercent = g_fTankFlowPercentByRound[i] * 100.0;
-            CPrintToChat(client, "%t", "RoundFlow", i + 1, flowPercent);
+            CPrintToChat(client, "%T", "RoundFlow", client, i + 1, flowPercent);
         }
         else
         {
-            CPrintToChat(client, "%t", "RoundMissing", i + 1);
+            CPrintToChat(client, "%T", "RoundMissing", client, i + 1);
         }
     }
 

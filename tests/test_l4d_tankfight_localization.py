@@ -135,7 +135,21 @@ class TankFightLocalizationContractTests(unittest.TestCase):
 
         self.assertIn('LoadTranslations("l4d_tankfight.phrases")', source)
         for key in EXPECTED_KEYS:
-            self.assertRegex(source, rf'"%t"\s*,\s*"{re.escape(key)}"')
+            self.assertRegex(source, rf'"%[tT]"\s*,\s*"{re.escape(key)}"')
+
+    def test_client_chat_translations_pass_the_client_as_translation_target(self):
+        source = PLUGIN_PATH.read_text(encoding="utf-8-sig")
+        expected_calls = {
+            "ScorePerTank": r'CPrintToChat\(client, "%T", "ScorePerTank", client, scorePerTank\)',
+            "PositionsNotReady": r'CPrintToChat\(client, "%T", "PositionsNotReady", client\)',
+            "PositionsHeader": r'CPrintToChat\(client, "%T", "PositionsHeader", client\)',
+            "RoundCount": r'CPrintToChat\(client, "%T", "RoundCount", client, g_iTankFightCurrentRound\+1, numRounds\)',
+            "RoundFlow": r'CPrintToChat\(client, "%T", "RoundFlow", client, i \+ 1, flowPercent\)',
+            "RoundMissing": r'CPrintToChat\(client, "%T", "RoundMissing", client, i \+ 1\)',
+        }
+
+        for key, pattern in expected_calls.items():
+            self.assertRegex(source, pattern, key)
 
     def test_player_visible_chat_calls_do_not_keep_literal_messages(self):
         source = PLUGIN_PATH.read_text(encoding="utf-8-sig")
@@ -144,9 +158,9 @@ class TankFightLocalizationContractTests(unittest.TestCase):
             if line.lstrip().startswith("//"):
                 continue
             if re.search(r"\b(?:CPrintToChat|PrintToChat)(?:All)?\s*\(", line):
-                self.assertIn(
-                    '"%t"',
+                self.assertRegex(
                     line,
+                    r'"%[tT]"',
                     f"line {line_number} still has a literal chat message: {line.strip()}",
                 )
 
