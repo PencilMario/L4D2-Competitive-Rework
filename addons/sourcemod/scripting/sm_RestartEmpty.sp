@@ -88,7 +88,7 @@ public void OnPluginStart()
 	( g_ConVarDeltaUTC 				= CreateConVar("sm_restart_empty_utc_delta", 				"0.0", 	"If your server has incorrect time, you can set UTC correction hours here (they will be appended to a server time)", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
 	( g_ConVarStartRandomMap 		= CreateConVar("sm_restart_empty_server_start_changemap", 	"0", 	"When server restarted, change map to the random one from the file: data/restart_empty_maps.txt (1 - Yes / 0 - No)", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
 	( g_ConVarCheckPlugins 			= CreateConVar("sm_restart_empty_check_plugins", 			"1", 	"Check loaded plugins count every 30 minutes and restart if less than min plugins (1 - On / 0 - Off)", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
-	( g_ConVarMinPlugins 			= CreateConVar("sm_restart_empty_min_plugins", 				"80", 	"Minimum number of loaded plugins required, restart if less (default: 5)", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
+	( g_ConVarMinPlugins 			= CreateConVar("sm_restart_empty_min_plugins", 				"100", 	"Minimum number of loaded plugins required, restart if less (default: 5)", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
 	( g_ConVarCheckInterval 		= CreateConVar("sm_restart_empty_check_interval", 			"600", "Check interval in seconds for plugin count check (default: 1800 = 30 minutes)", CVAR_FLAGS)).AddChangeHook(OnCvarChanged);
 
 	AutoExecConfig(true, "sm_restart_empty");
