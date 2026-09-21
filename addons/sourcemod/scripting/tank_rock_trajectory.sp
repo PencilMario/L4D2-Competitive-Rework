@@ -12,6 +12,9 @@ Handle g_PostReleaseTimer[MAXPLAYERS+1];
 float g_ReleasePos[MAXPLAYERS+1][3];
 float g_ReleaseVel[MAXPLAYERS+1][3];
 float g_RockGravityScale[MAXPLAYERS+1];
+float g_SimYaw[MAXPLAYERS+1];
+float g_SimLastTime[MAXPLAYERS+1];
+bool g_SimYawInitialized[MAXPLAYERS+1];
 ConVar g_cvEnabled;
 ConVar g_cvPostReleaseDuration;
 ConVar g_cvUseRockPosition;
@@ -20,6 +23,7 @@ ConVar g_cvMaxPredictTime;
 ConVar g_cvHitIndicator;
 ConVar g_cvVisibleTeam;
 ConVar g_cvOtherPlayerInterval;
+ConVar g_cvFeetMaxYawRate;
 
 bool g_bWillHit[MAXPLAYERS+1];
 int g_iFrameCount[MAXPLAYERS+1];
@@ -51,6 +55,7 @@ public void OnPluginStart() {
     g_cvHitIndicator = CreateConVar("rock_trajectory_hit_indicator", "1", "Show hit indicator when trajectory will hit survivor. 0=Off, 1=On", FCVAR_NOTIFY, true, 0.0, true, 1.0);
     g_cvVisibleTeam = CreateConVar("rock_trajectory_visible_team", "7", "Which teams can see trajectory (bitflags). 1=Spectators, 2=Survivors, 4=Infected. Add values for multiple teams (7=All)", FCVAR_NOTIFY, true, 0.0, true, 7.0);
     g_cvOtherPlayerInterval = CreateConVar("rock_trajectory_other_interval", "3", "Send to non-tank players every N frames. 1=Every frame, 3=Every 3rd frame", FCVAR_NOTIFY, true, 1.0, true, 10.0);
+    g_cvFeetMaxYawRate = FindConVar("mp_feetmaxyawrate");
     HookEvent("ability_use", Event_AbilityUse);
 }
 
@@ -80,6 +85,12 @@ void Frame_GetRockTank(int ref) {
         float gravScale = GetEntPropFloat(rock, Prop_Data, "m_flGravity");
         g_RockGravityScale[tank] = (gravScale > 0.0) ? gravScale : 1.0;
 
+        float tankAngles[3];
+        GetEntPropVector(tank, Prop_Data, "m_angRotation", tankAngles);
+        g_SimYaw[tank] = NormalizeYaw(tankAngles[1]);
+        g_SimLastTime[tank] = GetGameTime();
+        g_SimYawInitialized[tank] = true;
+
         delete g_PredictTimer[tank];
         float interval = g_cvDrawInterval.FloatValue;
         g_PredictTimer[tank] = CreateTimer(interval, Timer_PredictTrajectory, GetClientUserId(tank), TIMER_REPEAT);
@@ -88,6 +99,7 @@ void Frame_GetRockTank(int ref) {
 
 public Action L4D_TankRock_OnRelease(int tank, int rock, float vecPos[3], float vecAng[3], float vecVel[3], float vecRot[3]) {
     delete g_PredictTimer[tank];
+    g_SimYawInitialized[tank] = false;
 
     float duration = g_cvPostReleaseDuration.FloatValue;
     if (duration > 0.0 && tank > 0 && tank <= MaxClients) {
@@ -111,14 +123,47 @@ public Action L4D_TankRock_OnRelease(int tank, int rock, float vecPos[3], float 
 public void Event_AbilityUse(Event event, const char[] name, bool dontBroadcast) {
 }
 
+float NormalizeYaw(float yaw) {
+    while (yaw > 180.0) yaw -= 360.0;
+    while (yaw < -180.0) yaw += 360.0;
+    return yaw;
+}
+
 Action Timer_PredictTrajectory(Handle timer, int userid) {
     int client = GetClientOfUserId(userid);
     if (client <= 0 || !IsClientInGame(client)) {
-        g_PredictTimer[client] = null;
+        if (client > 0 && client <= MaxClients) {
+            g_PredictTimer[client] = null;
+            g_SimYawInitialized[client] = false;
+        }
         return Plugin_Stop;
     }
 
     float startPos[3], startAng[3], eyeAng[3], velocity[3];
+    GetClientEyeAngles(client, eyeAng);
+
+    // The world model follows the view yaw at mp_feetmaxyawrate degrees/second.
+    if (!g_SimYawInitialized[client]) {
+        float tankAngles[3];
+        GetEntPropVector(client, Prop_Data, "m_angRotation", tankAngles);
+        g_SimYaw[client] = NormalizeYaw(tankAngles[1]);
+        g_SimLastTime[client] = GetGameTime();
+        g_SimYawInitialized[client] = true;
+    }
+
+    float now = GetGameTime();
+    float dt = now - g_SimLastTime[client];
+    if (dt < 0.0) dt = 0.0;
+    g_SimLastTime[client] = now;
+
+    float turnRate = (g_cvFeetMaxYawRate != null) ? g_cvFeetMaxYawRate.FloatValue : 100.0;
+    float yawDelta = NormalizeYaw(eyeAng[1] - g_SimYaw[client]);
+    float maxStep = turnRate * dt;
+    if (FloatAbs(yawDelta) <= maxStep) {
+        g_SimYaw[client] = NormalizeYaw(eyeAng[1]);
+    } else if (maxStep > 0.0) {
+        g_SimYaw[client] = NormalizeYaw(g_SimYaw[client] + (yawDelta > 0.0 ? maxStep : -maxStep));
+    }
 
     if (g_cvUseRockPosition.BoolValue) {
         if (!GetAttachmentVectors(client, "debris", startPos, startAng)) {
@@ -143,17 +188,15 @@ Action Timer_PredictTrajectory(Handle timer, int userid) {
         }
 
         // Convert local offset to world space
-        float tankPos[3], tankAngles[3];
+        float tankPos[3];
         GetClientAbsOrigin(client, tankPos);
-        GetEntPropVector(client, Prop_Data, "m_angRotation", tankAngles);
 
-        float yaw = tankAngles[1] * 0.017453293;
+        float yaw = DegToRad(g_SimYaw[client]);
         startPos[0] = tankPos[0] + localOffset[0] * Cosine(yaw) - localOffset[1] * Sine(yaw);
         startPos[1] = tankPos[1] + localOffset[0] * Sine(yaw) + localOffset[1] * Cosine(yaw);
         startPos[2] = tankPos[2] + localOffset[2];
     }
 
-    GetClientEyeAngles(client, eyeAng);
     GetThrowVelocity(eyeAng, velocity);
     DrawParabola(startPos, velocity, g_RockGravityScale[client], client);
 
