@@ -97,9 +97,9 @@ public Action L4D_TankRock_OnRelease(int tank, int rock, float vecPos[3], float 
             GetClientAbsOrigin(tank, g_ReleasePos[tank]);
             g_ReleasePos[tank][2] += 50.0;
         }
-        float throwAng[3];
-        GetTankThrowAngles(tank, throwAng);
-        GetThrowVelocity(throwAng, g_ReleaseVel[tank]);
+        float eyeAng[3];
+        GetClientEyeAngles(tank, eyeAng);
+        GetThrowVelocity(eyeAng, g_ReleaseVel[tank]);
 
         delete g_PostReleaseTimer[tank];
         DrawParabolaLongLife(g_ReleasePos[tank], g_ReleaseVel[tank], g_RockGravityScale[tank], tank, duration);
@@ -118,8 +118,7 @@ Action Timer_PredictTrajectory(Handle timer, int userid) {
         return Plugin_Stop;
     }
 
-    float startPos[3], startAng[3], throwAng[3], velocity[3];
-    GetTankThrowAngles(client, throwAng);
+    float startPos[3], startAng[3], eyeAng[3], velocity[3];
 
     if (g_cvUseRockPosition.BoolValue) {
         if (!GetAttachmentVectors(client, "debris", startPos, startAng)) {
@@ -146,7 +145,7 @@ Action Timer_PredictTrajectory(Handle timer, int userid) {
         // Convert local offset to world space
         float tankPos[3], tankAngles[3];
         GetClientAbsOrigin(client, tankPos);
-        tankAngles = throwAng;
+        GetEntPropVector(client, Prop_Data, "m_angRotation", tankAngles);
 
         float yaw = tankAngles[1] * 0.017453293;
         startPos[0] = tankPos[0] + localOffset[0] * Cosine(yaw) - localOffset[1] * Sine(yaw);
@@ -154,7 +153,8 @@ Action Timer_PredictTrajectory(Handle timer, int userid) {
         startPos[2] = tankPos[2] + localOffset[2];
     }
 
-    GetThrowVelocity(throwAng, velocity);
+    GetClientEyeAngles(client, eyeAng);
+    GetThrowVelocity(eyeAng, velocity);
     DrawParabola(startPos, velocity, g_RockGravityScale[client], client);
 
     // Draw start point marker when using fixed offset
@@ -165,8 +165,8 @@ Action Timer_PredictTrajectory(Handle timer, int userid) {
         float corners[4][3];
 
         // Get view direction
-        float pitch = DegToRad(throwAng[0]);
-        float yaw = DegToRad(throwAng[1]);
+        float pitch = DegToRad(eyeAng[0]);
+        float yaw = DegToRad(eyeAng[1]);
 
         // Right vector (perpendicular to view)
         float right[3];
@@ -290,34 +290,6 @@ void GetThrowVelocity(float angles[3], float velocity[3]) {
     velocity[0] = Cosine(pitch) * Cosine(yaw) * speed;
     velocity[1] = Cosine(pitch) * Sine(yaw) * speed;
     velocity[2] = -Sine(pitch) * speed;
-}
-
-// Returns the direction used by the world model for a Tank throw. The
-// vertical aim still follows the camera, while horizontal aim follows the
-// body's body_yaw pose parameter instead of the camera yaw.
-bool GetTankThrowAngles(int tank, float angles[3]) {
-    if (tank <= 0 || tank > MaxClients || !IsClientInGame(tank)) {
-        return false;
-    }
-
-    float eyeAngles[3];
-    GetClientEyeAngles(tank, eyeAngles);
-
-    // L4D2 player models expose body_yaw as pose parameter 1, normalized
-    // from 0..1 over the model range -90..90 degrees.
-    float bodyYawPose = GetEntPropFloat(tank, Prop_Send, "m_flPoseParameter", 1);
-    float bodyYawOffset = (bodyYawPose * 180.0) - 90.0;
-
-    angles[0] = eyeAngles[0];
-    angles[1] = NormalizeYaw(eyeAngles[1] - bodyYawOffset);
-    angles[2] = eyeAngles[2];
-    return true;
-}
-
-float NormalizeYaw(float yaw) {
-    while (yaw > 180.0) yaw -= 360.0;
-    while (yaw < -180.0) yaw += 360.0;
-    return yaw;
 }
 
 void DrawParabola(float startPos[3], float vel[3], float gravScale = 1.0, int tank = 0) {
