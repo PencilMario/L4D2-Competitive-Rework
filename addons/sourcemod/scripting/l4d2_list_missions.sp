@@ -63,6 +63,7 @@ public void OnPluginStart()
 	loc = new Localizer(LC_INSTALL_MODE_FULLCACHE); 
 	
 	RegConsoleCmd("sm_map_list", CMD_Maps, "更换三方图");
+	RegConsoleCmd("sm_maps", CMD_Maps, "更换三方图");
 	RegAdminCmd("sm_map_list_update", CMD_MLU, ADMFLAG_UNBAN, "");
 	RegConsoleCmd("sm_votedlc", CMD_VoteDlc, "", 0);
 	
