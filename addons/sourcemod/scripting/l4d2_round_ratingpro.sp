@@ -15,6 +15,7 @@
 
 #define RATING_EXPONENT 0.75
 #define TANK_NO_DATA_SCORE 4.6
+#define RAW_HISTORY_SLOTS 4
 
 public Plugin myinfo =
 {
@@ -29,6 +30,9 @@ ConVar g_hEnabled;
 ConVar g_hDelay;
 ConVar g_hMinRaw;
 StringMap g_hLastTankRaw;
+int g_iRawHistoryNextSlot;
+int g_iRawHistoryCount;
+StringMap g_hRawHistory[RAW_HISTORY_SLOTS];
 
 bool g_bRoundEnded;
 bool g_bSeen[MAXPLAYERS + 1];
@@ -64,6 +68,12 @@ int g_iTankDeath[MAXPLAYERS + 1];
 public void OnPluginStart()
 {
 	g_hLastTankRaw = new StringMap();
+	g_iRawHistoryNextSlot = 0;
+	g_iRawHistoryCount = 0;
+	for (int slot = 0; slot < RAW_HISTORY_SLOTS; slot++)
+	{
+		g_hRawHistory[slot] = new StringMap();
+	}
 
 	g_hEnabled = CreateConVar("sm_round_ratingpro_enabled", "1", "Enable round-end RatingPro estimate announcement.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_hDelay = CreateConVar("sm_round_ratingpro_delay", "3.0", "Delay after round_end before announcing the best round RatingPro client.", FCVAR_NONE, true, 0.0, true, 15.0);
@@ -344,6 +354,7 @@ public void OnTankRockEaten(int tank, int survivor)
 public Action Timer_PrintBestRating(Handle timer)
 {
 	SaveLatestTankRaw();
+	SaveRoundRawHistory();
 
 	float outputMin;
 	float outputMax;
@@ -375,10 +386,10 @@ public Action Timer_PrintBestRating(Handle timer)
 			continue;
 		}
 
-		float output = NormalizeRaw(GetOutputRaw(client), outputMin, outputMax);
-		float defense = NormalizeRaw(GetDefenseRaw(client), defenseMin, defenseMax);
-		float focus = NormalizeRaw(GetFocusRaw(client), focusMin, focusMax);
-		float infector = NormalizeRaw(GetInfectorRaw(client), infectorMin, infectorMax);
+		float output = NormalizeRaw(GetHistoricalOutputRaw(client), outputMin, outputMax);
+		float defense = NormalizeRaw(GetHistoricalDefenseRaw(client), defenseMin, defenseMax);
+		float focus = NormalizeRaw(GetHistoricalFocusRaw(client), focusMin, focusMax);
+		float infector = NormalizeRaw(GetHistoricalInfectorRaw(client), infectorMin, infectorMax);
 		float tank = NormalizeTankRaw(GetEffectiveTankRaw(client), tankMin, tankMax);
 		float raw = GetWeightedRaw(output, defense, focus, infector, tank);
 		float rating = Pow(raw / 10.0, RATING_EXPONENT) * 10.0;
@@ -437,10 +448,10 @@ void PrintAllClientRatingDetails(float outputMin, float outputMax, float defense
 			continue;
 		}
 
-		float output = NormalizeRaw(GetOutputRaw(client), outputMin, outputMax);
-		float defense = NormalizeRaw(GetDefenseRaw(client), defenseMin, defenseMax);
-		float focus = NormalizeRaw(GetFocusRaw(client), focusMin, focusMax);
-		float infector = NormalizeRaw(GetInfectorRaw(client), infectorMin, infectorMax);
+		float output = NormalizeRaw(GetHistoricalOutputRaw(client), outputMin, outputMax);
+		float defense = NormalizeRaw(GetHistoricalDefenseRaw(client), defenseMin, defenseMax);
+		float focus = NormalizeRaw(GetHistoricalFocusRaw(client), focusMin, focusMax);
+		float infector = NormalizeRaw(GetHistoricalInfectorRaw(client), infectorMin, infectorMax);
 		float tank = NormalizeTankRaw(GetEffectiveTankRaw(client), tankMin, tankMax);
 		float raw = GetWeightedRaw(output, defense, focus, infector, tank);
 		float rating = Pow(raw / 10.0, RATING_EXPONENT) * 10.0;
@@ -487,10 +498,10 @@ void PrintAllClientRatingDetailsToConsole(float outputMin, float outputMax, floa
 			continue;
 		}
 
-		float outputRaw = GetOutputRaw(client);
-		float defenseRaw = GetDefenseRaw(client);
-		float focusRaw = GetFocusRaw(client);
-		float infectorRaw = GetInfectorRaw(client);
+		float outputRaw = GetHistoricalOutputRaw(client);
+		float defenseRaw = GetHistoricalDefenseRaw(client);
+		float focusRaw = GetHistoricalFocusRaw(client);
+		float infectorRaw = GetHistoricalInfectorRaw(client);
 		float tankRaw = GetEffectiveTankRaw(client);
 		float output = NormalizeRaw(outputRaw, outputMin, outputMax);
 		float defense = NormalizeRaw(defenseRaw, defenseMin, defenseMax);
@@ -661,6 +672,83 @@ float GetInfectorRaw(int client)
 	return float(g_iInfDmgTotal[client] + g_iInfBooms[client] * 8 + g_iInfDeathCharges[client] * 25);
 }
 
+void SaveRoundRawHistory()
+{
+	int slot = g_iRawHistoryNextSlot;
+	g_hRawHistory[slot].Clear();
+	for (int client = 1; client <= MaxClients; client++)
+	{
+		if (!IsHumanClient(client))
+		{
+			continue;
+		}
+
+		char auth[64];
+		if (!GetClientAuthId(client, AuthId_Steam2, auth, sizeof(auth), true))
+		{
+			continue;
+		}
+
+		float values[4];
+		values[0] = GetOutputRaw(client);
+		values[1] = GetDefenseRaw(client);
+		values[2] = GetFocusRaw(client);
+		values[3] = GetInfectorRaw(client);
+		g_hRawHistory[slot].SetArray(auth, values, sizeof(values));
+	}
+
+	g_iRawHistoryNextSlot = (slot + 1) % RAW_HISTORY_SLOTS;
+	if (g_iRawHistoryCount < RAW_HISTORY_SLOTS)
+	{
+		g_iRawHistoryCount++;
+	}
+}
+
+float GetHistoricalOutputRaw(int client)
+{
+	return GetHistoricalRaw(client, 0);
+}
+
+float GetHistoricalDefenseRaw(int client)
+{
+	return GetHistoricalRaw(client, 1);
+}
+
+float GetHistoricalFocusRaw(int client)
+{
+	return GetHistoricalRaw(client, 2);
+}
+
+float GetHistoricalInfectorRaw(int client)
+{
+	return GetHistoricalRaw(client, 3);
+}
+
+float GetHistoricalRaw(int client, int field)
+{
+	if (!IsHumanClient(client))
+	{
+		return 0.0;
+	}
+
+	char auth[64];
+	if (!GetClientAuthId(client, AuthId_Steam2, auth, sizeof(auth), true))
+	{
+		return 0.0;
+	}
+
+	float total = 0.0;
+	float values[4];
+	for (int slot = 0; slot < g_iRawHistoryCount; slot++)
+	{
+		if (g_hRawHistory[slot].GetArray(auth, values, sizeof(values)))
+		{
+			total += values[field];
+		}
+	}
+	return total;
+}
+
 float GetTankRaw(int client)
 {
 	return float(g_iTankDmgUpright[client] + g_iTankPunch[client] * 10 + g_iTankRock[client] * 20 + g_iTankHittable[client] * 35 + g_iTankIncap[client] * 45 + g_iTankDeath[client] * 60);
@@ -754,10 +842,10 @@ bool BuildRawRanges(float &outputMin, float &outputMax, float &defenseMin, float
 			continue;
 		}
 
-		float output = GetOutputRaw(client);
-		float defense = GetDefenseRaw(client);
-		float focus = GetFocusRaw(client);
-		float infector = GetInfectorRaw(client);
+		float output = GetHistoricalOutputRaw(client);
+		float defense = GetHistoricalDefenseRaw(client);
+		float focus = GetHistoricalFocusRaw(client);
+		float infector = GetHistoricalInfectorRaw(client);
 		float tank = GetEffectiveTankRaw(client);
 
 		if (!found)

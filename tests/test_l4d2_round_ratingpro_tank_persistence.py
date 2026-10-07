@@ -12,6 +12,19 @@ SOURCE = (
 
 
 class TankRatingPersistenceContractTests(unittest.TestCase):
+    def test_non_tank_raw_values_use_a_four_slot_ring_buffer(self):
+        source = SOURCE.read_text(encoding="utf-8-sig")
+
+        self.assertIn("#define RAW_HISTORY_SLOTS 4", source)
+        self.assertIn("g_iRawHistoryNextSlot", source)
+        self.assertIn("StringMap g_hRawHistory[RAW_HISTORY_SLOTS]", source)
+        self.assertIn("g_hRawHistory[slot].SetArray(auth, values, sizeof(values));", source)
+        self.assertIn("SaveRoundRawHistory();", source)
+        self.assertIn("GetHistoricalOutputRaw", source)
+        self.assertIn("GetHistoricalDefenseRaw", source)
+        self.assertIn("GetHistoricalFocusRaw", source)
+        self.assertIn("GetHistoricalInfectorRaw", source)
+
     def test_final_rating_uses_the_selected_power_curve(self):
         source = SOURCE.read_text(encoding="utf-8-sig")
 
@@ -30,7 +43,7 @@ class TankRatingPersistenceContractTests(unittest.TestCase):
         source = SOURCE.read_text(encoding="utf-8-sig")
 
         self.assertIn("SaveLatestTankRaw();", source)
-        self.assertIn("SaveLatestTankRaw();\n\n\tfloat outputMin;", source)
+        self.assertIn("SaveLatestTankRaw();\n\tSaveRoundRawHistory();", source)
 
 
 if __name__ == "__main__":
