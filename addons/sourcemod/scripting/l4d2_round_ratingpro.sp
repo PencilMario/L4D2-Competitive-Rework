@@ -13,8 +13,7 @@
 
 #define ZC_TANK 8
 
-#define RATING_SLOPE 0.7
-#define RATING_INTERCEPT 2.5
+#define RATING_EXPONENT 0.75
 #define TANK_NO_DATA_SCORE 4.6
 
 public Plugin myinfo =
@@ -29,6 +28,7 @@ public Plugin myinfo =
 ConVar g_hEnabled;
 ConVar g_hDelay;
 ConVar g_hMinRaw;
+StringMap g_hLastTankRaw;
 
 bool g_bRoundEnded;
 bool g_bSeen[MAXPLAYERS + 1];
@@ -63,6 +63,8 @@ int g_iTankDeath[MAXPLAYERS + 1];
 
 public void OnPluginStart()
 {
+	g_hLastTankRaw = new StringMap();
+
 	g_hEnabled = CreateConVar("sm_round_ratingpro_enabled", "1", "Enable round-end RatingPro estimate announcement.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_hDelay = CreateConVar("sm_round_ratingpro_delay", "3.0", "Delay after round_end before announcing the best round RatingPro client.", FCVAR_NONE, true, 0.0, true, 15.0);
 	g_hMinRaw = CreateConVar("sm_round_ratingpro_min_raw", "1.0", "Minimum weighted raw score required before announcing a winner.", FCVAR_NONE, true, 0.0, true, 10.0);
@@ -341,6 +343,8 @@ public void OnTankRockEaten(int tank, int survivor)
 
 public Action Timer_PrintBestRating(Handle timer)
 {
+	SaveLatestTankRaw();
+
 	float outputMin;
 	float outputMax;
 	float defenseMin;
@@ -375,9 +379,9 @@ public Action Timer_PrintBestRating(Handle timer)
 		float defense = NormalizeRaw(GetDefenseRaw(client), defenseMin, defenseMax);
 		float focus = NormalizeRaw(GetFocusRaw(client), focusMin, focusMax);
 		float infector = NormalizeRaw(GetInfectorRaw(client), infectorMin, infectorMax);
-		float tank = NormalizeTankRaw(GetTankRaw(client), tankMin, tankMax);
+		float tank = NormalizeTankRaw(GetEffectiveTankRaw(client), tankMin, tankMax);
 		float raw = GetWeightedRaw(output, defense, focus, infector, tank);
-		float rating = raw * RATING_SLOPE + RATING_INTERCEPT;
+		float rating = Pow(raw / 10.0, RATING_EXPONENT) * 10.0;
 
 		if (bestClient == 0 || rating > bestRating)
 		{
@@ -437,9 +441,9 @@ void PrintAllClientRatingDetails(float outputMin, float outputMax, float defense
 		float defense = NormalizeRaw(GetDefenseRaw(client), defenseMin, defenseMax);
 		float focus = NormalizeRaw(GetFocusRaw(client), focusMin, focusMax);
 		float infector = NormalizeRaw(GetInfectorRaw(client), infectorMin, infectorMax);
-		float tank = NormalizeTankRaw(GetTankRaw(client), tankMin, tankMax);
+		float tank = NormalizeTankRaw(GetEffectiveTankRaw(client), tankMin, tankMax);
 		float raw = GetWeightedRaw(output, defense, focus, infector, tank);
-		float rating = raw * RATING_SLOPE + RATING_INTERCEPT;
+		float rating = Pow(raw / 10.0, RATING_EXPONENT) * 10.0;
 
 		CPrintToChat(client, "{blue}[{green}RatingPro{blue}]{default} 你的评分 {green}%.1f{default} 综合 {olive}%.1f{default} | 输出 %.1f 防守 %.1f 关键操作 %.1f 特感进攻 %.1f Tank表现 %.1f",
 			rating, raw, output, defense, focus, infector, tank);
@@ -487,14 +491,14 @@ void PrintAllClientRatingDetailsToConsole(float outputMin, float outputMax, floa
 		float defenseRaw = GetDefenseRaw(client);
 		float focusRaw = GetFocusRaw(client);
 		float infectorRaw = GetInfectorRaw(client);
-		float tankRaw = GetTankRaw(client);
+		float tankRaw = GetEffectiveTankRaw(client);
 		float output = NormalizeRaw(outputRaw, outputMin, outputMax);
 		float defense = NormalizeRaw(defenseRaw, defenseMin, defenseMax);
 		float focus = NormalizeRaw(focusRaw, focusMin, focusMax);
 		float infector = NormalizeRaw(infectorRaw, infectorMin, infectorMax);
 		float tank = NormalizeTankRaw(tankRaw, tankMin, tankMax);
 		float raw = GetWeightedRaw(output, defense, focus, infector, tank);
-		float rating = raw * RATING_SLOPE + RATING_INTERCEPT;
+		float rating = Pow(raw / 10.0, RATING_EXPONENT) * 10.0;
 
 		PrintToServer("[RatingPro] #%d %s team=%d rating=%.1f raw=%.1f normalized(output=%.1f defense=%.1f focus=%.1f infector=%.1f tank=%.1f)",
 			client, name, GetClientTeam(client), rating, raw, output, defense, focus, infector, tank);
@@ -662,6 +666,57 @@ float GetTankRaw(int client)
 	return float(g_iTankDmgUpright[client] + g_iTankPunch[client] * 10 + g_iTankRock[client] * 20 + g_iTankHittable[client] * 35 + g_iTankIncap[client] * 45 + g_iTankDeath[client] * 60);
 }
 
+float GetEffectiveTankRaw(int client)
+{
+	float currentRaw = GetTankRaw(client);
+	if (currentRaw > 0.0)
+	{
+		return currentRaw;
+	}
+
+	if (!IsHumanClient(client) || g_hLastTankRaw == null)
+	{
+		return 0.0;
+	}
+
+	char auth[64];
+	char rawText[32];
+	if (!GetClientAuthId(client, AuthId_Steam2, auth, sizeof(auth), true)
+		|| !g_hLastTankRaw.GetString(auth, rawText, sizeof(rawText)))
+	{
+		return 0.0;
+	}
+
+	return StringToFloat(rawText);
+}
+
+void SaveLatestTankRaw()
+{
+	if (g_hLastTankRaw == null)
+	{
+		return;
+	}
+
+	for (int client = 1; client <= MaxClients; client++)
+	{
+		float tankRaw = GetTankRaw(client);
+		if (tankRaw <= 0.0 || !IsHumanClient(client))
+		{
+			continue;
+		}
+
+		char auth[64];
+		if (!GetClientAuthId(client, AuthId_Steam2, auth, sizeof(auth), true))
+		{
+			continue;
+		}
+
+		char rawText[32];
+		FloatToString(tankRaw, rawText, sizeof(rawText));
+		g_hLastTankRaw.SetString(auth, rawText);
+	}
+}
+
 float GetWeightedRaw(float output, float defense, float focus, float infector, float tank)
 {
 	return output * 0.30 + defense * 0.10 + focus * 0.10 + infector * 0.25 + tank * 0.25;
@@ -703,7 +758,7 @@ bool BuildRawRanges(float &outputMin, float &outputMax, float &defenseMin, float
 		float defense = GetDefenseRaw(client);
 		float focus = GetFocusRaw(client);
 		float infector = GetInfectorRaw(client);
-		float tank = GetTankRaw(client);
+		float tank = GetEffectiveTankRaw(client);
 
 		if (!found)
 		{
