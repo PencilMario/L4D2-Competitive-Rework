@@ -738,15 +738,21 @@ float GetHistoricalRaw(int client, int field)
 	}
 
 	float total = 0.0;
+	int recordedSlots = 0;
 	float values[4];
 	for (int slot = 0; slot < g_iRawHistoryCount; slot++)
 	{
 		if (g_hRawHistory[slot].GetArray(auth, values, sizeof(values)))
 		{
 			total += values[field];
+			recordedSlots++;
 		}
 	}
-	return total;
+	if (recordedSlots == 0)
+	{
+		return 0.0;
+	}
+	return total * float(RAW_HISTORY_SLOTS) / float(recordedSlots);
 }
 
 float GetTankRaw(int client)

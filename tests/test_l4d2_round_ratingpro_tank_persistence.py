@@ -12,6 +12,18 @@ SOURCE = (
 
 
 class TankRatingPersistenceContractTests(unittest.TestCase):
+    def test_missing_non_tank_slots_use_the_players_recorded_average(self):
+        source = SOURCE.read_text(encoding="utf-8-sig")
+        historical_raw = source.split("float GetHistoricalRaw(int client, int field)", 1)[1]
+        historical_raw = historical_raw.split("float GetTankRaw(int client)", 1)[0]
+
+        self.assertIn("int recordedSlots = 0;", historical_raw)
+        self.assertIn("total += values[field];\n\t\t\trecordedSlots++;", historical_raw)
+        self.assertIn("if (recordedSlots == 0)", historical_raw)
+        self.assertIn("return total * float(RAW_HISTORY_SLOTS) / float(recordedSlots);", historical_raw)
+        self.assertNotIn("SetArray", historical_raw)
+        self.assertNotIn("values[field] >", historical_raw)
+
     def test_non_tank_raw_values_use_a_four_slot_ring_buffer(self):
         source = SOURCE.read_text(encoding="utf-8-sig")
 
