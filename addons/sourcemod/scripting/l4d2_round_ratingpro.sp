@@ -17,11 +17,54 @@
 #define TANK_NO_DATA_SCORE 4.6
 #define RAW_HISTORY_SLOTS 4
 
+enum struct RatingSnapshotEntry
+{
+	bool valid;
+	bool eligible;
+	int team;
+	int tankSource;
+	float rating;
+	float raw;
+	float output;
+	float defense;
+	float focus;
+	float infector;
+	float tank;
+	float outputRaw;
+	float defenseRaw;
+	float focusRaw;
+	float infectorRaw;
+	float tankRaw;
+	int siDmg;
+	int ciKill;
+	int tankDmg;
+	int dmgTaken;
+	int incaps;
+	int deaths;
+	int ff;
+	int tankupDmg;
+	int tankupKill;
+	int skeet;
+	int level;
+	int pop;
+	int tongueCut;
+	int crown;
+	int dmg;
+	int booms;
+	int deathCharges;
+	int tankDmgUpright;
+	int punch;
+	int rock;
+	int hittable;
+	int incap;
+	int death;
+}
+
 public Plugin myinfo =
 {
 	name = "L4D2 Round RatingPro",
 	author = "Codex",
-	description = "Estimates per-round RatingPro from in-game survivor and infected performance.",
+	description = "基于比赛生还者与特感表现评估回合 RatingPro 评分。",
 	version = PLUGIN_VERSION,
 	url = ""
 };
@@ -33,6 +76,14 @@ StringMap g_hLastTankRaw;
 int g_iRawHistoryNextSlot;
 int g_iRawHistoryCount;
 StringMap g_hRawHistory[RAW_HISTORY_SLOTS];
+
+StringMap g_hLastRatingSnapshot;
+StringMap g_hLastRatingSnapshotNames;
+int g_iSnapshotRoundId;
+bool g_bHasSnapshot;
+char g_sSnapshotMap[64];
+char g_sSnapshotTime[64];
+float g_fLastQueryTime[MAXPLAYERS + 1];
 
 bool g_bRoundEnded;
 bool g_bSeen[MAXPLAYERS + 1];
@@ -75,10 +126,21 @@ public void OnPluginStart()
 		g_hRawHistory[slot] = new StringMap();
 	}
 
-	g_hEnabled = CreateConVar("sm_round_ratingpro_enabled", "1", "Enable round-end RatingPro estimate announcement.", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_hDelay = CreateConVar("sm_round_ratingpro_delay", "3.0", "Delay after round_end before announcing the best round RatingPro client.", FCVAR_NONE, true, 0.0, true, 15.0);
-	g_hMinRaw = CreateConVar("sm_round_ratingpro_min_raw", "1.0", "Minimum weighted raw score required before announcing a winner.", FCVAR_NONE, true, 0.0, true, 10.0);
-	CreateConVar("sm_round_ratingpro_version", PLUGIN_VERSION, "L4D2 Round RatingPro version.", FCVAR_NOTIFY | FCVAR_DONTRECORD);
+	g_hLastRatingSnapshot = new StringMap();
+	g_hLastRatingSnapshotNames = new StringMap();
+	g_iSnapshotRoundId = 0;
+	g_bHasSnapshot = false;
+	g_sSnapshotMap[0] = '\0';
+	g_sSnapshotTime[0] = '\0';
+
+	g_hEnabled = CreateConVar("sm_round_ratingpro_enabled", "1", "启用回合结束时 RatingPro 最佳表现播报与查询功能。", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_hDelay = CreateConVar("sm_round_ratingpro_delay", "3.0", "回合结束后延迟公布最佳 RatingPro 玩家的秒数。", FCVAR_NONE, true, 0.0, true, 15.0);
+	g_hMinRaw = CreateConVar("sm_round_ratingpro_min_raw", "1.0", "公布最佳表现所需的最低加权原始分阈值。", FCVAR_NONE, true, 0.0, true, 10.0);
+	CreateConVar("sm_round_ratingpro_version", PLUGIN_VERSION, "L4D2 回合 RatingPro 插件版本。", FCVAR_NOTIFY | FCVAR_DONTRECORD);
+
+	RegConsoleCmd("sm_ratingpro", Command_RatingPro, "查询玩家 RatingPro 评分数据快照。");
+	RegConsoleCmd("sm_rating", Command_RatingPro, "查询玩家 RatingPro 评分数据快照（别名）。");
+	RegConsoleCmd("sm_rt", Command_RatingPro, "查询玩家 RatingPro 评分数据快照（别名）。");
 
 	HookEvent("round_start", Event_RoundStart, EventHookMode_PostNoCopy);
 	HookEvent("scavenge_round_start", Event_RoundStart, EventHookMode_PostNoCopy);
@@ -104,6 +166,7 @@ public void OnClientDisconnect(int client)
 	if (IsValidClientIndex(client))
 	{
 		g_bSeen[client] = false;
+		g_fLastQueryTime[client] = 0.0;
 	}
 }
 
@@ -369,11 +432,15 @@ public Action Timer_PrintBestRating(Handle timer)
 
 	if (!BuildRawRanges(outputMin, outputMax, defenseMin, defenseMax, focusMin, focusMax, infectorMin, infectorMax, tankMin, tankMax))
 	{
+		SaveRatingSnapshot(false, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 		CPrintToChatAll("{blue}[{green}RatingPro{blue}]{default} 本章节没有足够数据生成最佳表现。");
 		PrintAllClientRatingDetailsNoData();
 		PrintAllClientRatingDetailsToConsoleNoData();
+		PromptRatingQuery();
 		return Plugin_Stop;
 	}
+
+	SaveRatingSnapshot(true, outputMin, outputMax, defenseMin, defenseMax, focusMin, focusMax, infectorMin, infectorMax, tankMin, tankMax);
 
 	int bestClient = 0;
 	float bestRating = 0.0;
@@ -407,6 +474,7 @@ public Action Timer_PrintBestRating(Handle timer)
 		CPrintToChatAll("{blue}[{green}RatingPro{blue}]{default} 本章节没有足够数据生成最佳表现。");
 		PrintAllClientRatingDetails(outputMin, outputMax, defenseMin, defenseMax, focusMin, focusMax, infectorMin, infectorMax, tankMin, tankMax);
 		PrintAllClientRatingDetailsToConsole(outputMin, outputMax, defenseMin, defenseMax, focusMin, focusMax, infectorMin, infectorMax, tankMin, tankMax);
+		PromptRatingQuery();
 		return Plugin_Stop;
 	}
 
@@ -416,6 +484,8 @@ public Action Timer_PrintBestRating(Handle timer)
 		name, bestRating);
 	PrintAllClientRatingDetails(outputMin, outputMax, defenseMin, defenseMax, focusMin, focusMax, infectorMin, infectorMax, tankMin, tankMax);
 	PrintAllClientRatingDetailsToConsole(outputMin, outputMax, defenseMin, defenseMax, focusMin, focusMax, infectorMin, infectorMax, tankMin, tankMax);
+	// 结算完成后向在线真人提示输入 !rating 查看详细数据
+	PromptRatingQuery();
 
 	return Plugin_Stop;
 }
@@ -954,4 +1024,385 @@ bool IsTankInPlay()
 bool InSecondHalfOfRound()
 {
 	return GameRules_GetProp("m_bInSecondHalfOfRound") != 0;
+}
+
+void PromptRatingQuery()
+{
+	for (int client = 1; client <= MaxClients; client++)
+	{
+		if (IsHumanClient(client))
+		{
+			CPrintToChat(client, "{blue}[{green}RatingPro{blue}]{default} 输入 {olive}!rating{default} 查看详细数据。");
+		}
+	}
+}
+
+void SaveRatingSnapshot(bool hasRanges, float outputMin, float outputMax, float defenseMin, float defenseMax, float focusMin, float focusMax, float infectorMin, float infectorMax, float tankMin, float tankMax)
+{
+	if (g_hLastRatingSnapshot == null || g_hLastRatingSnapshotNames == null)
+	{
+		return;
+	}
+
+	g_bHasSnapshot = true;
+	g_iSnapshotRoundId++;
+	GetCurrentMap(g_sSnapshotMap, sizeof(g_sSnapshotMap));
+	FormatTime(g_sSnapshotTime, sizeof(g_sSnapshotTime), "%Y-%m-%d %H:%M:%S");
+
+	g_hLastRatingSnapshot.Clear();
+	g_hLastRatingSnapshotNames.Clear();
+
+	for (int client = 1; client <= MaxClients; client++)
+	{
+		if (!IsHumanClient(client))
+		{
+			continue;
+		}
+
+		char auth[64];
+		if (!GetClientAuthId(client, AuthId_Steam2, auth, sizeof(auth), true))
+		{
+			continue;
+		}
+
+		char name[MAX_NAME_LENGTH];
+		GetClientName(client, name, sizeof(name));
+		g_hLastRatingSnapshotNames.SetString(auth, name);
+
+		RatingSnapshotEntry entry;
+		entry.valid = true;
+		entry.team = GetClientTeam(client);
+
+		entry.siDmg = g_iSiDamage[client];
+		entry.ciKill = g_iCiKilled[client];
+		entry.tankDmg = g_iTankDamage[client];
+		entry.dmgTaken = g_iDmgTaken[client];
+		entry.incaps = g_iIncaps[client];
+		entry.deaths = g_iDied[client];
+		entry.ff = g_iFfGiven[client];
+		entry.tankupDmg = g_iSiDamageTankup[client];
+		entry.tankupKill = g_iSiKilledTankup[client];
+		entry.skeet = g_iSkeets[client];
+		entry.level = g_iLevels[client];
+		entry.pop = g_iPops[client];
+		entry.tongueCut = g_iTongueCuts[client];
+		entry.crown = g_iCrowns[client];
+
+		entry.dmg = g_iInfDmgTotal[client];
+		entry.booms = g_iInfBooms[client];
+		entry.deathCharges = g_iInfDeathCharges[client];
+		entry.tankDmgUpright = g_iTankDmgUpright[client];
+		entry.punch = g_iTankPunch[client];
+		entry.rock = g_iTankRock[client];
+		entry.hittable = g_iTankHittable[client];
+		entry.incap = g_iTankIncap[client];
+		entry.death = g_iTankDeath[client];
+
+		float currentTank = GetTankRaw(client);
+		float effectiveTank = GetEffectiveTankRaw(client);
+		if (currentTank > 0.0)
+		{
+			entry.tankSource = 1;
+		}
+		else if (effectiveTank > 0.0)
+		{
+			entry.tankSource = 2;
+		}
+		else
+		{
+			entry.tankSource = 0;
+		}
+
+		if (hasRanges && IsEligibleForRating(client))
+		{
+			entry.eligible = true;
+			entry.outputRaw = GetHistoricalOutputRaw(client);
+			entry.defenseRaw = GetHistoricalDefenseRaw(client);
+			entry.focusRaw = GetHistoricalFocusRaw(client);
+			entry.infectorRaw = GetHistoricalInfectorRaw(client);
+			entry.tankRaw = effectiveTank;
+
+			entry.output = NormalizeRaw(entry.outputRaw, outputMin, outputMax);
+			entry.defense = NormalizeRaw(entry.defenseRaw, defenseMin, defenseMax);
+			entry.focus = NormalizeRaw(entry.focusRaw, focusMin, focusMax);
+			entry.infector = NormalizeRaw(entry.infectorRaw, infectorMin, infectorMax);
+			entry.tank = NormalizeTankRaw(entry.tankRaw, tankMin, tankMax);
+
+			entry.raw = GetWeightedRaw(entry.output, entry.defense, entry.focus, entry.infector, entry.tank);
+			entry.rating = Pow(entry.raw / 10.0, RATING_EXPONENT) * 10.0;
+		}
+		else
+		{
+			entry.eligible = false;
+			entry.outputRaw = 0.0;
+			entry.defenseRaw = 0.0;
+			entry.focusRaw = 0.0;
+			entry.infectorRaw = 0.0;
+			entry.tankRaw = 0.0;
+			entry.output = 0.0;
+			entry.defense = 0.0;
+			entry.focus = 0.0;
+			entry.infector = 0.0;
+			entry.tank = 0.0;
+			entry.raw = 0.0;
+			entry.rating = 0.0;
+		}
+
+		g_hLastRatingSnapshot.SetArray(auth, entry, sizeof(entry));
+	}
+}
+
+public Action Command_RatingPro(int client, int args)
+{
+	if (client > 0)
+	{
+		float engineTime = GetEngineTime();
+		if (engineTime - g_fLastQueryTime[client] < 2.0)
+		{
+			CPrintToChat(client, "{blue}[{green}RatingPro{blue}]{default} 查询过于频繁，请稍候再试。");
+			return Plugin_Handled;
+		}
+		g_fLastQueryTime[client] = engineTime;
+	}
+
+	char arg[128];
+	GetCmdArgString(arg, sizeof(arg));
+	TrimString(arg);
+	StripQuotes(arg);
+
+	if (arg[0] == '\0' || StrEqual(arg, "@all", false))
+	{
+		int count = 0;
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			if (IsHumanClient(i))
+			{
+				PrintRatingSnapshotToConsole(client, i);
+				count++;
+			}
+		}
+
+		if (client == 0)
+		{
+			if (count == 0)
+			{
+				PrintToConsole(0, "[RatingPro] 未找到在线真人玩家。");
+			}
+			else
+			{
+				PrintToConsole(0, "[RatingPro] 已将所有在线真人玩家的 RatingPro 详细数据输出到控制台。");
+			}
+		}
+		else
+		{
+			if (count == 0)
+			{
+				CPrintToChat(client, "{blue}[{green}RatingPro{blue}]{default} 当前没有在线真人玩家。");
+			}
+			else
+			{
+				CPrintToChat(client, "{blue}[{green}RatingPro{blue}]{default} 已将所有在线玩家的 RatingPro 详细数据输出到控制台（按 ~ 键查看）。");
+			}
+		}
+
+		return Plugin_Handled;
+	}
+
+	int target_list[MAXPLAYERS + 1];
+	char target_name[MAX_TARGET_LENGTH];
+	bool tn_is_ml;
+	int target_count = ProcessTargetString(
+		arg,
+		client,
+		target_list,
+		sizeof(target_list),
+		COMMAND_FILTER_NO_BOTS | COMMAND_FILTER_NO_MULTI | COMMAND_FILTER_NO_IMMUNITY,
+		target_name,
+		sizeof(target_name),
+		tn_is_ml
+	);
+
+	if (target_count <= 0)
+	{
+		ReplyToTargetError(client, target_count);
+		return Plugin_Handled;
+	}
+
+	int target = target_list[0];
+	if (!IsHumanClient(target))
+	{
+		if (client == 0)
+		{
+			PrintToConsole(0, "[RatingPro] 目标必须是在线真人玩家。");
+		}
+		else
+		{
+			CPrintToChat(client, "{blue}[{green}RatingPro{blue}]{default} 目标必须是在线真人玩家。");
+		}
+		return Plugin_Handled;
+	}
+
+	PrintRatingSnapshotToConsole(client, target);
+
+	if (client > 0)
+	{
+		char targetDisplayName[MAX_NAME_LENGTH];
+		GetClientName(target, targetDisplayName, sizeof(targetDisplayName));
+		CPrintToChat(client, "{blue}[{green}RatingPro{blue}]{default} 已将玩家 {olive}%s{default} 的 RatingPro 详细数据输出到控制台（按 ~ 键查看）。", targetDisplayName);
+	}
+
+	return Plugin_Handled;
+}
+
+void CleanName(const char[] input, char[] output, int maxlen)
+{
+	strcopy(output, maxlen, input);
+	for (int i = 0; output[i] != '\0'; i++)
+	{
+		if (output[i] == '\r' || output[i] == '\n' || output[i] == '\t')
+		{
+			output[i] = ' ';
+		}
+	}
+}
+
+void GetTeamNameString(int team, char[] buffer, int maxlen)
+{
+	if (team == TEAM_SURVIVOR)
+	{
+		strcopy(buffer, maxlen, "生还者 (Survivor)");
+	}
+	else if (team == TEAM_INFECTED)
+	{
+		strcopy(buffer, maxlen, "特感 (Infected)");
+	}
+	else
+	{
+		strcopy(buffer, maxlen, "旁观/其他");
+	}
+}
+
+void PrintRatingSnapshotToConsole(int requester, int targetClient)
+{
+	if (!IsHumanClient(targetClient))
+	{
+		return;
+	}
+
+	int targetUserId = GetClientUserId(targetClient);
+	char currentName[MAX_NAME_LENGTH];
+	char cleanCurrentName[MAX_NAME_LENGTH];
+	GetClientName(targetClient, currentName, sizeof(currentName));
+	CleanName(currentName, cleanCurrentName, sizeof(cleanCurrentName));
+
+	char auth[64];
+	if (!GetClientAuthId(targetClient, AuthId_Steam2, auth, sizeof(auth), true))
+	{
+		PrintToConsole(requester, "==================== RatingPro 数据表 ====================");
+		PrintToConsole(requester, "[元信息] 当前玩家: %s (userid: #%d) | 状态: 身份未验证 (N/A)", cleanCurrentName, targetUserId);
+		PrintToConsole(requester, "[说明] 目标玩家尚未完成 Steam 认证，无法关联评分快照。");
+		PrintToConsole(requester, "==========================================================");
+		return;
+	}
+
+	if (!g_bHasSnapshot)
+	{
+		PrintToConsole(requester, "==================== RatingPro 数据表 ====================");
+		PrintToConsole(requester, "[元信息] 当前玩家: %s (userid: #%d) | 状态: 暂无快照数据 (N/A)", cleanCurrentName, targetUserId);
+		PrintToConsole(requester, "[说明] 服务器尚未完成任何章节正式结算，暂无 RatingPro 快照。");
+		PrintToConsole(requester, "==========================================================");
+		return;
+	}
+
+	RatingSnapshotEntry entry;
+	if (!g_hLastRatingSnapshot.GetArray(auth, entry, sizeof(entry)))
+	{
+		PrintToConsole(requester, "==================== RatingPro 数据表 ====================");
+		PrintToConsole(requester, "快照编号: #%d | 结算地图: %s | 结算时间: %s", g_iSnapshotRoundId, g_sSnapshotMap, g_sSnapshotTime);
+		PrintToConsole(requester, "[元信息] 当前玩家: %s (userid: #%d) | 状态: 未参与上次结算 (N/A)", cleanCurrentName, targetUserId);
+		PrintToConsole(requester, "[说明] 该玩家未参与上次正式结算或结算时未完成身份认证。");
+		PrintToConsole(requester, "==========================================================");
+		return;
+	}
+
+	char snapshotName[MAX_NAME_LENGTH];
+	char cleanSnapshotName[MAX_NAME_LENGTH];
+	if (!g_hLastRatingSnapshotNames.GetString(auth, snapshotName, sizeof(snapshotName)))
+	{
+		strcopy(snapshotName, sizeof(snapshotName), cleanCurrentName);
+	}
+	CleanName(snapshotName, cleanSnapshotName, sizeof(cleanSnapshotName));
+
+	char teamName[32];
+	GetTeamNameString(entry.team, teamName, sizeof(teamName));
+
+	if (!entry.eligible)
+	{
+		PrintToConsole(requester, "==================== RatingPro 数据表 ====================");
+		PrintToConsole(requester, "快照编号: #%d | 结算地图: %s | 结算时间: %s", g_iSnapshotRoundId, g_sSnapshotMap, g_sSnapshotTime);
+		PrintToConsole(requester, "[元信息] 当前玩家: %s (userid: #%d) | 结算姓名: %s | 结算队伍: %s | 状态: 上次结算数据不足/无资格 (N/A)",
+			cleanCurrentName, targetUserId, cleanSnapshotName, teamName);
+		PrintToConsole(requester, "[综合评分] RatingPro: N/A | 加权原始分 (weighted raw): N/A");
+		PrintToConsole(requester, "[原始分与归一化] 输出(output): N/A | 防守(defense): N/A | 关键操作(focus): N/A | 特感进攻(infector): N/A | Tank表现(tank): N/A");
+		PrintToConsole(requester, "[生还者数据] 特感伤害(siDmg)=%d 丧尸击杀(ciKill)=%d 克伤害(tankDmg)=%d 承受伤害(dmgTaken)=%d 倒地(incaps)=%d 死亡(deaths)=%d 友伤(ff)=%d 克局特伤(tankupDmg)=%d 克局特杀(tankupKill)=%d 空爆(skeet)=%d 截停(level)=%d 秒爆(pop)=%d 断舌(tongueCut)=%d 秒妹(crown)=%d",
+			entry.siDmg, entry.ciKill, entry.tankDmg, entry.dmgTaken, entry.incaps, entry.deaths, entry.ff,
+			entry.tankupDmg, entry.tankupKill, entry.skeet, entry.level, entry.pop, entry.tongueCut, entry.crown);
+		PrintToConsole(requester, "[特感数据] 造成的伤害(dmg)=%d 炸中生还者(booms)=%d 致命牛撞(deathCharges)=%d 克直立伤害(tankDmgUpright)=%d 拳击(punch)=%d 砸石(rock)=%d 铁(hittable)=%d 击倒(incap)=%d 击杀(death)=%d",
+			entry.dmg, entry.booms, entry.deathCharges, entry.tankDmgUpright, entry.punch, entry.rock, entry.hittable, entry.incap, entry.death);
+		PrintToConsole(requester, "[说明] 该玩家在上次结算时无有效行为计数，未生成 RatingPro 评分。");
+		PrintToConsole(requester, "==========================================================");
+		return;
+	}
+
+	char tankSourceStr[32];
+	if (entry.tankSource == 1)
+	{
+		strcopy(tankSourceStr, sizeof(tankSourceStr), "本局当前 (current)");
+	}
+	else if (entry.tankSource == 2)
+	{
+		strcopy(tankSourceStr, sizeof(tankSourceStr), "历史回退 (historical)");
+	}
+	else
+	{
+		strcopy(tankSourceStr, sizeof(tankSourceStr), "无数据 (no data: 4.6)");
+	}
+
+	PrintToConsole(requester, "==================== RatingPro 数据表 ====================");
+	PrintToConsole(requester, "快照编号: #%d | 结算地图: %s | 结算时间: %s", g_iSnapshotRoundId, g_sSnapshotMap, g_sSnapshotTime);
+	PrintToConsole(requester, "[元信息] 当前玩家: %s (userid: #%d) | 结算姓名: %s | 结算队伍: %s | 状态: 正常有效",
+		cleanCurrentName, targetUserId, cleanSnapshotName, teamName);
+	PrintToConsole(requester, "[综合评分] RatingPro: %.1f | 加权原始分 (weighted raw): %.1f", entry.rating, entry.raw);
+	PrintToConsole(requester, "[加权分贡献 (对raw)] 输出(30%%): %.2f | 防守(10%%): %.2f | 关键操作(10%%): %.2f | 特感进攻(25%%): %.2f | Tank表现(25%%): %.2f",
+		entry.output * 0.30, entry.defense * 0.10, entry.focus * 0.10, entry.infector * 0.25, entry.tank * 0.25);
+	PrintToConsole(requester, "[归一化分] 输出(output): %.1f | 防守(defense): %.1f | 关键操作(focus): %.1f | 特感进攻(infector): %.1f | Tank表现(tank): %.1f",
+		entry.output, entry.defense, entry.focus, entry.infector, entry.tank);
+	PrintToConsole(requester, "[原始评分] 输出(output): %.1f | 防守(defense): %.1f | 关键操作(focus): %.1f | 特感进攻(infector): %.1f | Tank表现(tank): %.1f (Tank来源: %s)",
+		entry.outputRaw, entry.defenseRaw, entry.focusRaw, entry.infectorRaw, entry.tankRaw, tankSourceStr);
+
+	float curOutput = float(entry.siDmg + entry.tankDmg + entry.ciKill * 10);
+	float curDefense = -float(entry.dmgTaken + entry.incaps * 350 + entry.deaths * 80 + entry.ff * 40);
+	float curFocus = float(entry.tankupDmg) * 0.004 + float(entry.tankupKill) * 0.25 + float(entry.skeet) * 2.0 + float(entry.level) * 2.0 + float(entry.pop) * 1.5 + float(entry.tongueCut) * 1.0 + float(entry.crown) * 2.0;
+	float curInfector = float(entry.dmg + entry.booms * 8 + entry.deathCharges * 25);
+	float curTank = float(entry.tankDmgUpright + entry.punch * 10 + entry.rock * 20 + entry.hittable * 35 + entry.incap * 45 + entry.death * 60);
+
+	PrintToConsole(requester, "[原始评分构成与动作贡献]");
+	PrintToConsole(requester, "  ├─ 输出原始分贡献 (当章%.1f / 历史四槽均值%.1f): 特感伤害+%d, 克伤害+%d, 丧尸击杀+%d (x10)",
+		curOutput, entry.outputRaw, entry.siDmg, entry.tankDmg, entry.ciKill * 10);
+	PrintToConsole(requester, "  ├─ 防守原始分扣除 (当章%.1f / 历史四槽均值%.1f): 承伤-%d, 倒地-%d (x350), 死亡-%d (x80), 友伤-%d (x40)",
+		curDefense, entry.defenseRaw, entry.dmgTaken, entry.incaps * 350, entry.deaths * 80, entry.ff * 40);
+	PrintToConsole(requester, "  ├─ 关键操作原始分 (当章%.1f / 历史四槽均值%.1f): 克局特伤+%.1f, 克局特杀+%.1f, 空爆+%.1f, 截停+%.1f, 秒爆+%.1f, 断舌+%.1f, 秒妹+%.1f",
+		curFocus, entry.focusRaw, float(entry.tankupDmg) * 0.004, float(entry.tankupKill) * 0.25, float(entry.skeet) * 2.0, float(entry.level) * 2.0, float(entry.pop) * 1.5, float(entry.tongueCut) * 1.0, float(entry.crown) * 2.0);
+	PrintToConsole(requester, "  ├─ 特感进攻原始分 (当章%.1f / 历史四槽均值%.1f): 特感伤害+%d, 炸人+%d (x8), 致命牛撞+%d (x25)",
+		curInfector, entry.infectorRaw, entry.dmg, entry.booms * 8, entry.deathCharges * 25);
+	PrintToConsole(requester, "  └─ Tank表现原始分 (当章%.1f / 生效值%.1f): 直立伤害+%d, 拳击+%d (x10), 砸石+%d (x20), 铁+%d (x35), 击倒+%d (x45), 击杀+%d (x60)",
+		curTank, entry.tankRaw, entry.tankDmgUpright, entry.punch * 10, entry.rock * 20, entry.hittable * 35, entry.incap * 45, entry.death * 60);
+
+	PrintToConsole(requester, "[生还者数据] 特感伤害(siDmg)=%d 丧尸击杀(ciKill)=%d 克伤害(tankDmg)=%d 承受伤害(dmgTaken)=%d 倒地(incaps)=%d 死亡(deaths)=%d 友伤(ff)=%d 克局特伤(tankupDmg)=%d 克局特杀(tankupKill)=%d 空爆(skeet)=%d 截停(level)=%d 秒爆(pop)=%d 断舌(tongueCut)=%d 秒妹(crown)=%d",
+		entry.siDmg, entry.ciKill, entry.tankDmg, entry.dmgTaken, entry.incaps, entry.deaths, entry.ff,
+		entry.tankupDmg, entry.tankupKill, entry.skeet, entry.level, entry.pop, entry.tongueCut, entry.crown);
+	PrintToConsole(requester, "[特感数据] 造成的伤害(dmg)=%d 炸中生还者(booms)=%d 致命牛撞(deathCharges)=%d 克直立伤害(tankDmgUpright)=%d 拳击(punch)=%d 砸石(rock)=%d 铁(hittable)=%d 击倒(incap)=%d 击杀(death)=%d",
+		entry.dmg, entry.booms, entry.deathCharges, entry.tankDmgUpright, entry.punch, entry.rock, entry.hittable, entry.incap, entry.death);
+	PrintToConsole(requester, "[说明] output/defense/focus/infector 原始分来自四槽历史补齐，生还者与特感计数为上次结算当章记录。");
+	PrintToConsole(requester, "==========================================================");
 }
