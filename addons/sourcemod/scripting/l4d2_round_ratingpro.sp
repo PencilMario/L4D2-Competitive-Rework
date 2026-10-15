@@ -58,6 +58,30 @@ enum struct RatingSnapshotEntry
 	int hittable;
 	int incap;
 	int death;
+	bool becameTank;
+	int recordedSlots;
+}
+
+enum struct RawHistoryActionEntry
+{
+	float raw[4];
+	int siDmg;
+	int ciKill;
+	int tankDmg;
+	int dmgTaken;
+	int incaps;
+	int deaths;
+	int ff;
+	int tankupDmg;
+	int tankupKill;
+	int skeet;
+	int level;
+	int pop;
+	int tongueCut;
+	int crown;
+	int dmg;
+	int booms;
+	int deathCharges;
 }
 
 public Plugin myinfo =
@@ -76,6 +100,7 @@ StringMap g_hLastTankRaw;
 int g_iRawHistoryNextSlot;
 int g_iRawHistoryCount;
 StringMap g_hRawHistory[RAW_HISTORY_SLOTS];
+StringMap g_hRawActionHistory[RAW_HISTORY_SLOTS];
 
 StringMap g_hLastRatingSnapshot;
 StringMap g_hLastRatingSnapshotNames;
@@ -115,6 +140,7 @@ int g_iTankRock[MAXPLAYERS + 1];
 int g_iTankHittable[MAXPLAYERS + 1];
 int g_iTankIncap[MAXPLAYERS + 1];
 int g_iTankDeath[MAXPLAYERS + 1];
+bool g_bBecameTank[MAXPLAYERS + 1];
 
 public void OnPluginStart()
 {
@@ -124,6 +150,7 @@ public void OnPluginStart()
 	for (int slot = 0; slot < RAW_HISTORY_SLOTS; slot++)
 	{
 		g_hRawHistory[slot] = new StringMap();
+		g_hRawActionHistory[slot] = new StringMap();
 	}
 
 	g_hLastRatingSnapshot = new StringMap();
@@ -152,6 +179,9 @@ public void OnPluginStart()
 	HookEvent("infected_death", Event_InfectedDeath, EventHookMode_Post);
 	HookEvent("player_death", Event_PlayerDeath, EventHookMode_Post);
 	HookEvent("player_incapacitated", Event_PlayerIncapacitated, EventHookMode_Post);
+	HookEvent("tank_spawn", Event_TankSpawn, EventHookMode_Post);
+	HookEvent("bot_player_replace", Event_BotPlayerReplace, EventHookMode_Post);
+	HookEvent("player_spawn", Event_PlayerSpawn, EventHookMode_Post);
 
 	ResetRoundStats();
 }
@@ -258,7 +288,10 @@ public void Event_PlayerHurt(Event event, const char[] name, bool dontBroadcast)
 		}
 		else
 		{
-			g_iInfDmgTotal[attacker] += damage;
+			if (!IsSurvivorIncapacitated(victim))
+			{
+				g_iInfDmgTotal[attacker] += damage;
+			}
 		}
 	}
 }
@@ -308,6 +341,7 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 		}
 		else if (GetClientTeam(attacker) == TEAM_INFECTED && GetZombieClass(attacker) == ZC_TANK && IsHumanClient(victim) && GetClientTeam(victim) == TEAM_SURVIVOR)
 		{
+			MarkClientAsTank(attacker);
 			g_iTankDeath[attacker]++;
 		}
 	}
@@ -331,8 +365,61 @@ public void Event_PlayerIncapacitated(Event event, const char[] name, bool dontB
 
 	if (IsHumanClient(attacker) && GetClientTeam(attacker) == TEAM_INFECTED && GetZombieClass(attacker) == ZC_TANK)
 	{
-		RememberClient(attacker);
+		MarkClientAsTank(attacker);
 		g_iTankIncap[attacker]++;
+	}
+}
+
+void MarkClientAsTank(int client)
+{
+	if (!IsHumanClient(client))
+	{
+		return;
+	}
+
+	RememberClient(client);
+	g_bBecameTank[client] = true;
+}
+
+public void Event_TankSpawn(Event event, const char[] name, bool dontBroadcast)
+{
+	if (!g_hEnabled.BoolValue || g_bRoundEnded)
+	{
+		return;
+	}
+
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	if (IsHumanClient(client) && GetClientTeam(client) == TEAM_INFECTED)
+	{
+		MarkClientAsTank(client);
+	}
+}
+
+public void Event_BotPlayerReplace(Event event, const char[] name, bool dontBroadcast)
+{
+	if (!g_hEnabled.BoolValue || g_bRoundEnded)
+	{
+		return;
+	}
+
+	int player = GetClientOfUserId(event.GetInt("player"));
+	if (IsHumanClient(player) && GetClientTeam(player) == TEAM_INFECTED && GetZombieClass(player) == ZC_TANK)
+	{
+		MarkClientAsTank(player);
+	}
+}
+
+public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
+{
+	if (!g_hEnabled.BoolValue || g_bRoundEnded)
+	{
+		return;
+	}
+
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	if (IsHumanClient(client) && GetClientTeam(client) == TEAM_INFECTED && GetZombieClass(client) == ZC_TANK)
+	{
+		MarkClientAsTank(client);
 	}
 }
 
@@ -627,16 +714,18 @@ void ResetRoundStats()
 		g_iTankHittable[client] = 0;
 		g_iTankIncap[client] = 0;
 		g_iTankDeath[client] = 0;
+		g_bBecameTank[client] = false;
 	}
 }
 
 void TrackTankHit(int tank, int survivor, int damage, Event event)
 {
 	RememberClient(tank);
-	g_iInfDmgTotal[tank] += damage;
+	MarkClientAsTank(tank);
 
 	if (!IsSurvivorIncapacitated(survivor))
 	{
+		g_iInfDmgTotal[tank] += damage;
 		g_iTankDmgUpright[tank] += damage;
 	}
 
@@ -713,7 +802,8 @@ bool HasAnyRawSignal(int client)
 		|| g_iTankRock[client] > 0
 		|| g_iTankHittable[client] > 0
 		|| g_iTankIncap[client] > 0
-		|| g_iTankDeath[client] > 0;
+		|| g_iTankDeath[client] > 0
+		|| g_bBecameTank[client];
 }
 
 float GetOutputRaw(int client)
@@ -746,6 +836,7 @@ void SaveRoundRawHistory()
 {
 	int slot = g_iRawHistoryNextSlot;
 	g_hRawHistory[slot].Clear();
+	g_hRawActionHistory[slot].Clear();
 	for (int client = 1; client <= MaxClients; client++)
 	{
 		if (!IsHumanClient(client))
@@ -765,6 +856,33 @@ void SaveRoundRawHistory()
 		values[2] = GetFocusRaw(client);
 		values[3] = GetInfectorRaw(client);
 		g_hRawHistory[slot].SetArray(auth, values, sizeof(values));
+
+		RawHistoryActionEntry entry;
+		entry.raw[0] = values[0];
+		entry.raw[1] = values[1];
+		entry.raw[2] = values[2];
+		entry.raw[3] = values[3];
+
+		entry.siDmg = g_iSiDamage[client];
+		entry.ciKill = g_iCiKilled[client];
+		entry.tankDmg = g_iTankDamage[client];
+		entry.dmgTaken = g_iDmgTaken[client];
+		entry.incaps = g_iIncaps[client];
+		entry.deaths = g_iDied[client];
+		entry.ff = g_iFfGiven[client];
+		entry.tankupDmg = g_iSiDamageTankup[client];
+		entry.tankupKill = g_iSiKilledTankup[client];
+		entry.skeet = g_iSkeets[client];
+		entry.level = g_iLevels[client];
+		entry.pop = g_iPops[client];
+		entry.tongueCut = g_iTongueCuts[client];
+		entry.crown = g_iCrowns[client];
+
+		entry.dmg = g_iInfDmgTotal[client];
+		entry.booms = g_iInfBooms[client];
+		entry.deathCharges = g_iInfDeathCharges[client];
+
+		g_hRawActionHistory[slot].SetArray(auth, entry, sizeof(entry));
 	}
 
 	g_iRawHistoryNextSlot = (slot + 1) % RAW_HISTORY_SLOTS;
@@ -825,9 +943,69 @@ float GetHistoricalRaw(int client, int field)
 	return total * float(RAW_HISTORY_SLOTS) / float(recordedSlots);
 }
 
+void AggregateHistoricalActions(int client, RatingSnapshotEntry entry)
+{
+	entry.recordedSlots = 0;
+	entry.siDmg = 0;
+	entry.ciKill = 0;
+	entry.tankDmg = 0;
+	entry.dmgTaken = 0;
+	entry.incaps = 0;
+	entry.deaths = 0;
+	entry.ff = 0;
+	entry.tankupDmg = 0;
+	entry.tankupKill = 0;
+	entry.skeet = 0;
+	entry.level = 0;
+	entry.pop = 0;
+	entry.tongueCut = 0;
+	entry.crown = 0;
+	entry.dmg = 0;
+	entry.booms = 0;
+	entry.deathCharges = 0;
+
+	if (!IsHumanClient(client))
+	{
+		return;
+	}
+
+	char auth[64];
+	if (!GetClientAuthId(client, AuthId_Steam2, auth, sizeof(auth), true))
+	{
+		return;
+	}
+
+	RawHistoryActionEntry historyEntry;
+	for (int slot = 0; slot < g_iRawHistoryCount; slot++)
+	{
+		if (g_hRawActionHistory[slot].GetArray(auth, historyEntry, sizeof(historyEntry)))
+		{
+			entry.recordedSlots++;
+			entry.siDmg += historyEntry.siDmg;
+			entry.ciKill += historyEntry.ciKill;
+			entry.tankDmg += historyEntry.tankDmg;
+			entry.dmgTaken += historyEntry.dmgTaken;
+			entry.incaps += historyEntry.incaps;
+			entry.deaths += historyEntry.deaths;
+			entry.ff += historyEntry.ff;
+			entry.tankupDmg += historyEntry.tankupDmg;
+			entry.tankupKill += historyEntry.tankupKill;
+			entry.skeet += historyEntry.skeet;
+			entry.level += historyEntry.level;
+			entry.pop += historyEntry.pop;
+			entry.tongueCut += historyEntry.tongueCut;
+			entry.crown += historyEntry.crown;
+			entry.dmg += historyEntry.dmg;
+			entry.booms += historyEntry.booms;
+			entry.deathCharges += historyEntry.deathCharges;
+		}
+	}
+}
+
 float GetTankRaw(int client)
 {
-	return float(g_iTankDmgUpright[client] + g_iTankPunch[client] * 10 + g_iTankRock[client] * 20 + g_iTankHittable[client] * 35 + g_iTankIncap[client] * 45 + g_iTankDeath[client] * 60);
+	float baseRaw = g_bBecameTank[client] ? 1.0 : 0.0;
+	return baseRaw + float(g_iTankDmgUpright[client] + g_iTankPunch[client] * 10 + g_iTankRock[client] * 20 + g_iTankHittable[client] * 35 + g_iTankIncap[client] * 45 + g_iTankDeath[client] * 60);
 }
 
 float GetEffectiveTankRaw(int client)
@@ -1014,6 +1192,7 @@ bool IsTankInPlay()
 	{
 		if (IsHumanClient(client) && GetClientTeam(client) == TEAM_INFECTED && GetZombieClass(client) == ZC_TANK)
 		{
+			MarkClientAsTank(client);
 			return true;
 		}
 	}
@@ -1073,30 +1252,15 @@ void SaveRatingSnapshot(bool hasRanges, float outputMin, float outputMax, float 
 		entry.valid = true;
 		entry.team = GetClientTeam(client);
 
-		entry.siDmg = g_iSiDamage[client];
-		entry.ciKill = g_iCiKilled[client];
-		entry.tankDmg = g_iTankDamage[client];
-		entry.dmgTaken = g_iDmgTaken[client];
-		entry.incaps = g_iIncaps[client];
-		entry.deaths = g_iDied[client];
-		entry.ff = g_iFfGiven[client];
-		entry.tankupDmg = g_iSiDamageTankup[client];
-		entry.tankupKill = g_iSiKilledTankup[client];
-		entry.skeet = g_iSkeets[client];
-		entry.level = g_iLevels[client];
-		entry.pop = g_iPops[client];
-		entry.tongueCut = g_iTongueCuts[client];
-		entry.crown = g_iCrowns[client];
+		AggregateHistoricalActions(client, entry);
 
-		entry.dmg = g_iInfDmgTotal[client];
-		entry.booms = g_iInfBooms[client];
-		entry.deathCharges = g_iInfDeathCharges[client];
 		entry.tankDmgUpright = g_iTankDmgUpright[client];
 		entry.punch = g_iTankPunch[client];
 		entry.rock = g_iTankRock[client];
 		entry.hittable = g_iTankHittable[client];
 		entry.incap = g_iTankIncap[client];
 		entry.death = g_iTankDeath[client];
+		entry.becameTank = g_bBecameTank[client];
 
 		float currentTank = GetTankRaw(client);
 		float effectiveTank = GetEffectiveTankRaw(client);
@@ -1384,25 +1548,24 @@ void PrintRatingSnapshotToConsole(int requester, int targetClient)
 	float curDefense = -float(entry.dmgTaken + entry.incaps * 350 + entry.deaths * 80 + entry.ff * 40);
 	float curFocus = float(entry.tankupDmg) * 0.004 + float(entry.tankupKill) * 0.25 + float(entry.skeet) * 2.0 + float(entry.level) * 2.0 + float(entry.pop) * 1.5 + float(entry.tongueCut) * 1.0 + float(entry.crown) * 2.0;
 	float curInfector = float(entry.dmg + entry.booms * 8 + entry.deathCharges * 25);
-	float curTank = float(entry.tankDmgUpright + entry.punch * 10 + entry.rock * 20 + entry.hittable * 35 + entry.incap * 45 + entry.death * 60);
 
-	PrintToConsole(requester, "[原始评分构成与动作贡献]");
-	PrintToConsole(requester, "  ├─ 输出原始分贡献 (当章%.1f / 历史四槽均值%.1f): 特感伤害+%d, 克伤害+%d, 丧尸击杀+%d (x10)",
+	PrintToConsole(requester, "[原始评分构成与动作贡献 (跨章节累计 %d 槽)]", entry.recordedSlots);
+	PrintToConsole(requester, "  ├─ 输出原始分贡献 (累计%.1f / 均值补齐生效值%.1f): 特感伤害+%d, 克伤害+%d, 丧尸击杀+%d (x10)",
 		curOutput, entry.outputRaw, entry.siDmg, entry.tankDmg, entry.ciKill * 10);
-	PrintToConsole(requester, "  ├─ 防守原始分扣除 (当章%.1f / 历史四槽均值%.1f): 承伤-%d, 倒地-%d (x350), 死亡-%d (x80), 友伤-%d (x40)",
+	PrintToConsole(requester, "  ├─ 防守原始分扣除 (累计%.1f / 均值补齐生效值%.1f): 承伤-%d, 倒地-%d (x350), 死亡-%d (x80), 友伤-%d (x40)",
 		curDefense, entry.defenseRaw, entry.dmgTaken, entry.incaps * 350, entry.deaths * 80, entry.ff * 40);
-	PrintToConsole(requester, "  ├─ 关键操作原始分 (当章%.1f / 历史四槽均值%.1f): 克局特伤+%.1f, 克局特杀+%.1f, 空爆+%.1f, 截停+%.1f, 秒爆+%.1f, 断舌+%.1f, 秒妹+%.1f",
+	PrintToConsole(requester, "  ├─ 关键操作原始分 (累计%.1f / 均值补齐生效值%.1f): 克局特伤+%.1f, 克局特杀+%.1f, 空爆+%.1f, 截停+%.1f, 秒爆+%.1f, 断舌+%.1f, 秒妹+%.1f",
 		curFocus, entry.focusRaw, float(entry.tankupDmg) * 0.004, float(entry.tankupKill) * 0.25, float(entry.skeet) * 2.0, float(entry.level) * 2.0, float(entry.pop) * 1.5, float(entry.tongueCut) * 1.0, float(entry.crown) * 2.0);
-	PrintToConsole(requester, "  ├─ 特感进攻原始分 (当章%.1f / 历史四槽均值%.1f): 特感伤害+%d, 炸人+%d (x8), 致命牛撞+%d (x25)",
+	PrintToConsole(requester, "  ├─ 特感进攻原始分 (累计%.1f / 均值补齐生效值%.1f): 特感伤害+%d, 炸人+%d (x8), 致命牛撞+%d (x25)",
 		curInfector, entry.infectorRaw, entry.dmg, entry.booms * 8, entry.deathCharges * 25);
-	PrintToConsole(requester, "  └─ Tank表现原始分 (当章%.1f / 生效值%.1f): 直立伤害+%d, 拳击+%d (x10), 砸石+%d (x20), 铁+%d (x35), 击倒+%d (x45), 击杀+%d (x60)",
-		curTank, entry.tankRaw, entry.tankDmgUpright, entry.punch * 10, entry.rock * 20, entry.hittable * 35, entry.incap * 45, entry.death * 60);
+	PrintToConsole(requester, "  └─ Tank表现原始分 (当前生效值%.1f): 出克基础分+%d, 直立伤害+%d, 拳击+%d (x10), 砸石+%d (x20), 铁+%d (x35), 击倒+%d (x45), 击杀+%d (x60)",
+		entry.tankRaw, entry.becameTank ? 1 : 0, entry.tankDmgUpright, entry.punch * 10, entry.rock * 20, entry.hittable * 35, entry.incap * 45, entry.death * 60);
 
-	PrintToConsole(requester, "[生还者数据] 特感伤害(siDmg)=%d 丧尸击杀(ciKill)=%d 克伤害(tankDmg)=%d 承受伤害(dmgTaken)=%d 倒地(incaps)=%d 死亡(deaths)=%d 友伤(ff)=%d 克局特伤(tankupDmg)=%d 克局特杀(tankupKill)=%d 空爆(skeet)=%d 截停(level)=%d 秒爆(pop)=%d 断舌(tongueCut)=%d 秒妹(crown)=%d",
-		entry.siDmg, entry.ciKill, entry.tankDmg, entry.dmgTaken, entry.incaps, entry.deaths, entry.ff,
+	PrintToConsole(requester, "[生还者数据 (跨章节累计 %d 槽)] 特感伤害(siDmg)=%d 丧尸击杀(ciKill)=%d 克伤害(tankDmg)=%d 承受伤害(dmgTaken)=%d 倒地(incaps)=%d 死亡(deaths)=%d 友伤(ff)=%d 克局特伤(tankupDmg)=%d 克局特杀(tankupKill)=%d 空爆(skeet)=%d 截停(level)=%d 秒爆(pop)=%d 断舌(tongueCut)=%d 秒妹(crown)=%d",
+		entry.recordedSlots, entry.siDmg, entry.ciKill, entry.tankDmg, entry.dmgTaken, entry.incaps, entry.deaths, entry.ff,
 		entry.tankupDmg, entry.tankupKill, entry.skeet, entry.level, entry.pop, entry.tongueCut, entry.crown);
-	PrintToConsole(requester, "[特感数据] 造成的伤害(dmg)=%d 炸中生还者(booms)=%d 致命牛撞(deathCharges)=%d 克直立伤害(tankDmgUpright)=%d 拳击(punch)=%d 砸石(rock)=%d 铁(hittable)=%d 击倒(incap)=%d 击杀(death)=%d",
-		entry.dmg, entry.booms, entry.deathCharges, entry.tankDmgUpright, entry.punch, entry.rock, entry.hittable, entry.incap, entry.death);
-	PrintToConsole(requester, "[说明] output/defense/focus/infector 原始分来自四槽历史补齐，生还者与特感计数为上次结算当章记录。");
+	PrintToConsole(requester, "[特感数据 (跨章节累计 %d 槽)] 造成的伤害(dmg)=%d 炸中生还者(booms)=%d 致命牛撞(deathCharges)=%d 克直立伤害(tankDmgUpright)=%d 拳击(punch)=%d 砸石(rock)=%d 铁(hittable)=%d 击倒(incap)=%d 击杀(death)=%d",
+		entry.recordedSlots, entry.dmg, entry.booms, entry.deathCharges, entry.tankDmgUpright, entry.punch, entry.rock, entry.hittable, entry.incap, entry.death);
+	PrintToConsole(requester, "[说明] 生还者与特感数据为已有历史槽位(%d槽)跨章节累计统计，RatingPro评分采用平均值补齐至四槽计算。", entry.recordedSlots);
 	PrintToConsole(requester, "==========================================================");
 }
