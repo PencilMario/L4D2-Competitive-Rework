@@ -69,6 +69,17 @@ class RatingProInfectorDamageContractTests(unittest.TestCase):
         self.assertIn("g_iInfBooms[client] * 8", func_body)
         self.assertIn("g_iInfDeathCharges[client] * 25", func_body)
 
+    def test_survivor_damage_taken_excludes_incapacitated(self):
+        func_body = extract_function(self.source, "public void Event_PlayerHurt(Event event, const char[] name, bool dontBroadcast)")
+        self.assertTrue(func_body, "Event_PlayerHurt function must be defined")
+
+        # Must inspect survivor incapacitated state before adding survivor damage taken
+        self.assertRegex(
+            func_body,
+            r'if\s*\(\s*!IsSurvivorIncapacitated\(victim\)\s*\)\s*\{\s*g_iDmgTaken\[victim\]\s*\+=\s*damage;',
+            "g_iDmgTaken must only accumulate when victim is not incapacitated",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

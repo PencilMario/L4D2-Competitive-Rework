@@ -57,6 +57,52 @@ class TankRatingPersistenceContractTests(unittest.TestCase):
         self.assertIn("SaveLatestTankRaw();", source)
         self.assertIn("SaveLatestTankRaw();\n\tSaveRoundRawHistory();", source)
 
+    def test_tank_action_history_entry_and_persistence(self):
+        source = SOURCE.read_text(encoding="utf-8-sig")
+
+        # Struct must include action detail fields
+        self.assertIn("enum struct TankHistoryEntry", source)
+        self.assertIn("bool becameTank;", source)
+        self.assertIn("int tankDmgUpright;", source)
+        self.assertIn("int punch;", source)
+        self.assertIn("int rock;", source)
+        self.assertIn("int hittable;", source)
+        self.assertIn("int incap;", source)
+        self.assertIn("int death;", source)
+
+        # SaveLatestTankRaw must persist TankHistoryEntry into g_hLastTankRaw
+        self.assertIn("TankHistoryEntry tankEntry;", source)
+        self.assertIn("tankEntry.punch = g_iTankPunch[client];", source)
+        self.assertIn("tankEntry.rock = g_iTankRock[client];", source)
+        self.assertIn("tankEntry.hittable = g_iTankHittable[client];", source)
+        self.assertIn("tankEntry.incap = g_iTankIncap[client];", source)
+        self.assertIn("tankEntry.death = g_iTankDeath[client];", source)
+        self.assertIn("tankEntry.becameTank = g_bBecameTank[client];", source)
+        self.assertIn("g_hLastTankRaw.SetArray(auth, tankEntry, sizeof(tankEntry));", source)
+
+    def test_snapshot_restores_tank_actions_on_historical_fallback(self):
+        source = SOURCE.read_text(encoding="utf-8-sig")
+
+        # SaveRatingSnapshot must restore historical actions when fallback is active
+        self.assertIn("entry.tankSource = 2;", source)
+        self.assertIn("TankHistoryEntry histTank;", source)
+        self.assertIn("g_hLastTankRaw.GetArray(auth, histTank, sizeof(histTank))", source)
+        self.assertIn("entry.punch = histTank.punch;", source)
+        self.assertIn("entry.rock = histTank.rock;", source)
+        self.assertIn("entry.hittable = histTank.hittable;", source)
+        self.assertIn("entry.incap = histTank.incap;", source)
+        self.assertIn("entry.death = histTank.death;", source)
+        self.assertIn("entry.becameTank = histTank.becameTank;", source)
+
+    def test_console_breakdown_displays_all_tank_actions(self):
+        source = SOURCE.read_text(encoding="utf-8-sig")
+
+        # Must display 出克基础分, 直立伤害, 拳击, 砸石, 铁, 击倒, 击杀 regardless of tank source
+        self.assertIn(
+            "Tank表现原始分 (当前生效值%.1f): 出克基础分+%d, 直立伤害+%d, 拳击+%d (x10), 砸石+%d (x20), 铁+%d (x35), 击倒+%d (x45), 击杀+%d (x60)",
+            source,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

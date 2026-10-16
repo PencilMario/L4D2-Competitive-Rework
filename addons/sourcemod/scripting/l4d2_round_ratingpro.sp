@@ -84,6 +84,18 @@ enum struct RawHistoryActionEntry
 	int deathCharges;
 }
 
+enum struct TankHistoryEntry
+{
+	float raw;
+	bool becameTank;
+	int tankDmgUpright;
+	int punch;
+	int rock;
+	int hittable;
+	int incap;
+	int death;
+}
+
 public Plugin myinfo =
 {
 	name = "L4D2 Round RatingPro",
@@ -242,7 +254,10 @@ public void Event_PlayerHurt(Event event, const char[] name, bool dontBroadcast)
 		RememberClient(victim);
 		if (GetClientTeam(victim) == TEAM_SURVIVOR)
 		{
-			g_iDmgTaken[victim] += damage;
+			if (!IsSurvivorIncapacitated(victim))
+			{
+				g_iDmgTaken[victim] += damage;
+			}
 		}
 	}
 
@@ -674,8 +689,32 @@ void PrintAllClientRatingDetailsToConsole(float outputMin, float outputMax, floa
 			client, name, outputRaw, defenseRaw, focusRaw, infectorRaw, tankRaw);
 		PrintToServer("[RatingPro] #%d %s survivor(siDmg=%d ciKill=%d tankDmg=%d dmgTaken=%d incaps=%d deaths=%d ff=%d tankupDmg=%d tankupKill=%d skeet=%d level=%d pop=%d tongueCut=%d crown=%d)",
 			client, name, g_iSiDamage[client], g_iCiKilled[client], g_iTankDamage[client], g_iDmgTaken[client], g_iIncaps[client], g_iDied[client], g_iFfGiven[client], g_iSiDamageTankup[client], g_iSiKilledTankup[client], g_iSkeets[client], g_iLevels[client], g_iPops[client], g_iTongueCuts[client], g_iCrowns[client]);
+
+		int tankDmgUpright = g_iTankDmgUpright[client];
+		int tankPunch = g_iTankPunch[client];
+		int tankRock = g_iTankRock[client];
+		int tankHittable = g_iTankHittable[client];
+		int tankIncap = g_iTankIncap[client];
+		int tankDeath = g_iTankDeath[client];
+		if (GetTankRaw(client) <= 0.0 && tankRaw > 0.0 && g_hLastTankRaw != null)
+		{
+			char auth[64];
+			if (GetClientAuthId(client, AuthId_Steam2, auth, sizeof(auth), true))
+			{
+				TankHistoryEntry histTank;
+				if (g_hLastTankRaw.GetArray(auth, histTank, sizeof(histTank)))
+				{
+					tankDmgUpright = histTank.tankDmgUpright;
+					tankPunch = histTank.punch;
+					tankRock = histTank.rock;
+					tankHittable = histTank.hittable;
+					tankIncap = histTank.incap;
+					tankDeath = histTank.death;
+				}
+			}
+		}
 		PrintToServer("[RatingPro] #%d %s infected(dmg=%d booms=%d deathCharges=%d tankDmgUpright=%d punch=%d rock=%d hittable=%d incap=%d death=%d)",
-			client, name, g_iInfDmgTotal[client], g_iInfBooms[client], g_iInfDeathCharges[client], g_iTankDmgUpright[client], g_iTankPunch[client], g_iTankRock[client], g_iTankHittable[client], g_iTankIncap[client], g_iTankDeath[client]);
+			client, name, g_iInfDmgTotal[client], g_iInfBooms[client], g_iInfDeathCharges[client], tankDmgUpright, tankPunch, tankRock, tankHittable, tankIncap, tankDeath);
 	}
 }
 
@@ -1022,14 +1061,18 @@ float GetEffectiveTankRaw(int client)
 	}
 
 	char auth[64];
-	char rawText[32];
-	if (!GetClientAuthId(client, AuthId_Steam2, auth, sizeof(auth), true)
-		|| !g_hLastTankRaw.GetString(auth, rawText, sizeof(rawText)))
+	if (!GetClientAuthId(client, AuthId_Steam2, auth, sizeof(auth), true))
 	{
 		return 0.0;
 	}
 
-	return StringToFloat(rawText);
+	TankHistoryEntry tankEntry;
+	if (!g_hLastTankRaw.GetArray(auth, tankEntry, sizeof(tankEntry)))
+	{
+		return 0.0;
+	}
+
+	return tankEntry.raw;
 }
 
 void SaveLatestTankRaw()
@@ -1053,9 +1096,17 @@ void SaveLatestTankRaw()
 			continue;
 		}
 
-		char rawText[32];
-		FloatToString(tankRaw, rawText, sizeof(rawText));
-		g_hLastTankRaw.SetString(auth, rawText);
+		TankHistoryEntry tankEntry;
+		tankEntry.raw = tankRaw;
+		tankEntry.becameTank = g_bBecameTank[client];
+		tankEntry.tankDmgUpright = g_iTankDmgUpright[client];
+		tankEntry.punch = g_iTankPunch[client];
+		tankEntry.rock = g_iTankRock[client];
+		tankEntry.hittable = g_iTankHittable[client];
+		tankEntry.incap = g_iTankIncap[client];
+		tankEntry.death = g_iTankDeath[client];
+
+		g_hLastTankRaw.SetArray(auth, tankEntry, sizeof(tankEntry));
 	}
 }
 
@@ -1271,6 +1322,17 @@ void SaveRatingSnapshot(bool hasRanges, float outputMin, float outputMax, float 
 		else if (effectiveTank > 0.0)
 		{
 			entry.tankSource = 2;
+			TankHistoryEntry histTank;
+			if (g_hLastTankRaw != null && g_hLastTankRaw.GetArray(auth, histTank, sizeof(histTank)))
+			{
+				entry.tankDmgUpright = histTank.tankDmgUpright;
+				entry.punch = histTank.punch;
+				entry.rock = histTank.rock;
+				entry.hittable = histTank.hittable;
+				entry.incap = histTank.incap;
+				entry.death = histTank.death;
+				entry.becameTank = histTank.becameTank;
+			}
 		}
 		else
 		{
