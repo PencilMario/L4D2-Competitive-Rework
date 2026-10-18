@@ -147,6 +147,7 @@ int g_iCrowns[MAXPLAYERS + 1];
 
 int g_iInfDmgTotal[MAXPLAYERS + 1];
 int g_iInfBooms[MAXPLAYERS + 1];
+bool g_bBiled[MAXPLAYERS + 1];
 int g_iInfDeathCharges[MAXPLAYERS + 1];
 
 int g_iTankDmgUpright[MAXPLAYERS + 1];
@@ -198,6 +199,9 @@ public void OnPluginStart()
 	HookEvent("tank_spawn", Event_TankSpawn, EventHookMode_Post);
 	HookEvent("bot_player_replace", Event_BotPlayerReplace, EventHookMode_Post);
 	HookEvent("player_spawn", Event_PlayerSpawn, EventHookMode_Post);
+	HookEvent("player_now_it", Event_PlayerBiled, EventHookMode_Post);
+	HookEvent("player_no_longer_it", Event_PlayerUnbiled, EventHookMode_Post);
+	HookEvent("player_bot_replace", Event_PlayerBotReplace, EventHookMode_Post);
 
 	ResetRoundStats();
 }
@@ -212,6 +216,7 @@ public void OnClientDisconnect(int client)
 	if (IsValidClientIndex(client))
 	{
 		g_bSeen[client] = false;
+		g_bBiled[client] = false;
 		g_fLastQueryTime[client] = 0.0;
 	}
 }
@@ -219,6 +224,10 @@ public void OnClientDisconnect(int client)
 public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
 	g_bRoundEnded = false;
+	for (int client = 1; client <= MaxClients; client++)
+	{
+		g_bBiled[client] = false;
+	}
 }
 
 public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
@@ -334,12 +343,17 @@ public void Event_InfectedDeath(Event event, const char[] name, bool dontBroadca
 
 public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
+	int victim = GetClientOfUserId(event.GetInt("userid"));
+	if (IsValidClientIndex(victim))
+	{
+		g_bBiled[victim] = false;
+	}
+
 	if (!g_hEnabled.BoolValue || g_bRoundEnded)
 	{
 		return;
 	}
 
-	int victim = GetClientOfUserId(event.GetInt("userid"));
 	int attacker = GetClientOfUserId(event.GetInt("attacker"));
 
 	if (IsHumanClient(victim))
@@ -416,26 +430,49 @@ public void Event_TankSpawn(Event event, const char[] name, bool dontBroadcast)
 
 public void Event_BotPlayerReplace(Event event, const char[] name, bool dontBroadcast)
 {
+	int bot = GetClientOfUserId(event.GetInt("bot"));
+	int player = GetClientOfUserId(event.GetInt("player"));
+	if (IsValidClientIndex(bot) && IsValidClientIndex(player))
+	{
+		g_bBiled[player] = g_bBiled[bot];
+		g_bBiled[bot] = false;
+	}
+
 	if (!g_hEnabled.BoolValue || g_bRoundEnded)
 	{
 		return;
 	}
 
-	int player = GetClientOfUserId(event.GetInt("player"));
 	if (IsHumanClient(player) && GetClientTeam(player) == TEAM_INFECTED && GetZombieClass(player) == ZC_TANK)
 	{
 		MarkClientAsTank(player);
 	}
 }
 
+public void Event_PlayerBotReplace(Event event, const char[] name, bool dontBroadcast)
+{
+	int bot = GetClientOfUserId(event.GetInt("bot"));
+	int player = GetClientOfUserId(event.GetInt("player"));
+	if (IsValidClientIndex(bot) && IsValidClientIndex(player))
+	{
+		g_bBiled[bot] = g_bBiled[player];
+		g_bBiled[player] = false;
+	}
+}
+
 public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 {
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	if (IsValidClientIndex(client))
+	{
+		g_bBiled[client] = false;
+	}
+
 	if (!g_hEnabled.BoolValue || g_bRoundEnded)
 	{
 		return;
 	}
 
-	int client = GetClientOfUserId(event.GetInt("userid"));
 	if (IsHumanClient(client) && GetClientTeam(client) == TEAM_INFECTED && GetZombieClass(client) == ZC_TANK)
 	{
 		MarkClientAsTank(client);
@@ -487,15 +524,33 @@ public void OnTongueCut(int survivor, int smoker)
 	AddFocusCounter(survivor, g_iTongueCuts);
 }
 
-public void OnBoomerVomitLanded(int boomer, int amount)
+public void Event_PlayerBiled(Event event, const char[] name, bool dontBroadcast)
 {
-	if (amount <= 0 || !IsHumanClient(boomer))
+	int victim = GetClientOfUserId(event.GetInt("userid"));
+	if (!IsValidClientIndex(victim) || !IsClientInGame(victim) || GetClientTeam(victim) != TEAM_SURVIVOR || g_bBiled[victim])
 	{
 		return;
 	}
 
-	RememberClient(boomer);
-	g_iInfBooms[boomer] += amount;
+	g_bBiled[victim] = true;
+
+	int attacker = GetClientOfUserId(event.GetInt("attacker"));
+	if (!g_hEnabled.BoolValue || g_bRoundEnded || !IsHumanClient(attacker) || GetClientTeam(attacker) != TEAM_INFECTED)
+	{
+		return;
+	}
+
+	RememberClient(attacker);
+	g_iInfBooms[attacker]++;
+}
+
+public void Event_PlayerUnbiled(Event event, const char[] name, bool dontBroadcast)
+{
+	int victim = GetClientOfUserId(event.GetInt("userid"));
+	if (IsValidClientIndex(victim))
+	{
+		g_bBiled[victim] = false;
+	}
 }
 
 public void OnDeathCharge(int charger, int survivor, float height, float distance, bool wasCarried)
@@ -751,6 +806,7 @@ void ResetRoundStats()
 
 		g_iInfDmgTotal[client] = 0;
 		g_iInfBooms[client] = 0;
+		g_bBiled[client] = false;
 		g_iInfDeathCharges[client] = 0;
 
 		g_iTankDmgUpright[client] = 0;
@@ -1629,7 +1685,7 @@ void PrintRatingSnapshotToConsole(int requester, int targetClient, bool logToFil
 		PrintToConsoleOrLog(requester, logToFile, "[生还者数据] 特感伤害(siDmg)=%d 丧尸击杀(ciKill)=%d 克伤害(tankDmg)=%d 承受伤害(dmgTaken)=%d 倒地(incaps)=%d 死亡(deaths)=%d 友伤(ff)=%d 克局特伤(tankupDmg)=%d 克局特杀(tankupKill)=%d 空爆(skeet)=%d 截停(level)=%d 秒爆(pop)=%d 断舌(tongueCut)=%d 秒妹(crown)=%d",
 			entry.siDmg, entry.ciKill, entry.tankDmg, entry.dmgTaken, entry.incaps, entry.deaths, entry.ff,
 			entry.tankupDmg, entry.tankupKill, entry.skeet, entry.level, entry.pop, entry.tongueCut, entry.crown);
-		PrintToConsoleOrLog(requester, logToFile, "[特感数据] 造成的伤害(dmg)=%d 炸中生还者(booms)=%d 致命牛撞(deathCharges)=%d 克直立伤害(tankDmgUpright)=%d 拳击(punch)=%d 砸石(rock)=%d 铁(hittable)=%d 击倒(incap)=%d 击杀(death)=%d",
+		PrintToConsoleOrLog(requester, logToFile, "[特感数据] 造成的伤害(dmg)=%d 胆汁命中生还者(booms)=%d 致命牛撞(deathCharges)=%d 克直立伤害(tankDmgUpright)=%d 拳击(punch)=%d 砸石(rock)=%d 铁(hittable)=%d 击倒(incap)=%d 击杀(death)=%d",
 			entry.dmg, entry.booms, entry.deathCharges, entry.tankDmgUpright, entry.punch, entry.rock, entry.hittable, entry.incap, entry.death);
 		PrintToConsoleOrLog(requester, logToFile, "[说明] 该玩家在上次结算时无有效行为计数，未生成 RatingPro 评分。");
 		PrintToConsoleOrLog(requester, logToFile, "==========================================================");
@@ -1682,7 +1738,7 @@ void PrintRatingSnapshotToConsole(int requester, int targetClient, bool logToFil
 	PrintToConsoleOrLog(requester, logToFile, "[生还者数据 (跨章节累计 %d 槽)] 特感伤害(siDmg)=%d 丧尸击杀(ciKill)=%d 克伤害(tankDmg)=%d 承受伤害(dmgTaken)=%d 倒地(incaps)=%d 死亡(deaths)=%d 友伤(ff)=%d 克局特伤(tankupDmg)=%d 克局特杀(tankupKill)=%d 空爆(skeet)=%d 截停(level)=%d 秒爆(pop)=%d 断舌(tongueCut)=%d 秒妹(crown)=%d",
 		entry.recordedSlots, entry.siDmg, entry.ciKill, entry.tankDmg, entry.dmgTaken, entry.incaps, entry.deaths, entry.ff,
 		entry.tankupDmg, entry.tankupKill, entry.skeet, entry.level, entry.pop, entry.tongueCut, entry.crown);
-	PrintToConsoleOrLog(requester, logToFile, "[特感数据 (跨章节累计 %d 槽)] 造成的伤害(dmg)=%d 炸中生还者(booms)=%d 致命牛撞(deathCharges)=%d 克直立伤害(tankDmgUpright)=%d 拳击(punch)=%d 砸石(rock)=%d 铁(hittable)=%d 击倒(incap)=%d 击杀(death)=%d",
+	PrintToConsoleOrLog(requester, logToFile, "[特感数据 (跨章节累计 %d 槽)] 造成的伤害(dmg)=%d 胆汁命中生还者(booms)=%d 致命牛撞(deathCharges)=%d 克直立伤害(tankDmgUpright)=%d 拳击(punch)=%d 砸石(rock)=%d 铁(hittable)=%d 击倒(incap)=%d 击杀(death)=%d",
 		entry.recordedSlots, entry.dmg, entry.booms, entry.deathCharges, entry.tankDmgUpright, entry.punch, entry.rock, entry.hittable, entry.incap, entry.death);
 	PrintToConsoleOrLog(requester, logToFile, "[说明] 生还者与特感数据为已有历史槽位(%d槽)跨章节累计统计，RatingPro评分采用平均值补齐至四槽计算。", entry.recordedSlots);
 	PrintToConsoleOrLog(requester, logToFile, "==========================================================");
