@@ -5,6 +5,7 @@
 #include <sdktools>
 #include <colors>
 #include <l4d2_skill_detect>
+#include <logger>
 
 #define PLUGIN_VERSION "1.0.0"
 
@@ -105,6 +106,8 @@ public Plugin myinfo =
 	url = ""
 };
 
+Logger g_RatingLogger;
+
 ConVar g_hEnabled;
 ConVar g_hDelay;
 ConVar g_hMinRaw;
@@ -156,6 +159,7 @@ bool g_bBecameTank[MAXPLAYERS + 1];
 
 public void OnPluginStart()
 {
+	g_RatingLogger = new Logger("ratingpro", LoggerType_NewLogFile);
 	g_hLastTankRaw = new StringMap();
 	g_iRawHistoryNextSlot = 0;
 	g_iRawHistoryCount = 0;
@@ -535,6 +539,7 @@ public Action Timer_PrintBestRating(Handle timer)
 	if (!BuildRawRanges(outputMin, outputMax, defenseMin, defenseMax, focusMin, focusMax, infectorMin, infectorMax, tankMin, tankMax))
 	{
 		SaveRatingSnapshot(false, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+		RecordRatingSettlement();
 		CPrintToChatAll("{blue}[{green}RatingPro{blue}]{default} 本章节没有足够数据生成最佳表现。");
 		PrintAllClientRatingDetailsNoData();
 		PrintAllClientRatingDetailsToConsoleNoData();
@@ -543,6 +548,7 @@ public Action Timer_PrintBestRating(Handle timer)
 	}
 
 	SaveRatingSnapshot(true, outputMin, outputMax, defenseMin, defenseMax, focusMin, focusMax, infectorMin, infectorMax, tankMin, tankMax);
+	RecordRatingSettlement();
 
 	int bestClient = 0;
 	float bestRating = 0.0;
@@ -1508,7 +1514,57 @@ void GetTeamNameString(int team, char[] buffer, int maxlen)
 	}
 }
 
-void PrintRatingSnapshotToConsole(int requester, int targetClient)
+void RecordRatingSettlement()
+{
+	char timestamp[32];
+	FormatTime(timestamp, sizeof(timestamp), "%Y%m%d_%H%M%S");
+	char logName[MAX_LOGGERNAME_LENGTH];
+	char logPath[PLATFORM_MAX_PATH];
+	int sequence = 0;
+	do
+	{
+		sequence++;
+		Format(logName, sizeof(logName), "ratingpro_%s_%03d", timestamp, sequence);
+		BuildPath(Path_SM, logPath, sizeof(logPath), "logs/%s.log", logName);
+	}
+	while (FileExists(logPath));
+
+	File logFile = OpenFile(logPath, "wt");
+	if (logFile == null)
+	{
+		LogError("[RatingPro] Cannot create settlement log: %s", logPath);
+		return;
+	}
+	delete logFile;
+	g_RatingLogger.SetLogName(logName);
+
+	PrintToConsoleOrLog(0, true, "==================== RatingPro 结算 ====================");
+	PrintToConsoleOrLog(0, true, "结算地图: %s | 结算时间: %s | 快照编号: #%d", g_sSnapshotMap, g_sSnapshotTime, g_iSnapshotRoundId);
+	for (int client = 1; client <= MaxClients; client++)
+	{
+		if (IsHumanClient(client))
+		{
+			PrintRatingSnapshotToConsole(0, client, true);
+		}
+	}
+	PrintToServer("[RatingPro] Saved settlement log: %s", logPath);
+}
+
+void PrintToConsoleOrLog(int requester, bool logToFile, const char[] format, any ...)
+{
+	char buffer[2048];
+	VFormat(buffer, sizeof(buffer), format, 4);
+	if (logToFile)
+	{
+		g_RatingLogger.WritetoLogFileRaw(buffer);
+	}
+	else
+	{
+		PrintToConsole(requester, "%s", buffer);
+	}
+}
+
+void PrintRatingSnapshotToConsole(int requester, int targetClient, bool logToFile = false)
 {
 	if (!IsHumanClient(targetClient))
 	{
@@ -1524,30 +1580,30 @@ void PrintRatingSnapshotToConsole(int requester, int targetClient)
 	char auth[64];
 	if (!GetClientAuthId(targetClient, AuthId_Steam2, auth, sizeof(auth), true))
 	{
-		PrintToConsole(requester, "==================== RatingPro 数据表 ====================");
-		PrintToConsole(requester, "[元信息] 当前玩家: %s (userid: #%d) | 状态: 身份未验证 (N/A)", cleanCurrentName, targetUserId);
-		PrintToConsole(requester, "[说明] 目标玩家尚未完成 Steam 认证，无法关联评分快照。");
-		PrintToConsole(requester, "==========================================================");
+		PrintToConsoleOrLog(requester, logToFile, "==================== RatingPro 数据表 ====================");
+		PrintToConsoleOrLog(requester, logToFile, "[元信息] 当前玩家: %s (userid: #%d) | 状态: 身份未验证 (N/A)", cleanCurrentName, targetUserId);
+		PrintToConsoleOrLog(requester, logToFile, "[说明] 目标玩家尚未完成 Steam 认证，无法关联评分快照。");
+		PrintToConsoleOrLog(requester, logToFile, "==========================================================");
 		return;
 	}
 
 	if (!g_bHasSnapshot)
 	{
-		PrintToConsole(requester, "==================== RatingPro 数据表 ====================");
-		PrintToConsole(requester, "[元信息] 当前玩家: %s (userid: #%d) | 状态: 暂无快照数据 (N/A)", cleanCurrentName, targetUserId);
-		PrintToConsole(requester, "[说明] 服务器尚未完成任何章节正式结算，暂无 RatingPro 快照。");
-		PrintToConsole(requester, "==========================================================");
+		PrintToConsoleOrLog(requester, logToFile, "==================== RatingPro 数据表 ====================");
+		PrintToConsoleOrLog(requester, logToFile, "[元信息] 当前玩家: %s (userid: #%d) | 状态: 暂无快照数据 (N/A)", cleanCurrentName, targetUserId);
+		PrintToConsoleOrLog(requester, logToFile, "[说明] 服务器尚未完成任何章节正式结算，暂无 RatingPro 快照。");
+		PrintToConsoleOrLog(requester, logToFile, "==========================================================");
 		return;
 	}
 
 	RatingSnapshotEntry entry;
 	if (!g_hLastRatingSnapshot.GetArray(auth, entry, sizeof(entry)))
 	{
-		PrintToConsole(requester, "==================== RatingPro 数据表 ====================");
-		PrintToConsole(requester, "快照编号: #%d | 结算地图: %s | 结算时间: %s", g_iSnapshotRoundId, g_sSnapshotMap, g_sSnapshotTime);
-		PrintToConsole(requester, "[元信息] 当前玩家: %s (userid: #%d) | 状态: 未参与上次结算 (N/A)", cleanCurrentName, targetUserId);
-		PrintToConsole(requester, "[说明] 该玩家未参与上次正式结算或结算时未完成身份认证。");
-		PrintToConsole(requester, "==========================================================");
+		PrintToConsoleOrLog(requester, logToFile, "==================== RatingPro 数据表 ====================");
+		PrintToConsoleOrLog(requester, logToFile, "快照编号: #%d | 结算地图: %s | 结算时间: %s", g_iSnapshotRoundId, g_sSnapshotMap, g_sSnapshotTime);
+		PrintToConsoleOrLog(requester, logToFile, "[元信息] 当前玩家: %s (userid: #%d) | 状态: 未参与上次结算 (N/A)", cleanCurrentName, targetUserId);
+		PrintToConsoleOrLog(requester, logToFile, "[说明] 该玩家未参与上次正式结算或结算时未完成身份认证。");
+		PrintToConsoleOrLog(requester, logToFile, "==========================================================");
 		return;
 	}
 
@@ -1564,19 +1620,19 @@ void PrintRatingSnapshotToConsole(int requester, int targetClient)
 
 	if (!entry.eligible)
 	{
-		PrintToConsole(requester, "==================== RatingPro 数据表 ====================");
-		PrintToConsole(requester, "快照编号: #%d | 结算地图: %s | 结算时间: %s", g_iSnapshotRoundId, g_sSnapshotMap, g_sSnapshotTime);
-		PrintToConsole(requester, "[元信息] 当前玩家: %s (userid: #%d) | 结算姓名: %s | 结算队伍: %s | 状态: 上次结算数据不足/无资格 (N/A)",
+		PrintToConsoleOrLog(requester, logToFile, "==================== RatingPro 数据表 ====================");
+		PrintToConsoleOrLog(requester, logToFile, "快照编号: #%d | 结算地图: %s | 结算时间: %s", g_iSnapshotRoundId, g_sSnapshotMap, g_sSnapshotTime);
+		PrintToConsoleOrLog(requester, logToFile, "[元信息] 当前玩家: %s (userid: #%d) | 结算姓名: %s | 结算队伍: %s | 状态: 上次结算数据不足/无资格 (N/A)",
 			cleanCurrentName, targetUserId, cleanSnapshotName, teamName);
-		PrintToConsole(requester, "[综合评分] RatingPro: N/A | 加权原始分 (weighted raw): N/A");
-		PrintToConsole(requester, "[原始分与归一化] 输出(output): N/A | 防守(defense): N/A | 关键操作(focus): N/A | 特感进攻(infector): N/A | Tank表现(tank): N/A");
-		PrintToConsole(requester, "[生还者数据] 特感伤害(siDmg)=%d 丧尸击杀(ciKill)=%d 克伤害(tankDmg)=%d 承受伤害(dmgTaken)=%d 倒地(incaps)=%d 死亡(deaths)=%d 友伤(ff)=%d 克局特伤(tankupDmg)=%d 克局特杀(tankupKill)=%d 空爆(skeet)=%d 截停(level)=%d 秒爆(pop)=%d 断舌(tongueCut)=%d 秒妹(crown)=%d",
+		PrintToConsoleOrLog(requester, logToFile, "[综合评分] RatingPro: N/A | 加权原始分 (weighted raw): N/A");
+		PrintToConsoleOrLog(requester, logToFile, "[原始分与归一化] 输出(output): N/A | 防守(defense): N/A | 关键操作(focus): N/A | 特感进攻(infector): N/A | Tank表现(tank): N/A");
+		PrintToConsoleOrLog(requester, logToFile, "[生还者数据] 特感伤害(siDmg)=%d 丧尸击杀(ciKill)=%d 克伤害(tankDmg)=%d 承受伤害(dmgTaken)=%d 倒地(incaps)=%d 死亡(deaths)=%d 友伤(ff)=%d 克局特伤(tankupDmg)=%d 克局特杀(tankupKill)=%d 空爆(skeet)=%d 截停(level)=%d 秒爆(pop)=%d 断舌(tongueCut)=%d 秒妹(crown)=%d",
 			entry.siDmg, entry.ciKill, entry.tankDmg, entry.dmgTaken, entry.incaps, entry.deaths, entry.ff,
 			entry.tankupDmg, entry.tankupKill, entry.skeet, entry.level, entry.pop, entry.tongueCut, entry.crown);
-		PrintToConsole(requester, "[特感数据] 造成的伤害(dmg)=%d 炸中生还者(booms)=%d 致命牛撞(deathCharges)=%d 克直立伤害(tankDmgUpright)=%d 拳击(punch)=%d 砸石(rock)=%d 铁(hittable)=%d 击倒(incap)=%d 击杀(death)=%d",
+		PrintToConsoleOrLog(requester, logToFile, "[特感数据] 造成的伤害(dmg)=%d 炸中生还者(booms)=%d 致命牛撞(deathCharges)=%d 克直立伤害(tankDmgUpright)=%d 拳击(punch)=%d 砸石(rock)=%d 铁(hittable)=%d 击倒(incap)=%d 击杀(death)=%d",
 			entry.dmg, entry.booms, entry.deathCharges, entry.tankDmgUpright, entry.punch, entry.rock, entry.hittable, entry.incap, entry.death);
-		PrintToConsole(requester, "[说明] 该玩家在上次结算时无有效行为计数，未生成 RatingPro 评分。");
-		PrintToConsole(requester, "==========================================================");
+		PrintToConsoleOrLog(requester, logToFile, "[说明] 该玩家在上次结算时无有效行为计数，未生成 RatingPro 评分。");
+		PrintToConsoleOrLog(requester, logToFile, "==========================================================");
 		return;
 	}
 
@@ -1594,16 +1650,16 @@ void PrintRatingSnapshotToConsole(int requester, int targetClient)
 		strcopy(tankSourceStr, sizeof(tankSourceStr), "无数据 (no data: 4.6)");
 	}
 
-	PrintToConsole(requester, "==================== RatingPro 数据表 ====================");
-	PrintToConsole(requester, "快照编号: #%d | 结算地图: %s | 结算时间: %s", g_iSnapshotRoundId, g_sSnapshotMap, g_sSnapshotTime);
-	PrintToConsole(requester, "[元信息] 当前玩家: %s (userid: #%d) | 结算姓名: %s | 结算队伍: %s | 状态: 正常有效",
+	PrintToConsoleOrLog(requester, logToFile, "==================== RatingPro 数据表 ====================");
+	PrintToConsoleOrLog(requester, logToFile, "快照编号: #%d | 结算地图: %s | 结算时间: %s", g_iSnapshotRoundId, g_sSnapshotMap, g_sSnapshotTime);
+	PrintToConsoleOrLog(requester, logToFile, "[元信息] 当前玩家: %s (userid: #%d) | 结算姓名: %s | 结算队伍: %s | 状态: 正常有效",
 		cleanCurrentName, targetUserId, cleanSnapshotName, teamName);
-	PrintToConsole(requester, "[综合评分] RatingPro: %.1f | 加权原始分 (weighted raw): %.1f", entry.rating, entry.raw);
-	PrintToConsole(requester, "[加权分贡献 (对raw)] 输出(30%%): %.2f | 防守(10%%): %.2f | 关键操作(10%%): %.2f | 特感进攻(25%%): %.2f | Tank表现(25%%): %.2f",
+	PrintToConsoleOrLog(requester, logToFile, "[综合评分] RatingPro: %.1f | 加权原始分 (weighted raw): %.1f", entry.rating, entry.raw);
+	PrintToConsoleOrLog(requester, logToFile, "[加权分贡献 (对raw)] 输出(30%%): %.2f | 防守(10%%): %.2f | 关键操作(10%%): %.2f | 特感进攻(25%%): %.2f | Tank表现(25%%): %.2f",
 		entry.output * 0.30, entry.defense * 0.10, entry.focus * 0.10, entry.infector * 0.25, entry.tank * 0.25);
-	PrintToConsole(requester, "[归一化分] 输出(output): %.1f | 防守(defense): %.1f | 关键操作(focus): %.1f | 特感进攻(infector): %.1f | Tank表现(tank): %.1f",
+	PrintToConsoleOrLog(requester, logToFile, "[归一化分] 输出(output): %.1f | 防守(defense): %.1f | 关键操作(focus): %.1f | 特感进攻(infector): %.1f | Tank表现(tank): %.1f",
 		entry.output, entry.defense, entry.focus, entry.infector, entry.tank);
-	PrintToConsole(requester, "[原始评分] 输出(output): %.1f | 防守(defense): %.1f | 关键操作(focus): %.1f | 特感进攻(infector): %.1f | Tank表现(tank): %.1f (Tank来源: %s)",
+	PrintToConsoleOrLog(requester, logToFile, "[原始评分] 输出(output): %.1f | 防守(defense): %.1f | 关键操作(focus): %.1f | 特感进攻(infector): %.1f | Tank表现(tank): %.1f (Tank来源: %s)",
 		entry.outputRaw, entry.defenseRaw, entry.focusRaw, entry.infectorRaw, entry.tankRaw, tankSourceStr);
 
 	float curOutput = float(entry.siDmg + entry.tankDmg + entry.ciKill * 10);
@@ -1611,23 +1667,23 @@ void PrintRatingSnapshotToConsole(int requester, int targetClient)
 	float curFocus = float(entry.tankupDmg) * 0.004 + float(entry.tankupKill) * 0.25 + float(entry.skeet) * 2.0 + float(entry.level) * 2.0 + float(entry.pop) * 1.5 + float(entry.tongueCut) * 1.0 + float(entry.crown) * 2.0;
 	float curInfector = float(entry.dmg + entry.booms * 8 + entry.deathCharges * 25);
 
-	PrintToConsole(requester, "[原始评分构成与动作贡献 (跨章节累计 %d 槽)]", entry.recordedSlots);
-	PrintToConsole(requester, "  ├─ 输出原始分贡献 (累计%.1f / 均值补齐生效值%.1f): 特感伤害+%d, 克伤害+%d, 丧尸击杀+%d (x10)",
+	PrintToConsoleOrLog(requester, logToFile, "[原始评分构成与动作贡献 (跨章节累计 %d 槽)]", entry.recordedSlots);
+	PrintToConsoleOrLog(requester, logToFile, "  ├─ 输出原始分贡献 (累计%.1f / 均值补齐生效值%.1f): 特感伤害+%d, 克伤害+%d, 丧尸击杀+%d (x10)",
 		curOutput, entry.outputRaw, entry.siDmg, entry.tankDmg, entry.ciKill * 10);
-	PrintToConsole(requester, "  ├─ 防守原始分扣除 (累计%.1f / 均值补齐生效值%.1f): 承伤-%d, 倒地-%d (x350), 死亡-%d (x80), 友伤-%d (x40)",
+	PrintToConsoleOrLog(requester, logToFile, "  ├─ 防守原始分扣除 (累计%.1f / 均值补齐生效值%.1f): 承伤-%d, 倒地-%d (x350), 死亡-%d (x80), 友伤-%d (x40)",
 		curDefense, entry.defenseRaw, entry.dmgTaken, entry.incaps * 350, entry.deaths * 80, entry.ff * 40);
-	PrintToConsole(requester, "  ├─ 关键操作原始分 (累计%.1f / 均值补齐生效值%.1f): 克局特伤+%.1f, 克局特杀+%.1f, 空爆+%.1f, 截停+%.1f, 秒爆+%.1f, 断舌+%.1f, 秒妹+%.1f",
+	PrintToConsoleOrLog(requester, logToFile, "  ├─ 关键操作原始分 (累计%.1f / 均值补齐生效值%.1f): 克局特伤+%.1f, 克局特杀+%.1f, 空爆+%.1f, 截停+%.1f, 秒爆+%.1f, 断舌+%.1f, 秒妹+%.1f",
 		curFocus, entry.focusRaw, float(entry.tankupDmg) * 0.004, float(entry.tankupKill) * 0.25, float(entry.skeet) * 2.0, float(entry.level) * 2.0, float(entry.pop) * 1.5, float(entry.tongueCut) * 1.0, float(entry.crown) * 2.0);
-	PrintToConsole(requester, "  ├─ 特感进攻原始分 (累计%.1f / 均值补齐生效值%.1f): 特感伤害+%d, 炸人+%d (x8), 致命牛撞+%d (x25)",
+	PrintToConsoleOrLog(requester, logToFile, "  ├─ 特感进攻原始分 (累计%.1f / 均值补齐生效值%.1f): 特感伤害+%d, 炸人+%d (x8), 致命牛撞+%d (x25)",
 		curInfector, entry.infectorRaw, entry.dmg, entry.booms * 8, entry.deathCharges * 25);
-	PrintToConsole(requester, "  └─ Tank表现原始分 (当前生效值%.1f): 出克基础分+%d, 直立伤害+%d, 拳击+%d (x10), 砸石+%d (x20), 铁+%d (x35), 击倒+%d (x45), 击杀+%d (x60)",
+	PrintToConsoleOrLog(requester, logToFile, "  └─ Tank表现原始分 (当前生效值%.1f): 出克基础分+%d, 直立伤害+%d, 拳击+%d (x10), 砸石+%d (x20), 铁+%d (x35), 击倒+%d (x45), 击杀+%d (x60)",
 		entry.tankRaw, entry.becameTank ? 1 : 0, entry.tankDmgUpright, entry.punch * 10, entry.rock * 20, entry.hittable * 35, entry.incap * 45, entry.death * 60);
 
-	PrintToConsole(requester, "[生还者数据 (跨章节累计 %d 槽)] 特感伤害(siDmg)=%d 丧尸击杀(ciKill)=%d 克伤害(tankDmg)=%d 承受伤害(dmgTaken)=%d 倒地(incaps)=%d 死亡(deaths)=%d 友伤(ff)=%d 克局特伤(tankupDmg)=%d 克局特杀(tankupKill)=%d 空爆(skeet)=%d 截停(level)=%d 秒爆(pop)=%d 断舌(tongueCut)=%d 秒妹(crown)=%d",
+	PrintToConsoleOrLog(requester, logToFile, "[生还者数据 (跨章节累计 %d 槽)] 特感伤害(siDmg)=%d 丧尸击杀(ciKill)=%d 克伤害(tankDmg)=%d 承受伤害(dmgTaken)=%d 倒地(incaps)=%d 死亡(deaths)=%d 友伤(ff)=%d 克局特伤(tankupDmg)=%d 克局特杀(tankupKill)=%d 空爆(skeet)=%d 截停(level)=%d 秒爆(pop)=%d 断舌(tongueCut)=%d 秒妹(crown)=%d",
 		entry.recordedSlots, entry.siDmg, entry.ciKill, entry.tankDmg, entry.dmgTaken, entry.incaps, entry.deaths, entry.ff,
 		entry.tankupDmg, entry.tankupKill, entry.skeet, entry.level, entry.pop, entry.tongueCut, entry.crown);
-	PrintToConsole(requester, "[特感数据 (跨章节累计 %d 槽)] 造成的伤害(dmg)=%d 炸中生还者(booms)=%d 致命牛撞(deathCharges)=%d 克直立伤害(tankDmgUpright)=%d 拳击(punch)=%d 砸石(rock)=%d 铁(hittable)=%d 击倒(incap)=%d 击杀(death)=%d",
+	PrintToConsoleOrLog(requester, logToFile, "[特感数据 (跨章节累计 %d 槽)] 造成的伤害(dmg)=%d 炸中生还者(booms)=%d 致命牛撞(deathCharges)=%d 克直立伤害(tankDmgUpright)=%d 拳击(punch)=%d 砸石(rock)=%d 铁(hittable)=%d 击倒(incap)=%d 击杀(death)=%d",
 		entry.recordedSlots, entry.dmg, entry.booms, entry.deathCharges, entry.tankDmgUpright, entry.punch, entry.rock, entry.hittable, entry.incap, entry.death);
-	PrintToConsole(requester, "[说明] 生还者与特感数据为已有历史槽位(%d槽)跨章节累计统计，RatingPro评分采用平均值补齐至四槽计算。", entry.recordedSlots);
-	PrintToConsole(requester, "==========================================================");
+	PrintToConsoleOrLog(requester, logToFile, "[说明] 生还者与特感数据为已有历史槽位(%d槽)跨章节累计统计，RatingPro评分采用平均值补齐至四槽计算。", entry.recordedSlots);
+	PrintToConsoleOrLog(requester, logToFile, "==========================================================");
 }

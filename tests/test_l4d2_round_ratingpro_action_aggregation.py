@@ -40,7 +40,7 @@ class RatingProActionAggregationTests(unittest.TestCase):
         self.assertIn("entry.tankDmgUpright = g_iTankDmgUpright[client];", snapshot_code)
 
     def test_console_log_reflects_aggregated_stats(self):
-        console_code = self.source.split("void PrintRatingSnapshotToConsole(int requester, int targetClient)", 1)[1]
+        console_code = self.source.split("void PrintRatingSnapshotToConsole(", 1)[1]
         self.assertIn("跨章节累计", console_code)
         self.assertIn("entry.recordedSlots", console_code)
         self.assertNotIn("当章记录", console_code)
