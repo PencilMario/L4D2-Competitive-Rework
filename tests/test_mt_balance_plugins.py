@@ -265,6 +265,22 @@ class SplitPluginContractTests(unittest.TestCase):
                     "播报小数位数要和分数口径一致（ELO 取整 / RatingPro 两位）",
                 )
 
+    def test_plugins_execute_their_own_config_files(self):
+        # sourcemod 只自动执行调用了 AutoExecConfig 的插件配置；缺这一句时
+        # cfg/sourcemod/<plugin>.cfg 完全不生效（改文件也不会有任何反应）。
+        for filename in PLUGINS:
+            with self.subTest(plugin=filename):
+                stem = filename.removesuffix(".sp")
+                source = read(SCRIPTING / filename)
+                body = extract_function(source, "public void OnPluginStart()")
+                self.assertIn(f'AutoExecConfig(true, "{stem}");', body)
+                self.assertLess(
+                    body.index("CreateConVar("),
+                    body.index("AutoExecConfig("),
+                    "配置文件必须在 ConVar 创建之后执行",
+                )
+                self.assertTrue((ROOT / "cfg" / "sourcemod" / f"{stem}.cfg").exists())
+
     def test_vote_hooks_are_exposed_for_mix_team(self):
         for filename in PLUGINS:
             with self.subTest(plugin=filename):

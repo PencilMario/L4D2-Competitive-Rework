@@ -91,6 +91,10 @@ public void OnPluginStart()
 	g_hDefaultElo = CreateConVar("sm_mt_elo_default_elo", "1500.0",
 		"sm_mt_elo_require_data=0 时，没有 ELO 数据的玩家使用的占位 ELO",
 		FCVAR_NONE, true, 0.0, true, 10000.0);
+
+	// 让 cfg/sourcemod/mt_elo.cfg 真正被执行：sourcemod 只自动执行调用了
+	// AutoExecConfig 的插件配置，缺这一句时那个文件形同废纸。
+	AutoExecConfig(true, "mt_elo");
 }
 
 /**

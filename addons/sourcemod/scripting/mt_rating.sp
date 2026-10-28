@@ -91,6 +91,10 @@ public void OnPluginStart()
 	g_hDefaultRating = CreateConVar("sm_mt_rating_default_rating", "5.0",
 		"sm_mt_rating_require_data=0 时，没有 RatingPro 数据的玩家使用的占位平均分（0-10）",
 		FCVAR_NONE, true, 0.0, true, 10.0);
+
+	// 让 cfg/sourcemod/mt_rating.cfg 真正被执行：sourcemod 只自动执行调用了
+	// AutoExecConfig 的插件配置，缺这一句时那个文件形同废纸。
+	AutoExecConfig(true, "mt_rating");
 }
 
 /**
