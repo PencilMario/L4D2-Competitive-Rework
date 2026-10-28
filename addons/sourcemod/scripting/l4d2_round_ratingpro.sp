@@ -332,6 +332,10 @@ public void OnPluginStart()
 	CreateApiConVars();
 	InitializeApi();
 
+	// 让 cfg/sourcemod/l4d2_round_ratingpro.cfg 真正被执行：sourcemod 只会自动执行
+	// 调用了 AutoExecConfig 的插件配置，缺这一句时那个文件形同废纸（API Key 也读不到）。
+	AutoExecConfig(true, "l4d2_round_ratingpro");
+
 	RegConsoleCmd("sm_ratingpro", Command_RatingPro, "查询玩家 RatingPro 评分数据快照。");
 	RegConsoleCmd("sm_rating", Command_RatingPro, "查询玩家 RatingPro 评分数据快照（别名）。");
 	RegConsoleCmd("sm_rt", Command_RatingPro, "查询玩家 RatingPro 评分数据快照（别名）。");

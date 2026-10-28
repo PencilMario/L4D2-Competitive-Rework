@@ -50,6 +50,17 @@ class RatingProBackendTests(unittest.TestCase):
         for name in declared:
             self.assertIn(name, created, f"{name} 声明了但未 CreateGlobalForward")
 
+    def test_plugin_executes_its_own_config_file(self):
+        # sourcemod 只自动执行调用了 AutoExecConfig 的插件配置，缺这一句时
+        # cfg/sourcemod/l4d2_round_ratingpro.cfg 不会被读取（API Key 也就读不到）。
+        body = extract_function(self.plugin, "public void OnPluginStart()")
+        self.assertIn('AutoExecConfig(true, "l4d2_round_ratingpro");', body)
+        self.assertLess(
+            body.index("CreateApiConVars();"),
+            body.index("AutoExecConfig("),
+            "配置文件必须在 ConVar 创建之后执行",
+        )
+
     # ------------------------- 战役（章节序列）判定 -------------------------
 
     def test_campaign_break_only_resets_the_upload_counter(self):

@@ -48,7 +48,7 @@
 - 新增手写 JSON 读取器（`JsonSkipValue` / `JsonFindMember` / `JsonResolvePath` / `JsonGetValue|Float|Int|Bool` / `JsonGetArrayLength|Element`）与写入器（`JsonEscape` / `UrlEncode`）：仓库没有 `json.inc`，为免给所有服主加装 RIPExt 硬依赖，只实现用得到的最小子集，不分配堆内存。
 - `CollectHistoryMaps` 拆出 `CollectHistoryMapNames` 供上传载荷复用；`SaveRoundRawHistory` 额外记录槽位所属段序号 `g_iRawHistorySeq[slot]`。
 - 运维命令 `sm_ratingpro_apidebug`（`ADMFLAG_ROOT`）：打印后端配置、战役累计、上传状态与在线玩家 ELO 缓存，加任意参数打印待上传载荷 JSON。
-- 新增 `cfg/sourcemod/l4d2_round_ratingpro.cfg`（API Key 与 server_key 默认注释掉，避免自动执行时覆盖本机既有值）。
+- 新增 `cfg/sourcemod/l4d2_round_ratingpro.cfg`（API Key 与 server_key 默认注释掉，避免自动执行时覆盖本机既有值）。`OnPluginStart` 里必须调用 `AutoExecConfig(true, "l4d2_round_ratingpro")`：sourcemod 只会自动执行调用了它的插件配置，缺这一句时整个 cfg 不会被读取（`sm_ratingpro_api_key` 因此永远为空、一次都不会上传）。
 - 行为影响面：`spcomp` 编译通过的同一份源码在无 `sm_ratingpro_api_key` 时**只读不写**——ELO 与平均分照常缓存，但一次也不会尝试上传，并只在首次记录一条 `LogError` 提示。
 
 ## 部署前提
