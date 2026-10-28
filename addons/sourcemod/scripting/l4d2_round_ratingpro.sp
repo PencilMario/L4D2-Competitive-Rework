@@ -248,15 +248,13 @@ char g_sHttpResponse[HTTP_RESPONSE_SIZE];
 
 // ============================ 后端接入：战役（同一章节序列）跟踪 ============================
 // 一段序列 = 连续结算、双方战役累计比分单调不减的一组地图。
-// 判据只有比分这一条：地图名（战役前缀、章节号）不可靠 —— 仓库里有插件能把随机地图
-// 拼成章节序列，前缀会变、章节会跳，用它们判断会把连续对局误判成断章。
+// 判据只有比分这一条，也不解析地图名 —— 仓库里有插件能把随机地图拼成章节序列，
+// 前缀和章节号在那种服务器上说明不了连续性，所以「按图名判断」这条路径整条都不存在。
 // 序列中断时只重置上传计数（本段不完整对局不上传），评分窗口保持原始跨图口径。
-char g_sCampaignKey[MAP_NAME_LENGTH];       // 仅当日志标签：本段第一张图解析出的战役前缀
-char g_sCampaignStartMap[MAP_NAME_LENGTH];  // 本段第一张图的图名
+char g_sCampaignStartMap[MAP_NAME_LENGTH];  // 本段第一张图的图名（仅日志定位）
 int g_iCampaignSeqId;                       // 段序号，每断一次 +1；评分窗口用它在槽位里标记归属
 int g_iRawHistorySeq[RAW_HISTORY_SLOTS];    // 槽位写入时所处的段序号（0 = 尚未记录）
 int g_iCampaignMaps;
-int g_iCampaignLastChapter;                 // 仅当日志标签，不参与断章判定
 int g_iCampaignLastScoreA;
 int g_iCampaignLastScoreB;
 bool g_bCampaignHasScoreBaseline;
@@ -2256,10 +2254,8 @@ void InitializeApi()
 	g_bCampaignHasScoreBaseline = false;
 	g_iCampaignMaps = 0;
 	g_iCampaignSeqId = 0;
-	g_iCampaignLastChapter = 0;
 	g_iCampaignLastScoreA = 0;
 	g_iCampaignLastScoreB = 0;
-	g_sCampaignKey[0] = '\0';
 	g_sCampaignStartMap[0] = '\0';
 
 	for (int index = 0; index < RAW_HISTORY_SLOTS; index++)
@@ -2568,80 +2564,6 @@ void ParseRatingAverageResponse(int client, const char[] body)
 
 // ------------------------------ 战役跟踪 ------------------------------
 
-// 解析地图名中的战役前缀与章节号：c1m3_mall → key="c1", chapter=3。
-// 仅供日志/!apidebug 显示，不参与任何判定（见 IsCampaignBroken 的说明）。
-// 非标准命名（工坊自定义图）返回 false，由调用方退化为「整张图名即战役键」。
-bool ParseCampaignProgress(const char[] map, char[] key, int keySize, int &chapter)
-{
-	chapter = 0;
-	if (keySize <= 0)
-	{
-		return false;
-	}
-
-	key[0] = '\0';
-
-	int length = strlen(map);
-	for (int index = 1; index < length - 1; index++)
-	{
-		if (map[index] != 'm' && map[index] != 'M')
-		{
-			continue;
-		}
-
-		int nextCode = map[index + 1];
-		if (nextCode < 48 || nextCode > 57)
-		{
-			continue;
-		}
-
-		int prevCode = map[index - 1];
-		bool prevOk = (prevCode >= 48 && prevCode <= 57)
-			|| prevCode == '_'
-			|| (prevCode >= 97 && prevCode <= 122)
-			|| (prevCode >= 65 && prevCode <= 90);
-		if (!prevOk)
-		{
-			continue;
-		}
-
-		int value = 0;
-		int cursor = index + 1;
-		while (cursor < length)
-		{
-			int digitCode = map[cursor];
-			if (digitCode < 48 || digitCode > 57)
-			{
-				break;
-			}
-			value = value * 10 + (digitCode - 48);
-			cursor++;
-		}
-
-		if (value <= 0)
-		{
-			continue;
-		}
-
-		int prefixLength = index;
-		if (prefixLength >= keySize)
-		{
-			prefixLength = keySize - 1;
-		}
-
-		for (int copyIndex = 0; copyIndex < prefixLength; copyIndex++)
-		{
-			key[copyIndex] = map[copyIndex];
-		}
-		key[prefixLength] = '\0';
-
-		chapter = value;
-		return true;
-	}
-
-	return false;
-}
-
 // 读取双方战役累计比分；left4dhooks 不存在或尚未就绪时返回 false，判定自动降级。
 bool TryGetCampaignScores(int &scoreA, int &scoreB)
 {
@@ -2660,8 +2582,8 @@ bool TryGetCampaignScores(int &scoreA, int &scoreB)
 }
 
 // 唯一判据：双方战役累计比分单调不减。回退了就说明有人重开过战役，这段序列作废。
-// 地图名（战役前缀、章节号）一律不参与判定 —— 仓库里有插件能把随机地图拼成章节序列，
-// 前缀和章节号在那种服务器上完全说明不了连续性，只留作日志定位用。
+// 地图名一概不参与判定（连解析都不做）—— 仓库里有插件能把随机地图拼成章节序列，
+// 前缀和章节号在那种服务器上说明不了连续性，日志里只记原始图名。
 // 这一条依赖引擎的战役累计分；个别环境读不准时可用 sm_ratingpro_score_guard 0 关掉，
 // 关掉后就没有任何断章信号了，上传计数只会在攒满上传时归零。
 bool IsCampaignBroken(bool hasScores, int scoreA, int scoreB)
@@ -2679,10 +2601,8 @@ void ResetCampaignProgress()
 {
 	g_iCampaignMaps = 0;
 	g_bCampaignHasScoreBaseline = false;
-	g_iCampaignLastChapter = 0;
 	g_iCampaignLastScoreA = 0;
 	g_iCampaignLastScoreB = 0;
-	g_sCampaignKey[0] = '\0';
 	g_sCampaignStartMap[0] = '\0';
 }
 
@@ -2692,14 +2612,6 @@ void UpdateCampaignProgress()
 {
 	char map[PLATFORM_MAX_PATH];
 	GetCurrentMap(map, sizeof(map));
-
-	char key[MAP_NAME_LENGTH];
-	int chapter;
-	if (!ParseCampaignProgress(map, key, sizeof(key), chapter))
-	{
-		strcopy(key, sizeof(key), map);
-		chapter = 0;
-	}
 
 	int scoreA;
 	int scoreB;
@@ -2718,8 +2630,8 @@ void UpdateCampaignProgress()
 			scoreNote[0] = '\0';
 		}
 
-		LogMessage("[RatingPro] 序列中断：%s → %s（上一段起点 %s 第 %d 章，已结算 %d 张图%s），本段不完整对局不上传，仅重置上传计数。",
-			g_sCampaignStartMap, map, g_sCampaignKey, g_iCampaignLastChapter, g_iCampaignMaps, scoreNote);
+		LogMessage("[RatingPro] 序列中断：上一段起点 %s，已结算 %d 张图%s；从当前图 %s 重新开始，本段不完整对局不上传，仅重置上传计数。",
+			g_sCampaignStartMap, g_iCampaignMaps, scoreNote, map);
 
 		ResetCampaignProgress();
 		g_iCampaignSeqId++;
@@ -2732,11 +2644,9 @@ void UpdateCampaignProgress()
 			g_iCampaignSeqId = 1;
 		}
 
-		strcopy(g_sCampaignKey, sizeof(g_sCampaignKey), key);
 		strcopy(g_sCampaignStartMap, sizeof(g_sCampaignStartMap), map);
 	}
 
-	g_iCampaignLastChapter = chapter;
 	g_iCampaignLastScoreA = scoreA;
 	g_iCampaignLastScoreB = scoreB;
 	g_bCampaignHasScoreBaseline = hasScores;
@@ -3534,8 +3444,8 @@ public Action Command_ApiDebug(int client, int args)
 		g_hApiEnabled.BoolValue ? 1 : 0, base, serverKey,
 		apiKey[0] == '\0' ? "(未配置，不会上传)" : "(已配置)");
 
-	ReplyToCommand(client, "[RatingPro] 序列: #%d 起点=%s（前缀 %s）当前第 %d 章 已累计=%d/%d 张（攒满即上传并归零）",
-		g_iCampaignSeqId, g_sCampaignStartMap, g_sCampaignKey, g_iCampaignLastChapter,
+	ReplyToCommand(client, "[RatingPro] 序列: #%d 起点=%s 已累计=%d/%d 张（攒满即上传并归零；断章只看双方比分回退）",
+		g_iCampaignSeqId, g_sCampaignStartMap,
 		g_iCampaignMaps, g_hUploadMaps.IntValue);
 
 	ReplyToCommand(client, "[RatingPro] 上传门槛: 人数>=%d（本图参与 %d 人）",

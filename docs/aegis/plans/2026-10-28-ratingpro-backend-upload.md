@@ -19,7 +19,7 @@
 - 断章**不清空评分窗口**（`RAW_HISTORY_SLOTS` 四槽环仍按原始跨图口径滚动）：断章只决定「这段数据算不算一次可交付的战役段」，不改变 `!rating` 看到的历史口径。因此上传载荷的评分窗口可能含上一段序列留下的槽位——槽位归属按段序号 `g_iCampaignSeqId` 判定（断章 +1、上传归零不 +1），只记一条 `LogMessage` 说明覆盖情况，不阻断上传。
 - 攒满即消费：计数器在**载荷构建之后**归零，成功、后端判重、重试彻底失败都不回补，避免同一段被反复上传；上一发还在途 / 等重试时不会重复攒（否则会覆盖仍在重试的载荷）。
 - 人数不足**丢弃而非延后**：`players[]` 只取自触发上传的那张图，若只是「等下一局够人再传」，下一局的载荷会把这段稀薄战绩连同错配的人数一起带出去。人数据取的是「本图触发过统计事件的去重 SteamID 数」（`g_iParticipantCount`，按图重置），纯观察位不算。
-- 地图名解析（`c1m3_mall` → `c1` + 章节 `3`）只用于日志与 `!apidebug` 定位，**不参与判定**：仓库里有插件能把随机地图拼成章节序列，前缀与章节号在那种服务器上说明不了连续性。
+- 地图名解析层已整条删除（`ParseCampaignProgress`、`g_sCampaignKey`、`g_iCampaignLastChapter` 都不存在了）：仓库里有插件能把随机地图拼成章节序列，前缀与章节号说明不了连续性，留着的解析代码只会被后来者误认为仍在参与判定。日志与 `!apidebug` 只报本段起点图名。
 - 比分单调性是**唯一**判据，依赖 left4dhooks `L4D_GetTeamScore(team, campaign_score=true)`，以 `native` + `MarkNativeAsOptional` 声明避免硬依赖；native 不可用或返回负数时不再检测中断（`sm_ratingpro_score_guard 0` 同理），上传计数只在攒满上传时归零。
 
 **载荷：** `schema_version: 2` + `stats_scope: cumulative`，字段与 `docs/API.md` §4.2–4.4 一一对应（`snapshot` / `players[]` / 23 项行为计数 / 五维归一化 / 五维原始分）。不发送 `winner_team`，走文档默认的**表现 ELO**。`external_id` 固定为 `服务器key|地图|快照号|结算时间`，重试时完全一致，后端据此幂等去重。

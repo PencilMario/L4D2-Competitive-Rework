@@ -106,14 +106,12 @@ class RatingProBackendTests(unittest.TestCase):
         self.assertIn("g_bCampaignHasScoreBaseline", body)
         self.assertIn("g_hScoreGuard.BoolValue", body)
 
-    def test_campaign_map_name_parsing_accepts_official_and_workshop_names(self):
-        body = extract_function(
-            self.plugin,
-            "bool ParseCampaignProgress(const char[] map, char[] key, int keySize, int &chapter)",
-        )
-        self.assertIn("map[index] != 'm' && map[index] != 'M'", body)
-        self.assertIn("nextCode < 48 || nextCode > 57", body)
-        self.assertIn("prefixLength = index;", body)
+    def test_no_map_name_parsing_remains(self):
+        # 断章只看比分后，地图名解析层没有任何消费方：留着只会让后来者以为它还在参与判定，
+        # 顺手就能把「按前缀/章节号判断」重新接回去。整条路径直接删掉。
+        self.assertNotIn("ParseCampaignProgress", self.plugin)
+        self.assertNotIn("g_sCampaignKey", self.plugin)
+        self.assertNotIn("g_iCampaignLastChapter", self.plugin)
 
     def test_settlement_runs_campaign_check_before_saving_the_slot(self):
         body = extract_function(self.plugin, "public Action Timer_PrintBestRating(Handle timer)")
