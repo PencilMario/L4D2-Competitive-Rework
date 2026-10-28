@@ -46,28 +46,28 @@ class RatingProInfectorDamageContractTests(unittest.TestCase):
         self.assertIn("!IsSurvivorIncapacitated(victim)", func_body)
         self.assertRegex(
             func_body,
-            r'if\s*\(\s*!IsSurvivorIncapacitated\(victim\)\s*\)\s*\{\s*g_iInfDmgTotal\[attacker\]\s*\+=\s*damage;',
+            r'if\s*\(\s*!IsSurvivorIncapacitated\(victim\)\s*\)\s*\{\s*g_iInfDmgTotal\[attackerParticipant\]\s*\+=\s*damage;',
             "g_iInfDmgTotal must only accumulate when victim is not incapacitated",
         )
 
     def test_tank_infected_damage_excludes_incapacitated_survivor(self):
-        func_body = extract_function(self.source, "void TrackTankHit(int tank, int survivor, int damage, Event event)")
+        func_body = extract_function(self.source, "void TrackTankHit(int tankParticipant, int survivor, int damage, Event event)")
         self.assertTrue(func_body, "TrackTankHit function must be defined")
 
         # Must accumulate both upright tank damage and infector damage inside the non-incapacitated block
         self.assertIn("!IsSurvivorIncapacitated(survivor)", func_body)
         self.assertRegex(
             func_body,
-            r'if\s*\(\s*!IsSurvivorIncapacitated\(survivor\)\s*\)\s*\{[^}]*g_iInfDmgTotal\[tank\]\s*\+=\s*damage;[^}]*g_iTankDmgUpright\[tank\]\s*\+=\s*damage;',
+            r'if\s*\(\s*!IsSurvivorIncapacitated\(survivor\)\s*\)\s*\{[^}]*g_iInfDmgTotal\[tankParticipant\]\s*\+=\s*damage;[^}]*g_iTankDmgUpright\[tankParticipant\]\s*\+=\s*damage;',
             "g_iInfDmgTotal for Tank must only accumulate inside !IsSurvivorIncapacitated block",
         )
 
     def test_infector_raw_definition(self):
-        func_body = extract_function(self.source, "float GetInfectorRaw(int client)")
+        func_body = extract_function(self.source, "float GetInfectorRaw(int participant)")
         self.assertTrue(func_body, "GetInfectorRaw function must be defined")
-        self.assertIn("g_iInfDmgTotal[client]", func_body)
-        self.assertIn("g_iInfBooms[client] * 8", func_body)
-        self.assertIn("g_iInfDeathCharges[client] * 25", func_body)
+        self.assertIn("g_iInfDmgTotal[participant]", func_body)
+        self.assertIn("g_iInfBooms[participant] * 8", func_body)
+        self.assertIn("g_iInfDeathCharges[participant] * 25", func_body)
 
     def test_survivor_damage_taken_excludes_incapacitated(self):
         func_body = extract_function(self.source, "public void Event_PlayerHurt(Event event, const char[] name, bool dontBroadcast)")
@@ -76,7 +76,7 @@ class RatingProInfectorDamageContractTests(unittest.TestCase):
         # Must inspect survivor incapacitated state before adding survivor damage taken
         self.assertRegex(
             func_body,
-            r'if\s*\(\s*!IsSurvivorIncapacitated\(victim\)\s*\)\s*\{\s*g_iDmgTaken\[victim\]\s*\+=\s*damage;',
+            r'if\s*\(\s*!IsSurvivorIncapacitated\(victim\)\s*\)\s*\{\s*g_iDmgTaken\[victimParticipant\]\s*\+=\s*damage;',
             "g_iDmgTaken must only accumulate when victim is not incapacitated",
         )
 

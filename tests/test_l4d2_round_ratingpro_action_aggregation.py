@@ -21,7 +21,7 @@ class RatingProActionAggregationTests(unittest.TestCase):
         self.assertIn("StringMap g_hRawActionHistory[RAW_HISTORY_SLOTS]", self.source)
 
     def test_aggregate_historical_actions_function(self):
-        self.assertIn("void AggregateHistoricalActions(int client, RatingSnapshotEntry entry)", self.source)
+        self.assertIn("void AggregateHistoricalActions(const char[] auth, RatingSnapshotEntry entry)", self.source)
         # Aggregation logic
         self.assertIn("entry.recordedSlots++;", self.source)
         self.assertIn("entry.siDmg += historyEntry.siDmg;", self.source)
@@ -35,9 +35,9 @@ class RatingProActionAggregationTests(unittest.TestCase):
     def test_save_snapshot_uses_aggregated_actions(self):
         snapshot_code = self.source.split("void SaveRatingSnapshot(", 1)[1]
         snapshot_code = snapshot_code.split("public Action Command_RatingPro(", 1)[0]
-        self.assertIn("AggregateHistoricalActions(client, entry);", snapshot_code)
-        # Tank upright/punch/rock remain direct from client
-        self.assertIn("entry.tankDmgUpright = g_iTankDmgUpright[client];", snapshot_code)
+        self.assertIn("AggregateHistoricalActions(g_sParticipantAuth[participant], entry);", snapshot_code)
+        # Tank upright/punch/rock remain direct from the participant record
+        self.assertIn("entry.tankDmgUpright = g_iTankDmgUpright[participant];", snapshot_code)
 
     def test_console_log_reflects_aggregated_stats(self):
         console_code = self.source.split("void PrintRatingSnapshotToConsole(", 1)[1]

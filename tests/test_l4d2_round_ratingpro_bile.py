@@ -27,8 +27,8 @@ class RatingProBileTests(unittest.TestCase):
         self.assertLess(body.index("g_bBiled[victim] = true"), body.index("!g_hEnabled.BoolValue"))
         self.assertIn("!IsHumanClient(attacker)", body)
         self.assertIn("GetClientTeam(attacker) != TEAM_INFECTED", body)
-        self.assertIn("RememberClient(attacker)", body)
-        self.assertIn("g_iInfBooms[attacker]++;", body)
+        self.assertIn("int participant = AcquireParticipant(attacker);", body)
+        self.assertIn("g_iInfBooms[participant]++;", body)
         self.assertNotIn('GetBool("exploded")', body)
         self.assertNotIn('GetBool("by_boomer")', body)
         self.assertNotIn("g_bBiled[attacker]", body)
@@ -56,5 +56,5 @@ class RatingProBileTests(unittest.TestCase):
             self.assertIn(assignment, body)
 
     def test_bile_has_single_counter_owner(self):
-        self.assertEqual(self.source.count("g_iInfBooms[attacker]++;"), 1)
+        self.assertEqual(self.source.count("g_iInfBooms[participant]++;"), 1)
         self.assertNotIn("g_iInfBooms[boomer] += amount", self.source)

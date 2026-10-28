@@ -47,31 +47,31 @@ class TankBaseScoreContractTests(unittest.TestCase):
 
     def test_became_tank_variable_and_reset(self):
         source = self.source
-        self.assertIn("bool g_bBecameTank[MAXPLAYERS + 1];", source)
+        self.assertIn("bool g_bBecameTank[MAX_PARTICIPANTS];", source)
 
         reset_body = extract_function(source, "void ResetRoundStats()")
         self.assertTrue(reset_body)
-        self.assertIn("g_bBecameTank[client] = false;", reset_body)
+        self.assertIn("g_bBecameTank[participant] = false;", reset_body)
 
     def test_mark_client_as_tank_behavior(self):
         source = self.source
-        mark_body = extract_function(source, "void MarkClientAsTank(int client)")
+        mark_body = extract_function(source, "int MarkClientAsTank(int client)")
         self.assertTrue(mark_body)
-        self.assertIn("RememberClient(client);", mark_body)
-        self.assertIn("g_bBecameTank[client] = true;", mark_body)
+        self.assertIn("int participant = AcquireParticipant(client);", mark_body)
+        self.assertIn("g_bBecameTank[participant] = true;", mark_body)
 
     def test_get_tank_raw_awards_base_one_score_when_became_tank(self):
         source = self.source
-        func_body = extract_function(source, "float GetTankRaw(int client)")
+        func_body = extract_function(source, "float GetTankRaw(int participant)")
         self.assertTrue(func_body)
-        self.assertRegex(func_body, r"g_bBecameTank\[client\]\s*\?\s*1\.0\s*:\s*0\.0")
+        self.assertRegex(func_body, r"g_bBecameTank\[participant\]\s*\?\s*1\.0\s*:\s*0\.0")
         self.assertIn("baseRaw + float(", func_body)
 
     def test_has_any_raw_signal_includes_became_tank(self):
         source = self.source
-        signal_body = extract_function(source, "bool HasAnyRawSignal(int client)")
+        signal_body = extract_function(source, "bool HasAnyRawSignal(int participant)")
         self.assertTrue(signal_body)
-        self.assertIn("g_bBecameTank[client]", signal_body)
+        self.assertIn("g_bBecameTank[participant]", signal_body)
 
     def test_snapshot_stores_became_tank(self):
         source = self.source
@@ -81,7 +81,7 @@ class TankBaseScoreContractTests(unittest.TestCase):
             "void SaveRatingSnapshot(bool hasRanges",
         )
         self.assertTrue(snapshot_body)
-        self.assertIn("entry.becameTank = g_bBecameTank[client];", snapshot_body)
+        self.assertIn("entry.becameTank = g_bBecameTank[participant];", snapshot_body)
 
 
 if __name__ == "__main__":

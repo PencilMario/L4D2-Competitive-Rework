@@ -23,11 +23,36 @@ $RECYCLE.BIN/
 # =========================
 
 # Visual Studio Code files
-/.vscode
+.vscode/
 
+# =========================
+# 项目特例
+# =========================
 
 addons/sourcemod/scripting/l4d_pig_infected_notify.sp
-addons/sourcemod/logs
-.vscode
-Dedicated Server Install Guide/auto_add_to_favserver/__pycache__/*
+addons/sourcemod/logs/
 .claude/settings.local.json
+
+# =========================
+# Python 测试产物
+# =========================
+
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# =========================
+# 本地构建产物（由脚本 / CI 生成，不入库）
+# =========================
+
+artifacts/
+dist/
+.build_temp/
+addons/sourcemod/scripting/compiled/
+
+# =========================
+# 会话 / 工具临时目录
+# =========================
+
+.dsh_tmp/
+.playwright-mcp/

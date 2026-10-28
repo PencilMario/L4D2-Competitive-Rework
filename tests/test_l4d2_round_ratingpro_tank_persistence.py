@@ -14,8 +14,8 @@ SOURCE = (
 class TankRatingPersistenceContractTests(unittest.TestCase):
     def test_missing_non_tank_slots_use_the_players_recorded_average(self):
         source = SOURCE.read_text(encoding="utf-8-sig")
-        historical_raw = source.split("float GetHistoricalRaw(int client, int field)", 1)[1]
-        historical_raw = historical_raw.split("float GetTankRaw(int client)", 1)[0]
+        historical_raw = source.split("float GetHistoricalRaw(const char[] auth, int field)", 1)[1]
+        historical_raw = historical_raw.split("float GetTankRaw(int participant)", 1)[0]
 
         self.assertIn("int recordedSlots = 0;", historical_raw)
         self.assertIn("total += values[field];\n\t\t\trecordedSlots++;", historical_raw)
@@ -30,7 +30,7 @@ class TankRatingPersistenceContractTests(unittest.TestCase):
         self.assertIn("#define RAW_HISTORY_SLOTS 4", source)
         self.assertIn("g_iRawHistoryNextSlot", source)
         self.assertIn("StringMap g_hRawHistory[RAW_HISTORY_SLOTS]", source)
-        self.assertIn("g_hRawHistory[slot].SetArray(auth, values, sizeof(values));", source)
+        self.assertIn("g_hRawHistory[slot].SetArray(g_sParticipantAuth[participant], values, sizeof(values));", source)
         self.assertIn("SaveRoundRawHistory();", source)
         self.assertIn("GetHistoricalOutputRaw", source)
         self.assertIn("GetHistoricalDefenseRaw", source)
@@ -49,7 +49,7 @@ class TankRatingPersistenceContractTests(unittest.TestCase):
         self.assertIn("StringMap g_hLastTankRaw", source)
         self.assertIn("GetClientAuthId(client, AuthId_Steam2", source)
         self.assertIn("GetEffectiveTankRaw", source)
-        self.assertIn("float tank = GetEffectiveTankRaw(client);", source)
+        self.assertIn("float tank = GetEffectiveTankRaw(participant);", source)
 
     def test_round_end_updates_latest_tank_raw_before_rating_is_recomputed(self):
         source = SOURCE.read_text(encoding="utf-8-sig")
@@ -72,13 +72,13 @@ class TankRatingPersistenceContractTests(unittest.TestCase):
 
         # SaveLatestTankRaw must persist TankHistoryEntry into g_hLastTankRaw
         self.assertIn("TankHistoryEntry tankEntry;", source)
-        self.assertIn("tankEntry.punch = g_iTankPunch[client];", source)
-        self.assertIn("tankEntry.rock = g_iTankRock[client];", source)
-        self.assertIn("tankEntry.hittable = g_iTankHittable[client];", source)
-        self.assertIn("tankEntry.incap = g_iTankIncap[client];", source)
-        self.assertIn("tankEntry.death = g_iTankDeath[client];", source)
-        self.assertIn("tankEntry.becameTank = g_bBecameTank[client];", source)
-        self.assertIn("g_hLastTankRaw.SetArray(auth, tankEntry, sizeof(tankEntry));", source)
+        self.assertIn("tankEntry.punch = g_iTankPunch[participant];", source)
+        self.assertIn("tankEntry.rock = g_iTankRock[participant];", source)
+        self.assertIn("tankEntry.hittable = g_iTankHittable[participant];", source)
+        self.assertIn("tankEntry.incap = g_iTankIncap[participant];", source)
+        self.assertIn("tankEntry.death = g_iTankDeath[participant];", source)
+        self.assertIn("tankEntry.becameTank = g_bBecameTank[participant];", source)
+        self.assertIn("g_hLastTankRaw.SetArray(g_sParticipantAuth[participant], tankEntry, sizeof(tankEntry));", source)
 
     def test_snapshot_restores_tank_actions_on_historical_fallback(self):
         source = SOURCE.read_text(encoding="utf-8-sig")
@@ -86,7 +86,7 @@ class TankRatingPersistenceContractTests(unittest.TestCase):
         # SaveRatingSnapshot must restore historical actions when fallback is active
         self.assertIn("entry.tankSource = 2;", source)
         self.assertIn("TankHistoryEntry histTank;", source)
-        self.assertIn("g_hLastTankRaw.GetArray(auth, histTank, sizeof(histTank))", source)
+        self.assertIn("g_hLastTankRaw.GetArray(g_sParticipantAuth[participant], histTank, sizeof(histTank))", source)
         self.assertIn("entry.punch = histTank.punch;", source)
         self.assertIn("entry.rock = histTank.rock;", source)
         self.assertIn("entry.hittable = histTank.hittable;", source)

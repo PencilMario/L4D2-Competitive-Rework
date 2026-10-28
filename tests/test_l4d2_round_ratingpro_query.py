@@ -90,7 +90,7 @@ class RatingProQueryContractTests(unittest.TestCase):
     def test_print_rating_snapshot_to_console(self):
         func_body = extract_function(
             self.source,
-            "void PrintRatingSnapshotToConsole(int requester, int targetClient",
+            "void PrintRatingSnapshotToConsole(int requester, const char[] auth",
         )
         if not func_body:
             # Also allow slightly varied signature as long as requester and target are present

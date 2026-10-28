@@ -36,4 +36,4 @@ class RatingProLoggingTests(unittest.TestCase):
         sink = extract_function(self.source, "void PrintToConsoleOrLog(")
         for expected in ("char buffer[2048]", "WritetoLogFileRaw(buffer)", 'PrintToConsole(requester, "%s", buffer)'):
             self.assertIn(expected, sink)
-        self.assertIn("PrintRatingSnapshotToConsole(0, client, true)", self.source)
+        self.assertIn("PrintRatingSnapshotToConsole(0, g_sParticipantAuth[participant], g_sParticipantName[participant], userId, true)", self.source)
