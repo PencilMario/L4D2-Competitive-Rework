@@ -14,9 +14,11 @@
 | 同一战役 | 地图名 `campaign` 前缀相同 **且** 章节号严格 `+1` **且** 双方战役比分单调不减 | 继续累加 |
 | 战役中断 | 上面任一条被破坏（中途换图、跳章、战役重开） | 只把**上传计数器**归零：这段不完整对局**不产生任何上传**；评分窗口不动 |
 | 上传时机 | `g_iCampaignMaps >= sm_ratingpro_upload_maps`（默认 4），且上一发已结清 | 上传一次快照，随后**计数器归零**重新累计；同一战役连打超过 N 张会分多次上传 |
+| 人数门槛 | 触发上传的那张图参与人数 < `sm_ratingpro_min_players`（默认 8） | 这段数据不上传，计数器归零；设 0 关闭限制 |
 
 - 断章**不清空评分窗口**（`RAW_HISTORY_SLOTS` 四槽环仍按原始跨图口径滚动）：断章只决定「这段数据算不算一次可交付的战役段」，不改变 `!rating` 看到的历史口径。因此上传载荷的评分窗口可能含上一段战役留下的槽位——只记一条 `LogMessage` 说明覆盖情况，不阻断上传。
 - 攒满即消费：计数器在**载荷构建之后**归零，成功、后端判重、重试彻底失败都不回补，避免同一段被反复上传；上一发还在途 / 等重试时不会重复攒（否则会覆盖仍在重试的载荷）。
+- 人数不足**丢弃而非延后**：`players[]` 只取自触发上传的那张图，若只是「等下一局够人再传」，下一局的载荷会把这段稀薄战绩连同错配的人数一起带出去。人数据取的是「本图触发过统计事件的去重 SteamID 数」（`g_iParticipantCount`，按图重置），纯观察位不算。
 - 地图名解析：`c1m3_mall` → `c1` + 章节 `3`；非标准命名（工坊图）退化为「整张图名即战役键」，此时同名连打才算同一序列。
 - 比分单调性依赖 left4dhooks `L4D_GetTeamScore(team, campaign_score=true)`，以 `native` + `MarkNativeAsOptional` 声明避免硬依赖；native 不可用或返回负数时该条判定自动跳过，另可用 `sm_ratingpro_score_guard 0` 单独关掉。
 
@@ -33,8 +35,8 @@
 
 **验证：**
 
-- `spcomp -w234 -w217 -O2 -v2` 无 error / 无 warning（Code 123560 / Data 160228 / Stack-heap 19380）。
-- `python -m unittest discover -s tests -p 'test_*.py'` → 80 tests OK，其中 `tests/test_l4d2_round_ratingpro_backend.py` 新增 25 条：native 声明与注册双向一致、forward 全覆盖、断章只重置上传计数且不动评分窗口、攒满即归零且在途不重复攒、载荷字段与 API 文档对齐、external_id 重试稳定、SteamID 先编码再拼 URL、槽位复用丢弃过期响应、只对可重试状态重试。
+- `spcomp -w234 -w217 -O2 -v2` 无 error / 无 warning（Code 123988 / Data 160588 / Stack-heap 19380）。
+- `python -m unittest discover -s tests -p 'test_*.py'` → 112 tests OK，其中 `tests/test_l4d2_round_ratingpro_backend.py` 新增 26 条：native 声明与注册双向一致、forward 全覆盖、断章只重置上传计数且不动评分窗口、攒满即归零且在途不重复攒、人数门槛不足即丢弃、载荷字段与 API 文档对齐、external_id 重试稳定、SteamID 先编码再拼 URL、槽位复用丢弃过期响应、只对可重试状态重试。
 - 载荷结构用逐字复制源码字面量的 Python 脚本 `json.loads` 复核通过（含 2 人样例，1.6 KB；满 64 人约 52 KB，未超 2 MB 限制，另有 `strlen + 1024` 余量保护）。
 - 未对线上后端 POST 测试数据（避免污染生产库）；`GET /api/v1/health` 确认为 `1.1.0` + `ratingpro-1.0.0`，未知 SteamID 返回 404 `not_found`，与实现的 404 → `RatingProCache_NoRecord` 分支一致。
 

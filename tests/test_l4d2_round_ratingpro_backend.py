@@ -127,23 +127,51 @@ class RatingProBackendTests(unittest.TestCase):
         body = extract_function(self.plugin, "void MaybeUploadCampaign()")
         self.assertIn("int settledMaps = g_iCampaignMaps;", body)
 
-        # 归零必须发生在载荷构建之后、且先于「没有玩家」的早退：
+        # 交付后的归零必须发生在载荷构建之后、且先于「没有玩家」的早退：
         # 这样攒满只消费一次，成功 / 判重 / 彻底失败都不回补重传。
-        self.assertLess(body.index("BuildUploadPayload();"), body.index("g_iCampaignMaps = 0;"))
+        handoff = body[body.index("BuildUploadPayload();"):]
+        self.assertIn("g_iCampaignMaps = 0;", handoff)
         self.assertLess(
-            body.index("g_iCampaignMaps = 0;"),
-            body.index("if (g_iPendingUploadPlayerCount <= 0)"),
+            handoff.index("g_iCampaignMaps = 0;"),
+            handoff.index("if (g_iPendingUploadPlayerCount <= 0)"),
         )
 
         # 上一发还没结清时不许再攒一次，否则会覆盖仍在重试的载荷。
         self.assertIn("if (g_bUploadInFlight || g_bUploadPending)", body)
         self.assertLess(
             body.index("if (g_bUploadInFlight || g_bUploadPending)"),
-            body.index("g_iCampaignMaps = 0;"),
+            body.index("BuildUploadPayload();"),
         )
 
         # 「每战役只传一次」的标志已随归零机制一起移除，不再有第二份真相。
         self.assertNotIn("g_bCampaignUploaded", self.plugin)
+
+    def test_upload_requires_minimum_player_count(self):
+        self.assertIn('g_hMinPlayers = CreateConVar("sm_ratingpro_min_players", "8"', self.plugin)
+        self.assertRegex(
+            self.plugin,
+            r'"sm_ratingpro_min_players", "8",[\s\S]*?true, 0\.0, true, float\(MAX_PARTICIPANTS\)\)',
+        )
+
+        body = extract_function(self.plugin, "void MaybeUploadCampaign()")
+        gate_head = "if (minPlayers > 0 && g_iParticipantCount < minPlayers)"
+        self.assertIn("int minPlayers = g_hMinPlayers.IntValue;", body)
+        self.assertIn(gate_head, body)
+
+        # 人数不足等于这一段没有效对局：直接丢弃、计数器归零，不留到下一局再传。
+        gate = body[body.index(gate_head):]
+        gate = gate[: gate.index("int settledMaps = g_iCampaignMaps;")]
+        self.assertIn("g_iCampaignMaps = 0;", gate)
+        self.assertIn("return;", gate)
+        self.assertNotIn("BuildUploadPayload();", gate)
+
+        # 上一发未结清时先别动计数器；人数门槛必须在攒数据 / 构建载荷之前判定。
+        self.assertLess(
+            body.index("if (g_bUploadInFlight || g_bUploadPending)"),
+            body.index(gate_head),
+        )
+        self.assertLess(body.index(gate_head), body.index("int settledMaps = g_iCampaignMaps;"))
+        self.assertLess(body.index(gate_head), body.index("BuildUploadPayload();"))
 
     def test_upload_is_triggered_once_per_settlement_path(self):
         body = extract_function(self.plugin, "public Action Timer_PrintBestRating(Handle timer)")

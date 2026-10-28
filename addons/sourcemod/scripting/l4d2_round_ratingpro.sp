@@ -227,6 +227,7 @@ ConVar g_hApiBase;
 ConVar g_hApiKey;
 ConVar g_hServerKey;
 ConVar g_hUploadMaps;
+ConVar g_hMinPlayers;
 ConVar g_hAutoRefresh;
 ConVar g_hScoreGuard;
 
@@ -2205,6 +2206,7 @@ void PrintRatingSnapshotToConsole(int requester, const char[] auth, const char[]
 // 战役由「campaign 前缀相同 + 章节号连续递增 + 双方比分不减」三点共同界定；任一条件被破坏
 // （中途换图、选图跳过章节、比分被重置）都视为这一段没能打成完整对局：只重置上传计数，
 // 不产生任何上传；评分窗口（RAW_HISTORY_SLOTS）保持原始跨图滚动口径，不跟着清空。
+// 另外触发上传的那张图参与人数必须 >= sm_ratingpro_min_players（默认 8），否则这段数据直接丢弃。
 //
 // 读接口：玩家认证完成后异步请求 /elo/current 与 /rating/average?limit=5 并缓存在本地，
 // 所有 Get 类 native 只读本地缓存，不发请求。
@@ -2222,6 +2224,9 @@ void CreateApiConVars()
 		"服务器标识，后端用它区分多台服务器并做幂等去重；留空时取 hostname。");
 	g_hUploadMaps = CreateConVar("sm_ratingpro_upload_maps", "4",
 		"同一章节累计结算多少张图后上传一次对局数据。", FCVAR_NONE, true, 1.0, true, 4.0);
+	g_hMinPlayers = CreateConVar("sm_ratingpro_min_players", "8",
+		"参与人数达到该值（含）才上传对局数据；人数不足的对局直接丢弃，计数器归零。0 表示不限制。",
+		FCVAR_NONE, true, 0.0, true, float(MAX_PARTICIPANTS));
 	g_hAutoRefresh = CreateConVar("sm_ratingpro_auto_refresh", "1",
 		"玩家认证完成时自动请求并缓存 ELO 与最近 5 场平均 RatingPro。", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_hScoreGuard = CreateConVar("sm_ratingpro_score_guard", "1",
@@ -2733,15 +2738,28 @@ void MaybeUploadCampaign()
 		return;
 	}
 
+	// 上一次上传还没结清（在途 / 等重试）：这一段继续攒着，等下个结算点再传，
+	// 免得把仍在重试的载荷覆盖掉。
+	if (g_bUploadInFlight || g_bUploadPending)
+	{
+		return;
+	}
+
 	if (g_iParticipantCount <= 0)
 	{
 		return;
 	}
 
-	// 上一次上传还没结清（在途 / 等重试）：这一段继续攒着，等下个结算点再传，
-	// 免得把仍在重试的载荷覆盖掉。
-	if (g_bUploadInFlight || g_bUploadPending)
+	// 人数不够不算一次有效对局：这段数据不入库，计数器归零重新攒。
+	// 之所以不「跳过等下一局」，是因为 players[] 只取自触发的这一张图：
+	// 攒着不消费会让下一局的上传把这段稀薄战绩连同错配的人数一起带出去。
+	int minPlayers = g_hMinPlayers.IntValue;
+	if (minPlayers > 0 && g_iParticipantCount < minPlayers)
 	{
+		LogMessage("[RatingPro] 本局参与人数 %d 未达到 sm_ratingpro_min_players=%d，这 %d 张图的数据不上传，计数器归零。",
+			g_iParticipantCount, minPlayers, g_iCampaignMaps);
+
+		g_iCampaignMaps = 0;
 		return;
 	}
 
@@ -3498,6 +3516,9 @@ public Action Command_ApiDebug(int client, int args)
 
 	ReplyToCommand(client, "[RatingPro] 战役: key=%s 起始图=%s 已累计=%d/%d 张（攒满即上传并归零）",
 		g_sCampaignKey, g_sCampaignStartMap, g_iCampaignMaps, g_hUploadMaps.IntValue);
+
+	ReplyToCommand(client, "[RatingPro] 上传门槛: 人数>=%d（本图参与 %d 人）",
+		g_hMinPlayers.IntValue, g_iParticipantCount);
 
 	ReplyToCommand(client, "[RatingPro] 快照窗口: %d 槽 待上传=%d 在途=%d 重试次数=%d 载荷长度=%d",
 		g_iRawHistoryCount, g_bUploadPending ? 1 : 0, g_bUploadInFlight ? 1 : 0,
