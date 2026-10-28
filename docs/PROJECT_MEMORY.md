@@ -27,3 +27,22 @@ Compilation successful.
 ```
 
 以后修改该插件后，优先使用以上命令编译；实际编译结果以当前工作区命令输出为准。
+
+## 分队插件（mt_elo / mt_rating）
+
+两个插件共用 `addons/sourcemod/scripting/include/mt_balance.inc`（分队算法，不单独编译），
+编译命令与 CI 一致（工作目录 `addons/sourcemod/scripting`，SourcePawn Compiler 1.12）：
+
+```powershell
+.\sourcemod\spcomp.exe mt_elo.sp    -i include -w234 -w217 -O2 -v2 -o compiled\mt_elo.smx
+.\sourcemod\spcomp.exe mt_rating.sp -i include -w234 -w217 -O2 -v2 -o compiled\mt_rating.smx
+```
+
+编译产物需要复制到 `addons/sourcemod/plugins/`（发布工作流只会更新已存在的同名 `.smx`）。
+
+改动后的验证：
+
+```powershell
+python -m pytest tests/test_mt_balance_plugins.py -q
+```
+

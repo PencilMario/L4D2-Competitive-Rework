@@ -1,0 +1,67 @@
+"Phrases"
+{
+	"VOTE_DISPLAY_MSG"
+	{
+		"en"			"Start mix: balance teams by ELO"
+	}
+
+	"VOTE_END_MSG"
+	{
+		"en"			"ELO mix in progress"
+	}
+
+	"MIX_HEADER"
+	{
+		"en"			"[ELO mix] {1} players, {2} per team, ELO gap {3}"
+	}
+
+	"SURVIVORS_LINE"
+	{
+		"en"			"Survivors total {1} avg {2}: {3}"
+	}
+
+	"SURVIVORS_LINE_MORE"
+	{
+		"en"			"Survivors (cont.): {1}"
+	}
+
+	"INFECTED_LINE"
+	{
+		"en"			"Infected total {1} avg {2}: {3}"
+	}
+
+	"INFECTED_LINE_MORE"
+	{
+		"en"			"Infected (cont.): {1}"
+	}
+
+	"MIX_NO_DATA"
+	{
+		"en"			"No ELO data for {1}, mix cancelled"
+	}
+
+	"MIX_ASSIGN_FAILED"
+	{
+		"en"			"Failed to move players (not enough survivor slots?), mix cancelled"
+	}
+
+	"MIX_NOT_ENOUGH_PLAYERS"
+	{
+		"en"			"Not enough players for a mix"
+	}
+
+	"MIX_LEFTOVER"
+	{
+		"en"			"{1} player(s) stay in spectator (odd count or survivor_limit reached)"
+	}
+
+	"MIX_FALLBACK_NOTE"
+	{
+		"en"			"* = no ELO data, counted with the default value"
+	}
+
+	"MIX_UNAVAILABLE"
+	{
+		"en"			"RatingPro backend plugin is missing, ELO mix unavailable"
+	}
+}

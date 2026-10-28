@@ -1,0 +1,67 @@
+"Phrases"
+{
+	"VOTE_DISPLAY_MSG"
+	{
+		"chi"			"开始进行mix（按 ELO 分队）"
+	}
+
+	"VOTE_END_MSG"
+	{
+		"chi"			"即将进行 ELO 分队..."
+	}
+
+	"MIX_HEADER"
+	{
+		"chi"			"【ELO 分队】{1} 人，每队 {2} 人，两队 ELO 总和差 {3}"
+	}
+
+	"SURVIVORS_LINE"
+	{
+		"chi"			"生还者 合计 {1} 平均 {2}：{3}"
+	}
+
+	"SURVIVORS_LINE_MORE"
+	{
+		"chi"			"生还者（续）：{1}"
+	}
+
+	"INFECTED_LINE"
+	{
+		"chi"			"感染者 合计 {1} 平均 {2}：{3}"
+	}
+
+	"INFECTED_LINE_MORE"
+	{
+		"chi"			"感染者（续）：{1}"
+	}
+
+	"MIX_NO_DATA"
+	{
+		"chi"			"{1} 没有 ELO 数据，已取消本次 mix"
+	}
+
+	"MIX_ASSIGN_FAILED"
+	{
+		"chi"			"玩家落位失败（生还者位不足？），已取消本次 mix"
+	}
+
+	"MIX_NOT_ENOUGH_PLAYERS"
+	{
+		"chi"			"人数不足，无法分队"
+	}
+
+	"MIX_LEFTOVER"
+	{
+		"chi"			"{1} 名玩家留在旁观（人数为奇数或已达 survivor_limit）"
+	}
+
+	"MIX_FALLBACK_NOTE"
+	{
+		"chi"			"* = 没有 ELO 数据，按默认值计入"
+	}
+
+	"MIX_UNAVAILABLE"
+	{
+		"chi"			"缺少 RatingPro 后端插件，无法进行 ELO 分队"
+	}
+}
