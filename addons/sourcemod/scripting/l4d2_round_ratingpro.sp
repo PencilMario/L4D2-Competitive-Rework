@@ -9,7 +9,7 @@
 #include <SteamWorks>
 #include <l4d2_round_ratingpro>
 
-#define PLUGIN_VERSION "1.1.0"
+#define PLUGIN_VERSION "1.1.3"
 
 #define TEAM_SURVIVOR 2
 #define TEAM_INFECTED 3
@@ -34,6 +34,12 @@
 #define UPLOAD_MAX_ATTEMPTS 3
 #define UPLOAD_RETRY_DELAY 10.0
 #define RATING_REFRESH_DELAY 5.0
+
+// 后端接入专用日志：单独一个文件 logs/l4d2_ratingpro_api.log，
+// 不跟结算明细（ratingpro.log / ratingpro_<地图>_<时间>.log）混在一起。
+#define API_LOG_NAME "l4d2_ratingpro_api"
+#define API_LOG_BODY_CHUNK 400
+#define CLIENT_API_ERROR_LENGTH 192
 
 // left4dhooks 原生函数：读取战役累计比分，是「对局是否连续」的唯一判据。
 // 未安装 left4dhooks（或 sm_ratingpro_score_guard 0）时无法检测中断，只能按攒满即传。
@@ -157,6 +163,9 @@ public Plugin myinfo =
 };
 
 Logger g_RatingLogger;
+// 后端 HTTP 专用 logger：固定写 logs/l4d2_ratingpro_api.log。
+// 与 g_RatingLogger 分开，因为后者会被 RecordRatingSettlement 改成每局一个文件名。
+Logger g_ApiLogger;
 
 ConVar g_hEnabled;
 ConVar g_hDelay;
@@ -230,6 +239,7 @@ ConVar g_hUploadMaps;
 ConVar g_hMinPlayers;
 ConVar g_hAutoRefresh;
 ConVar g_hScoreGuard;
+ConVar g_hApiLog;
 
 Handle g_hFwdClientDataLoaded;
 Handle g_hFwdClientEloUpdated;
@@ -242,6 +252,10 @@ int g_iClientToken[MAXPLAYERS + 1];
 bool g_bEloRequestInFlight[MAXPLAYERS + 1];
 bool g_bRatingRequestInFlight[MAXPLAYERS + 1];
 bool g_bApiKeyWarned;
+
+// 每个玩家最近一次 ELO 请求的失败原因（成功/404 时清空）。
+// !apidebug 直接把它打出来，不用先开日志再复现。
+char g_sClientApiError[MAXPLAYERS + 1][CLIENT_API_ERROR_LENGTH];
 
 // HTTP 回调是主线程序列执行的，响应体共用一块静态缓冲即可，避免频繁堆分配。
 char g_sHttpResponse[HTTP_RESPONSE_SIZE];
@@ -304,6 +318,9 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 public void OnPluginStart()
 {
 	g_RatingLogger = new Logger("ratingpro", LoggerType_NewLogFile);
+	// 级别过滤交给 sm_ratingpro_api_log：logger 自身不过滤，WritetoLogFile 才拿得到原始级别。
+	g_ApiLogger = new Logger(API_LOG_NAME, LoggerType_NewLogFile);
+	g_ApiLogger.IgnoreLevel = LogType_Debug;
 	g_hLastTankRaw = new StringMap();
 	g_iRawHistoryNextSlot = 0;
 	g_iRawHistoryCount = 0;
@@ -363,6 +380,24 @@ public void OnPluginStart()
 public void OnMapStart()
 {
 	ResetRoundStats();
+}
+
+// cfg 里的 cvar 在 OnPluginStart 之后才被 AutoExecConfig 执行，会话头必须放在这里，
+// 否则日志里记的是默认值（尤其是 api_base / server_key）。
+public void OnConfigsExecuted()
+{
+	char base[256];
+	g_hApiBase.GetString(base, sizeof(base));
+
+	char serverKey[PLATFORM_MAX_PATH];
+	GetServerKey(serverKey, sizeof(serverKey));
+
+	char apiKey[256];
+	g_hApiKey.GetString(apiKey, sizeof(apiKey));
+
+	ApiLog(LogType_Info, "======== 会话开始：插件 %s · 日志级别 %d · base=%s · server_key=%s · api_key=%s ========",
+		PLUGIN_VERSION, g_hApiLog.IntValue, base, serverKey,
+		apiKey[0] == '\0' ? "未配置（只读不上传）" : "已配置");
 }
 
 public void OnClientDisconnect(int client)
@@ -2237,6 +2272,10 @@ void CreateApiConVars()
 	g_hScoreGuard = CreateConVar("sm_ratingpro_score_guard", "1",
 		"用「双方战役比分不减」判定对局是否连续（依赖 left4dhooks）。这是唯一的断章信号：关掉后不再检测中断，上传计数只在攒满上传时归零。",
 		FCVAR_NONE, true, 0.0, true, 1.0);
+	// 后端排查日志：独立文件。默认 2（全量），先把证据记全；确认稳定后再降到 1 省磁盘。
+	g_hApiLog = CreateConVar("sm_ratingpro_api_log", "2",
+		"后端日志级别（logs/l4d2_ratingpro_api.log）：0=关闭，1=只记请求失败与上传结果，2=另外记录每次请求的 URL、响应体与上传载荷。",
+		FCVAR_NONE, true, 0.0, true, 2.0);
 }
 
 void InitializeApi()
@@ -2312,6 +2351,82 @@ void ResetClientApiCache(int client)
 
 	g_bEloRequestInFlight[client] = false;
 	g_bRatingRequestInFlight[client] = false;
+	ClearClientApiError(client);
+}
+
+// ------------------------------ 后端日志 ------------------------------
+// 全部写 logs/l4d2_ratingpro_api.log，级别由 sm_ratingpro_api_log 控制（默认 2）：
+//   0 = 不写；1 = 只写失败 / 上传结果 / 会话头；2 = 再写每次请求的 URL 与成功响应体。
+// 这里直接调 WritetoLogFile 而不是 logger 的 error()/warning()：后者会同时刷服务器控制台，
+// 后端长期不可达时每个玩家两条，控制台会被淹掉。
+void ApiLog(LogType level, const char[] fmt, any ...)
+{
+	if (g_hApiLog == null || g_hApiLog.IntValue <= 0)
+	{
+		return;
+	}
+
+	if (level == LogType_Debug && g_hApiLog.IntValue < 2)
+	{
+		return;
+	}
+
+	char buffer[MAX_LOG_LINE];
+	VFormat(buffer, sizeof(buffer), fmt, 3);
+	g_ApiLogger.WritetoLogFile(level, buffer);
+}
+
+// 响应体分块写：logger 单行上限 512，整段丢进去只剩开头几十个字，
+// 而排查 401/500 恰恰要看后端返回的错误 JSON。
+void ApiLogBody(LogType level, const char[] label, const char[] body)
+{
+	if (g_hApiLog == null || g_hApiLog.IntValue <= 0)
+	{
+		return;
+	}
+
+	if (level == LogType_Debug && g_hApiLog.IntValue < 2)
+	{
+		return;
+	}
+
+	int length = strlen(body);
+	ApiLog(level, "%s：%d 字节", label, length);
+
+	char chunk[API_LOG_BODY_CHUNK];
+	for (int offset = 0; offset < length; offset += sizeof(chunk) - 1)
+	{
+		strcopy(chunk, sizeof(chunk), body[offset]);
+		ApiLog(level, "  [%d] %s", offset, chunk);
+	}
+}
+
+void SetClientApiError(int client, const char[] fmt, any ...)
+{
+	if (client < 0 || client > MaxClients)
+	{
+		return;
+	}
+
+	VFormat(g_sClientApiError[client], sizeof(g_sClientApiError[]), fmt, 3);
+}
+
+void ClearClientApiError(int client)
+{
+	if (client >= 0 && client <= MaxClients)
+	{
+		g_sClientApiError[client][0] = '\0';
+	}
+}
+
+// 日志里用的 SteamID：未认证/已离场时退化成 unknown，不阻断请求本身。
+void GetClientApiAuthForLog(int client, char[] buffer, int size)
+{
+	buffer[0] = '\0';
+	if (!GetClientAuthKey(client, buffer, size))
+	{
+		strcopy(buffer, size, "unknown");
+	}
 }
 
 void RequestClientApiData(int client)
@@ -2347,14 +2462,19 @@ void RequestClientElo(int client, const char[] encodedAuth)
 	char url[512];
 	FormatApiUrl(url, sizeof(url), path);
 
+	ApiLog(LogType_Debug, "[GET elo] client=%d token=%d url=%s", client, g_iClientToken[client], url);
+
 	Handle request = SteamWorks_CreateHTTPRequest(k_EHTTPMethodGET, url);
 	if (request == null)
 	{
+		SetClientApiError(client, "创建 ELO 请求失败（SteamWorks_CreateHTTPRequest 返回 null）");
+		ApiLog(LogType_Error, "[GET elo] client=%d 创建请求失败：%s", client, url);
 		return;
 	}
 
 	g_bEloRequestInFlight[client] = true;
 	g_ClientInfo[client].status = view_as<int>(RatingProCache_Loading);
+	ClearClientApiError(client);
 
 	SteamWorks_SetHTTPRequestNetworkActivityTimeout(request, 10);
 	SteamWorks_SetHTTPRequestContextValue(request, client, g_iClientToken[client]);
@@ -2364,6 +2484,8 @@ void RequestClientElo(int client, const char[] encodedAuth)
 	{
 		g_bEloRequestInFlight[client] = false;
 		g_ClientInfo[client].status = view_as<int>(RatingProCache_Error);
+		SetClientApiError(client, "发送 ELO 请求失败（Steam 网络栈拒绝）");
+		ApiLog(LogType_Error, "[GET elo] client=%d 发送请求失败（SteamWorks_SendHTTPRequest 返回 false）：%s", client, url);
 		delete request;
 	}
 }
@@ -2381,9 +2503,12 @@ void RequestClientRecentRating(int client, const char[] encodedAuth)
 	char url[512];
 	FormatApiUrl(url, sizeof(url), path);
 
+	ApiLog(LogType_Debug, "[GET rating] client=%d token=%d url=%s", client, g_iClientToken[client], url);
+
 	Handle request = SteamWorks_CreateHTTPRequest(k_EHTTPMethodGET, url);
 	if (request == null)
 	{
+		ApiLog(LogType_Error, "[GET rating] client=%d 创建请求失败：%s", client, url);
 		return;
 	}
 
@@ -2396,6 +2521,7 @@ void RequestClientRecentRating(int client, const char[] encodedAuth)
 	if (!SteamWorks_SendHTTPRequest(request))
 	{
 		g_bRatingRequestInFlight[client] = false;
+		ApiLog(LogType_Error, "[GET rating] client=%d 发送请求失败（SteamWorks_SendHTTPRequest 返回 false）：%s", client, url);
 		delete request;
 	}
 }
@@ -2413,13 +2539,28 @@ public void OnClientEloResponse(Handle request, bool failure, bool requestSucces
 	// 槽位已被复用（玩家退服 / 换人）时丢弃这次结果。
 	if (!IsValidClientIndex(client) || token != g_iClientToken[client])
 	{
+		ApiLog(LogType_Debug, "[GET elo] 丢弃过期响应：client=%d token=%d 当前 token=%d status=%d",
+			client, token, g_iClientToken[client], status);
 		return;
 	}
 
 	g_bEloRequestInFlight[client] = false;
 
+	char auth[64];
+	GetClientApiAuthForLog(client, auth, sizeof(auth));
+
 	if (!transportOk)
 	{
+		SetClientApiError(client, "ELO 传输失败 failure=%d ok=%d status=%d body=%d 字节",
+			failure ? 1 : 0, requestSuccessful ? 1 : 0, status, strlen(g_sHttpResponse));
+		ApiLog(LogType_Error,
+			"[GET elo] %N(%s) 传输失败：failure=%d requestSuccessful=%d status=%d body=%d 字节。常见原因：服务器出站 DNS/防火墙拦截、后端域名解析失败、TLS 握手失败。",
+			client, auth, failure ? 1 : 0, requestSuccessful ? 1 : 0, status, strlen(g_sHttpResponse));
+		if (hasBody)
+		{
+			ApiLogBody(LogType_Error, "[GET elo] 失败响应体", g_sHttpResponse);
+		}
+
 		g_ClientInfo[client].status = view_as<int>(RatingProCache_Error);
 		FireClientDataLoaded(client, RatingProCache_Error);
 		return;
@@ -2427,6 +2568,9 @@ public void OnClientEloResponse(Handle request, bool failure, bool requestSucces
 
 	if (status == 404)
 	{
+		ApiLog(LogType_Debug, "[GET elo] %N(%s) 后端无此玩家记录（HTTP 404）", client, auth);
+		ClearClientApiError(client);
+
 		g_ClientInfo[client].loaded = false;
 		g_ClientInfo[client].status = view_as<int>(RatingProCache_NoRecord);
 		FireClientDataLoaded(client, RatingProCache_NoRecord);
@@ -2435,6 +2579,14 @@ public void OnClientEloResponse(Handle request, bool failure, bool requestSucces
 
 	if (status != 200 || !hasBody)
 	{
+		SetClientApiError(client, "ELO HTTP %d body=%d 字节", status, strlen(g_sHttpResponse));
+		ApiLog(LogType_Error, "[GET elo] %N(%s) 返回 HTTP %d（期望 200），body=%d 字节%s",
+			client, auth, status, strlen(g_sHttpResponse), hasBody ? "" : "（未读到 body，原因见下一行）");
+		if (hasBody)
+		{
+			ApiLogBody(LogType_Error, "[GET elo] 错误响应体", g_sHttpResponse);
+		}
+
 		g_ClientInfo[client].status = view_as<int>(RatingProCache_Error);
 		FireClientDataLoaded(client, RatingProCache_Error);
 		return;
@@ -2442,13 +2594,23 @@ public void OnClientEloResponse(Handle request, bool failure, bool requestSucces
 
 	if (!ParseEloResponse(client, g_sHttpResponse))
 	{
+		SetClientApiError(client, "ELO 响应解析失败（缺少 elo 字段）");
+		ApiLog(LogType_Error, "[GET elo] %N(%s) 响应解析失败：HTTP 200 但不是预期的 JSON（缺少 elo 字段），检查后端返回结构是否变了。",
+			client, auth);
+		ApiLogBody(LogType_Error, "[GET elo] 解析失败响应体", g_sHttpResponse);
+
 		g_ClientInfo[client].status = view_as<int>(RatingProCache_Error);
 		FireClientDataLoaded(client, RatingProCache_Error);
 		return;
 	}
 
+	ClearClientApiError(client);
 	g_ClientInfo[client].loaded = true;
 	g_ClientInfo[client].status = view_as<int>(RatingProCache_Ready);
+	ApiLog(LogType_Debug, "[GET elo] %N(%s) 成功：elo=%.2f rank=%d/%d rounds=%d",
+		client, auth, g_ClientInfo[client].elo, g_ClientInfo[client].rank,
+		g_ClientInfo[client].totalPlayers, g_ClientInfo[client].rounds);
+	ApiLogBody(LogType_Debug, "[GET elo] 响应体", g_sHttpResponse);
 	FireClientDataLoaded(client, RatingProCache_Ready);
 }
 
@@ -2499,18 +2661,61 @@ public void OnClientRatingResponse(Handle request, bool failure, bool requestSuc
 
 	if (!IsValidClientIndex(client) || token != g_iClientToken[client])
 	{
+		ApiLog(LogType_Debug, "[GET rating] 丢弃过期响应：client=%d token=%d 当前 token=%d status=%d",
+			client, token, g_iClientToken[client], status);
 		return;
 	}
 
 	g_bRatingRequestInFlight[client] = false;
 
-	if (!transportOk || status != 200 || !hasBody)
+	char auth[64];
+	GetClientApiAuthForLog(client, auth, sizeof(auth));
+
+	if (!transportOk)
 	{
+		ApiLog(LogType_Error, "[GET rating] %N(%s) 传输失败：failure=%d requestSuccessful=%d status=%d body=%d 字节。",
+			client, auth, failure ? 1 : 0, requestSuccessful ? 1 : 0, status, strlen(g_sHttpResponse));
+		if (hasBody)
+		{
+			ApiLogBody(LogType_Error, "[GET rating] 失败响应体", g_sHttpResponse);
+		}
+
+		g_ClientInfo[client].hasRecent = false;
+		return;
+	}
+
+	if (status == 404)
+	{
+		ApiLog(LogType_Debug, "[GET rating] %N(%s) 无历史评分（HTTP 404）", client, auth);
+		g_ClientInfo[client].hasRecent = false;
+		return;
+	}
+
+	if (status != 200 || !hasBody)
+	{
+		ApiLog(LogType_Error, "[GET rating] %N(%s) 返回 HTTP %d（期望 200），body=%d 字节%s",
+			client, auth, status, strlen(g_sHttpResponse), hasBody ? "" : "（未读到 body，原因见下一行）");
+		if (hasBody)
+		{
+			ApiLogBody(LogType_Error, "[GET rating] 错误响应体", g_sHttpResponse);
+		}
+
 		g_ClientInfo[client].hasRecent = false;
 		return;
 	}
 
 	ParseRatingAverageResponse(client, g_sHttpResponse);
+
+	if (g_ClientInfo[client].hasRecent)
+	{
+		ApiLog(LogType_Debug, "[GET rating] %N(%s) 成功：最近平均=%.2f（%d 场）",
+			client, auth, g_ClientInfo[client].recentAverage, g_ClientInfo[client].recentCount);
+	}
+	else
+	{
+		ApiLog(LogType_Error, "[GET rating] %N(%s) 响应解析失败：HTTP 200 但缺少 average 字段。", client, auth);
+		ApiLogBody(LogType_Error, "[GET rating] 解析失败响应体", g_sHttpResponse);
+	}
 }
 
 void ParseRatingAverageResponse(int client, const char[] body)
@@ -2977,6 +3182,7 @@ void SendUploadRequest()
 	Handle request = SteamWorks_CreateHTTPRequest(k_EHTTPMethodPOST, url);
 	if (request == null)
 	{
+		ApiLog(LogType_Error, "[POST upload] 创建上传请求失败（SteamWorks_CreateHTTPRequest 返回 null）：%s", url);
 		ScheduleUploadRetry();
 		return;
 	}
@@ -2986,6 +3192,12 @@ void SendUploadRequest()
 
 	g_iUploadToken++;
 	g_bUploadInFlight = true;
+
+	ApiLog(LogType_Debug, "[POST upload] snapshot=#%d token=%d 人数=%d 载荷=%d 字节 url=%s",
+		g_iPendingUploadSnapshotId, g_iUploadToken, g_iPendingUploadPlayerCount,
+		strlen(g_sUploadPayload), url);
+	// Authorization 头里有 api_key，绝不写日志；载荷里只有对局数据与 server_key。
+	ApiLogBody(LogType_Debug, "[POST upload] 载荷", g_sUploadPayload);
 
 	SteamWorks_SetHTTPRequestNetworkActivityTimeout(request, 20);
 	SteamWorks_SetHTTPRequestHeaderValue(request, "Content-Type", "application/json; charset=utf-8");
@@ -2999,6 +3211,8 @@ void SendUploadRequest()
 	{
 		g_bUploadInFlight = false;
 		delete request;
+		ApiLog(LogType_Error, "[POST upload] 发送请求失败（SteamWorks_SendHTTPRequest 返回 false）：snapshot=#%d token=%d url=%s",
+			g_iPendingUploadSnapshotId, g_iUploadToken, url);
 		ScheduleUploadRetry();
 		return;
 	}
@@ -3055,6 +3269,8 @@ public void OnUploadCompleted(Handle request, bool failure, bool requestSuccessf
 
 	if (token != g_iUploadToken)
 	{
+		ApiLog(LogType_Debug, "[POST upload] 丢弃过期响应：snapshot=#%d token=%d 当前 token=%d status=%d",
+			snapshotId, token, g_iUploadToken, status);
 		return;
 	}
 
@@ -3079,6 +3295,15 @@ public void OnUploadCompleted(Handle request, bool failure, bool requestSuccessf
 
 		// 网络层失败、429 限流与 5xx 值得重试；4xx 属于载荷/鉴权问题，重试也不会成功。
 		bool retryable = !transportOk || status == 0 || status == 429 || status >= 500;
+
+		ApiLog(LogType_Error, "[POST upload] snapshot=#%d 失败：transportOk=%d status=%d body=%d 字节 → %s",
+			snapshotId, transportOk ? 1 : 0, status, strlen(g_sHttpResponse),
+			retryable ? "可重试（网络/429/5xx）" : "不可重试（4xx：载荷或 api_key 被拒），丢弃本段载荷");
+		if (hasBody)
+		{
+			ApiLogBody(LogType_Error, "[POST upload] 失败响应体", g_sHttpResponse);
+		}
+
 		if (retryable)
 		{
 			ScheduleUploadRetry();
@@ -3099,6 +3324,10 @@ public void OnUploadCompleted(Handle request, bool failure, bool requestSuccessf
 
 	LogMessage("[RatingPro] 对局数据上传成功（快照 #%d，%d 人，HTTP %d%s）。",
 		snapshotId, playerCount, status, duplicate ? "，后端判定重复" : "");
+
+	ApiLog(LogType_Debug, "[POST upload] snapshot=#%d 成功：HTTP %d%s",
+		snapshotId, status, duplicate ? "（后端判定重复）" : "");
+	ApiLogBody(LogType_Debug, "[POST upload] 响应体", g_sHttpResponse);
 
 	FireEloUploaded(snapshotId, status, true, playerCount);
 	ClearPendingUpload();
@@ -3455,6 +3684,9 @@ public Action Command_ApiDebug(int client, int args)
 		g_iRawHistoryCount, g_bUploadPending ? 1 : 0, g_bUploadInFlight ? 1 : 0,
 		g_iUploadAttempts, strlen(g_sUploadPayload));
 
+	ReplyToCommand(client, "[RatingPro] 日志: sm_ratingpro_api_log=%d 文件=addons/sourcemod/logs/%s.log（0=关闭 1=失败与上传 2=全部请求；改完即时生效，无需重载）",
+		g_hApiLog.IntValue, API_LOG_NAME);
+
 	for (int target = 1; target <= MaxClients; target++)
 	{
 		if (!IsHumanClient(target))
@@ -3464,10 +3696,19 @@ public Action Command_ApiDebug(int client, int args)
 
 		char stateName[32];
 		GetCacheStatusName(g_ClientInfo[target].status, stateName, sizeof(stateName));
-		ReplyToCommand(client, "[RatingPro] #%d %N: 状态=%s ELO=%.2f 排名=%d/%d 对局数=%d 最近平均=%.2f(%d 场)",
+
+		// 失败原因直接带出来：状态=请求失败时最想知道的就是哪一层失败了。
+		char errorNote[CLIENT_API_ERROR_LENGTH + 16];
+		errorNote[0] = '\0';
+		if (g_sClientApiError[target][0] != '\0')
+		{
+			Format(errorNote, sizeof(errorNote), " 最近错误=%s", g_sClientApiError[target]);
+		}
+
+		ReplyToCommand(client, "[RatingPro] #%d %N: 状态=%s ELO=%.2f 排名=%d/%d 对局数=%d 最近平均=%.2f(%d 场)%s",
 			target, target, stateName, g_ClientInfo[target].elo, g_ClientInfo[target].rank,
 			g_ClientInfo[target].totalPlayers, g_ClientInfo[target].rounds,
-			g_ClientInfo[target].recentAverage, g_ClientInfo[target].recentCount);
+			g_ClientInfo[target].recentAverage, g_ClientInfo[target].recentCount, errorNote);
 	}
 
 	if (args > 0 && g_sUploadPayload[0] != '\0')
@@ -3507,6 +3748,49 @@ void GetCacheStatusName(int status, char[] buffer, int size)
 
 // ------------------------------ JSON / HTTP 工具 ------------------------------
 
+// 读不出 body 时不能只说「空响应体」：size 拿不到和 data 读不出是两种故障，
+// 而两者都可能因为响应头丢了 body。这里把两层原生的真实返回值与响应头一起记下来。
+void LogResponseBodyReadFailure(Handle request, bool sizeOk, int size)
+{
+	if (g_hApiLog == null || g_hApiLog.IntValue <= 0)
+	{
+		return;
+	}
+
+	char contentLength[64];
+	contentLength[0] = '\0';
+	bool hasContentLength = SteamWorks_GetHTTPResponseHeaderValue(request, "Content-Length",
+		contentLength, sizeof(contentLength));
+
+	char contentEncoding[64];
+	contentEncoding[0] = '\0';
+	bool hasContentEncoding = SteamWorks_GetHTTPResponseHeaderValue(request, "Content-Encoding",
+		contentEncoding, sizeof(contentEncoding));
+
+	char transferEncoding[64];
+	transferEncoding[0] = '\0';
+	bool hasTransferEncoding = SteamWorks_GetHTTPResponseHeaderValue(request, "Transfer-Encoding",
+		transferEncoding, sizeof(transferEncoding));
+
+	char server[64];
+	server[0] = '\0';
+	bool hasServer = SteamWorks_GetHTTPResponseHeaderValue(request, "Server", server, sizeof(server));
+
+	char contentType[64];
+	contentType[0] = '\0';
+	bool hasContentType = SteamWorks_GetHTTPResponseHeaderValue(request, "Content-Type", contentType, sizeof(contentType));
+
+	// 分两行：中文按 UTF-8 计 3 字节，单行 512 的上限很容易把后面的头截掉。
+	ApiLog(LogType_Error, "[http] 响应体读取失败：GetHTTPResponseBodySize 返回=%d size=%d",
+		sizeOk ? 1 : 0, size);
+	ApiLog(LogType_Error, "[http] 响应头 Content-Length=%s | Content-Encoding=%s | Transfer-Encoding=%s | Server=%s | Content-Type=%s",
+		hasContentLength ? contentLength : "(无此头)",
+		hasContentEncoding ? contentEncoding : "(无此头)",
+		hasTransferEncoding ? transferEncoding : "(无此头)",
+		hasServer ? server : "(无此头)",
+		hasContentType ? contentType : "(无此头)");
+}
+
 bool ReadResponseBody(Handle request, char[] buffer, int size)
 {
 	if (size <= 0)
@@ -3516,9 +3800,16 @@ bool ReadResponseBody(Handle request, char[] buffer, int size)
 
 	buffer[0] = '\0';
 
-	int length = 0;
-	if (request == null || !SteamWorks_GetHTTPResponseBodySize(request, length) || length <= 0)
+	if (request == null)
 	{
+		return false;
+	}
+
+	int length = 0;
+	bool sizeOk = SteamWorks_GetHTTPResponseBodySize(request, length);
+	if (!sizeOk || length <= 0)
+	{
+		LogResponseBodyReadFailure(request, sizeOk, length);
 		return false;
 	}
 
@@ -3527,10 +3818,25 @@ bool ReadResponseBody(Handle request, char[] buffer, int size)
 		length = size - 1;
 	}
 
-	if (!SteamWorks_GetHTTPResponseBodyData(request, buffer, length + 1))
+	// Valve 的 GetHTTPResponseBodyData 要的是「缓冲区长度」，而部分 Steam 客户端要求它
+	// 与 body 大小**完全一致**：多传 1 字节留 null 结尾会被判成缓冲不匹配，直接返回 false。
+	// 以前这里传 length + 1，于是 HTTP 200、size 也读到了 526，body 却永远是空的。
+	// 先按精确大小读（仓库里的 sm_translator 一直这么写）；万一某个客户端只认更大的缓冲，
+	// 再退回 length + 1，并把实际生效的口径记进日志。
+	buffer[0] = '\0';
+	if (!SteamWorks_GetHTTPResponseBodyData(request, buffer, length))
 	{
-		buffer[0] = '\0';
-		return false;
+		if (!SteamWorks_GetHTTPResponseBodyData(request, buffer, length + 1))
+		{
+			ApiLog(LogType_Error, "[http] GetHTTPResponseBodyData 两种 bufferLen 都失败：body=%d，目标缓冲=%d",
+				length, size);
+			buffer[0] = '\0';
+			return false;
+		}
+
+		// 客户端口径差异，不是错误，别刷 Error。
+		ApiLog(LogType_Debug, "[http] GetHTTPResponseBodyData 仅在 bufferLen=%d 时成功（body=%d）",
+			length + 1, length);
 	}
 
 	buffer[length] = '\0';
