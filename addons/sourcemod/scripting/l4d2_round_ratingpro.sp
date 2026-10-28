@@ -35,8 +35,8 @@
 #define UPLOAD_RETRY_DELAY 10.0
 #define RATING_REFRESH_DELAY 5.0
 
-// left4dhooks 原生函数：读取战役累计比分，仅用于「双方分数不减」的章节连续性判定。
-// 未安装 left4dhooks 时自动降级为只按地图名 / 章节号判定。
+// left4dhooks 原生函数：读取战役累计比分，是「对局是否连续」的唯一判据。
+// 未安装 left4dhooks（或 sm_ratingpro_score_guard 0）时无法检测中断，只能按攒满即传。
 native int L4D_GetTeamScore(int logical_team, bool campaign_score = false);
 
 enum struct RatingSnapshotEntry
@@ -247,13 +247,16 @@ bool g_bApiKeyWarned;
 char g_sHttpResponse[HTTP_RESPONSE_SIZE];
 
 // ============================ 后端接入：战役（同一章节序列）跟踪 ============================
-// 一次战役 = 同一 campaign 前缀、章节号连续递增、双方比分不减的一组地图。
-// 中途换图导致序列中断时，只重置上传计数（本段不完整对局不上传），评分窗口保持原始跨图口径。
-char g_sCampaignKey[MAP_NAME_LENGTH];
-char g_sCampaignStartMap[MAP_NAME_LENGTH];
-char g_sRawHistoryCampaign[RAW_HISTORY_SLOTS][MAP_NAME_LENGTH];
+// 一段序列 = 连续结算、双方战役累计比分单调不减的一组地图。
+// 判据只有比分这一条：地图名（战役前缀、章节号）不可靠 —— 仓库里有插件能把随机地图
+// 拼成章节序列，前缀会变、章节会跳，用它们判断会把连续对局误判成断章。
+// 序列中断时只重置上传计数（本段不完整对局不上传），评分窗口保持原始跨图口径。
+char g_sCampaignKey[MAP_NAME_LENGTH];       // 仅当日志标签：本段第一张图解析出的战役前缀
+char g_sCampaignStartMap[MAP_NAME_LENGTH];  // 本段第一张图的图名
+int g_iCampaignSeqId;                       // 段序号，每断一次 +1；评分窗口用它在槽位里标记归属
+int g_iRawHistorySeq[RAW_HISTORY_SLOTS];    // 槽位写入时所处的段序号（0 = 尚未记录）
 int g_iCampaignMaps;
-int g_iCampaignLastChapter;
+int g_iCampaignLastChapter;                 // 仅当日志标签，不参与断章判定
 int g_iCampaignLastScoreA;
 int g_iCampaignLastScoreB;
 bool g_bCampaignHasScoreBaseline;
@@ -1158,7 +1161,7 @@ void SaveRoundRawHistory()
 	g_hRawHistory[slot].Clear();
 	g_hRawActionHistory[slot].Clear();
 	GetCurrentMap(g_sRawHistoryMap[slot], sizeof(g_sRawHistoryMap[]));
-	strcopy(g_sRawHistoryCampaign[slot], sizeof(g_sRawHistoryCampaign[]), g_sCampaignKey);
+	g_iRawHistorySeq[slot] = g_iCampaignSeqId;
 	for (int participant = 0; participant < g_iParticipantCount; participant++)
 	{
 		if (g_sParticipantAuth[participant][0] == '\0')
@@ -2202,10 +2205,10 @@ void PrintRatingSnapshotToConsole(int requester, const char[] auth, const char[]
 // ==========================================================================================
 // RatingPro Hub 后端接入
 //
-// 上传口径：同一战役里每攒满 N 张图（默认 4）上传一次，上传后计数器归零重新累计。
-// 战役由「campaign 前缀相同 + 章节号连续递增 + 双方比分不减」三点共同界定；任一条件被破坏
-// （中途换图、选图跳过章节、比分被重置）都视为这一段没能打成完整对局：只重置上传计数，
-// 不产生任何上传；评分窗口（RAW_HISTORY_SLOTS）保持原始跨图滚动口径，不跟着清空。
+// 上传口径：一组连续对局里每攒满 N 张图（默认 4）上传一次，上传后计数器归零重新累计。
+// 「连续」只有一个判据：双方战役累计比分单调不减。比分回退（= 战役被重开）就视为这一段
+// 没能打成完整对局：只重置上传计数，不产生任何上传；评分窗口（RAW_HISTORY_SLOTS）保持
+// 原始跨图滚动口径，不跟着清空。地图名（战役前缀、章节号）完全不参与判定。
 // 另外触发上传的那张图参与人数必须 >= sm_ratingpro_min_players（默认 8），否则这段数据直接丢弃。
 //
 // 读接口：玩家认证完成后异步请求 /elo/current 与 /rating/average?limit=5 并缓存在本地，
@@ -2230,7 +2233,7 @@ void CreateApiConVars()
 	g_hAutoRefresh = CreateConVar("sm_ratingpro_auto_refresh", "1",
 		"玩家认证完成时自动请求并缓存 ELO 与最近 5 场平均 RatingPro。", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_hScoreGuard = CreateConVar("sm_ratingpro_score_guard", "1",
-		"用「双方战役比分不减」辅助判定章节连续性（依赖 left4dhooks）；关掉后只按地图名与章节号判定。",
+		"用「双方战役比分不减」判定对局是否连续（依赖 left4dhooks）。这是唯一的断章信号：关掉后不再检测中断，上传计数只在攒满上传时归零。",
 		FCVAR_NONE, true, 0.0, true, 1.0);
 }
 
@@ -2248,11 +2251,17 @@ void InitializeApi()
 
 	g_bCampaignHasScoreBaseline = false;
 	g_iCampaignMaps = 0;
+	g_iCampaignSeqId = 0;
 	g_iCampaignLastChapter = 0;
 	g_iCampaignLastScoreA = 0;
 	g_iCampaignLastScoreB = 0;
 	g_sCampaignKey[0] = '\0';
 	g_sCampaignStartMap[0] = '\0';
+
+	for (int index = 0; index < RAW_HISTORY_SLOTS; index++)
+	{
+		g_iRawHistorySeq[index] = 0;
+	}
 	g_sUploadPayload[0] = '\0';
 	g_sUploadExternalId[0] = '\0';
 	g_sHttpResponse[0] = '\0';
@@ -2556,6 +2565,7 @@ void ParseRatingAverageResponse(int client, const char[] body)
 // ------------------------------ 战役跟踪 ------------------------------
 
 // 解析地图名中的战役前缀与章节号：c1m3_mall → key="c1", chapter=3。
+// 仅供日志/!apidebug 显示，不参与任何判定（见 IsCampaignBroken 的说明）。
 // 非标准命名（工坊自定义图）返回 false，由调用方退化为「整张图名即战役键」。
 bool ParseCampaignProgress(const char[] map, char[] key, int keySize, int &chapter)
 {
@@ -2645,31 +2655,19 @@ bool TryGetCampaignScores(int &scoreA, int &scoreB)
 	return scoreA >= 0 && scoreB >= 0;
 }
 
-bool IsCampaignBroken(const char[] key, int chapter, bool hasScores, int scoreA, int scoreB)
+// 唯一判据：双方战役累计比分单调不减。回退了就说明有人重开过战役，这段序列作废。
+// 地图名（战役前缀、章节号）一律不参与判定 —— 仓库里有插件能把随机地图拼成章节序列，
+// 前缀和章节号在那种服务器上完全说明不了连续性，只留作日志定位用。
+// 这一条依赖引擎的战役累计分；个别环境读不准时可用 sm_ratingpro_score_guard 0 关掉，
+// 关掉后就没有任何断章信号了，上传计数只会在攒满上传时归零。
+bool IsCampaignBroken(bool hasScores, int scoreA, int scoreB)
 {
-	// 换了战役前缀：一定是新的章节序列。
-	if (!StrEqual(key, g_sCampaignKey, false))
+	if (!hasScores || !g_bCampaignHasScoreBaseline || !g_hScoreGuard.BoolValue)
 	{
-		return true;
+		return false;
 	}
 
-	// 章节号必须严格 +1；跳章、回退或原地重开都说明这段序列断了。
-	if (chapter > 0 && g_iCampaignLastChapter > 0 && chapter != g_iCampaignLastChapter + 1)
-	{
-		return true;
-	}
-
-	// 双方比分必须单调不减：任意一方回退说明战役被重新开始过。
-	// 这一条依赖引擎的战役累计分，个别环境不准时可用 sm_ratingpro_score_guard 0 关掉。
-	if (hasScores && g_bCampaignHasScoreBaseline && g_hScoreGuard.BoolValue)
-	{
-		if (scoreA < g_iCampaignLastScoreA || scoreB < g_iCampaignLastScoreB)
-		{
-			return true;
-		}
-	}
-
-	return false;
+	return scoreA < g_iCampaignLastScoreA || scoreB < g_iCampaignLastScoreB;
 }
 
 // 章节中断只重置「上传计数」，评分窗口（RAW_HISTORY_SLOTS）保持原始跨图滚动口径，不跟着清空。
@@ -2684,7 +2682,8 @@ void ResetCampaignProgress()
 	g_sCampaignStartMap[0] = '\0';
 }
 
-// 每次正式结算前调用：判定本图是否延续同一战役；断了就重置上传计数，评分窗口原样保留。
+// 每次正式结算前调用：判定这张图是否接着上一段连续对局（只看双方比分有没有回退）；
+// 断了就重置上传计数，评分窗口原样保留。
 void UpdateCampaignProgress()
 {
 	char map[PLATFORM_MAX_PATH];
@@ -2702,16 +2701,33 @@ void UpdateCampaignProgress()
 	int scoreB;
 	bool hasScores = TryGetCampaignScores(scoreA, scoreB);
 
-	if (g_iCampaignMaps > 0 && IsCampaignBroken(key, chapter, hasScores, scoreA, scoreB))
+	if (g_iCampaignMaps > 0 && IsCampaignBroken(hasScores, scoreA, scoreB))
 	{
-		LogMessage("[RatingPro] 章节中断：%s → %s（上一段 campaign=%s 第 %d 章，已结算 %d 张图），本段不完整对局不上传，仅重置上传计数。",
-			g_sCampaignStartMap, map, g_sCampaignKey, g_iCampaignLastChapter, g_iCampaignMaps);
+		char scoreNote[64];
+		if (hasScores)
+		{
+			Format(scoreNote, sizeof(scoreNote), "，比分 %d:%d → %d:%d",
+				g_iCampaignLastScoreA, g_iCampaignLastScoreB, scoreA, scoreB);
+		}
+		else
+		{
+			scoreNote[0] = '\0';
+		}
+
+		LogMessage("[RatingPro] 序列中断：%s → %s（上一段起点 %s 第 %d 章，已结算 %d 张图%s），本段不完整对局不上传，仅重置上传计数。",
+			g_sCampaignStartMap, map, g_sCampaignKey, g_iCampaignLastChapter, g_iCampaignMaps, scoreNote);
 
 		ResetCampaignProgress();
+		g_iCampaignSeqId++;
 	}
 
 	if (g_iCampaignMaps == 0)
 	{
+		if (g_iCampaignSeqId == 0)
+		{
+			g_iCampaignSeqId = 1;
+		}
+
 		strcopy(g_sCampaignKey, sizeof(g_sCampaignKey), key);
 		strcopy(g_sCampaignStartMap, sizeof(g_sCampaignStartMap), map);
 	}
@@ -2765,13 +2781,13 @@ void MaybeUploadCampaign()
 
 	int settledMaps = g_iCampaignMaps;
 
-	// 评分窗口沿用原始插件的跨图滚动口径，因此可能仍含上一段（未完成、已不参与上传）的图。
-	// 这里只记录一次覆盖情况，不阻断上传：上传与否只看本段战役累计了多少张图。
+	// 评分窗口沿用原始插件的跨图滚动口径，因此可能仍含上一段（已中断、不参与上传）的图。
+	// 这里只记录一次覆盖情况，不阻断上传：上传与否只看本段累计了多少张图。
+	// 归属按段序号判断：同一段里跨过的图前缀可能变、章节可能跳，都算本段。
 	int foreignSlots = 0;
 	for (int slot = 0; slot < g_iRawHistoryCount; slot++)
 	{
-		if (g_sRawHistoryCampaign[slot][0] != '\0'
-			&& !StrEqual(g_sRawHistoryCampaign[slot], g_sCampaignKey, false))
+		if (g_iRawHistorySeq[slot] > 0 && g_iRawHistorySeq[slot] != g_iCampaignSeqId)
 		{
 			foreignSlots++;
 		}
@@ -2779,8 +2795,8 @@ void MaybeUploadCampaign()
 
 	if (foreignSlots > 0)
 	{
-		LogMessage("[RatingPro] 评分窗口含 %d 个上一段战役的槽位（%d/%d 张图属于当前战役 %s），按原始跨图口径保留。",
-			foreignSlots, g_iRawHistoryCount - foreignSlots, g_iRawHistoryCount, g_sCampaignKey);
+		LogMessage("[RatingPro] 评分窗口含 %d 个上一段序列的槽位（%d/%d 张图属于当前序列，本段起点 %s），按原始跨图口径保留。",
+			foreignSlots, g_iRawHistoryCount - foreignSlots, g_iRawHistoryCount, g_sCampaignStartMap);
 	}
 
 	g_iPendingUploadSnapshotId = g_iSnapshotRoundId;
@@ -3514,8 +3530,9 @@ public Action Command_ApiDebug(int client, int args)
 		g_hApiEnabled.BoolValue ? 1 : 0, base, serverKey,
 		apiKey[0] == '\0' ? "(未配置，不会上传)" : "(已配置)");
 
-	ReplyToCommand(client, "[RatingPro] 战役: key=%s 起始图=%s 已累计=%d/%d 张（攒满即上传并归零）",
-		g_sCampaignKey, g_sCampaignStartMap, g_iCampaignMaps, g_hUploadMaps.IntValue);
+	ReplyToCommand(client, "[RatingPro] 序列: #%d 起点=%s（前缀 %s）当前第 %d 章 已累计=%d/%d 张（攒满即上传并归零）",
+		g_iCampaignSeqId, g_sCampaignStartMap, g_sCampaignKey, g_iCampaignLastChapter,
+		g_iCampaignMaps, g_hUploadMaps.IntValue);
 
 	ReplyToCommand(client, "[RatingPro] 上传门槛: 人数>=%d（本图参与 %d 人）",
 		g_hMinPlayers.IntValue, g_iParticipantCount);

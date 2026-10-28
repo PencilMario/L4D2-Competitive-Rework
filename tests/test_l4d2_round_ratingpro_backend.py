@@ -54,8 +54,11 @@ class RatingProBackendTests(unittest.TestCase):
 
     def test_campaign_break_only_resets_the_upload_counter(self):
         body = extract_function(self.plugin, "void UpdateCampaignProgress()")
-        self.assertIn("IsCampaignBroken(key, chapter, hasScores, scoreA, scoreB)", body)
+        self.assertIn("IsCampaignBroken(hasScores, scoreA, scoreB)", body)
         self.assertIn("ResetCampaignProgress();", body)
+        # 断章要换段序号，评分窗口里的槽位才能区分「同一段跨块」和「上一段残留」。
+        self.assertIn("g_iCampaignSeqId++;", body)
+        self.assertLess(body.index("ResetCampaignProgress();"), body.index("g_iCampaignSeqId++;"))
 
         # 断章只影响上传，不影响 !rating 的历史口径：评分窗口一律不因断章清空。
         self.assertNotIn("ResetCampaignWindow", self.plugin)
@@ -69,21 +72,27 @@ class RatingProBackendTests(unittest.TestCase):
         for forbidden in (
             "g_iRawHistoryCount",
             "g_iRawHistoryNextSlot",
+            "g_iRawHistorySeq",
             "g_hRawHistory",
             "g_hRawActionHistory",
             "g_sRawHistoryMap",
-            "g_sRawHistoryCampaign",
         ):
             self.assertNotIn(forbidden, reset, "断章不得清空评分窗口")
 
-    def test_campaign_break_uses_prefix_chapter_and_scores(self):
+    def test_campaign_break_only_reads_the_scores(self):
         body = extract_function(
             self.plugin,
-            "bool IsCampaignBroken(const char[] key, int chapter, bool hasScores, int scoreA, int scoreB)",
+            "bool IsCampaignBroken(bool hasScores, int scoreA, int scoreB)",
         )
-        self.assertIn("!StrEqual(key, g_sCampaignKey, false)", body)
-        self.assertIn("chapter != g_iCampaignLastChapter + 1", body)
+
+        # 仓库里有插件能把随机地图拼成章节序列：前缀会变、章节会跳，都不参与判定。
+        self.assertNotIn("StrEqual", body)
+        self.assertNotIn("g_sCampaignKey", body)
+        self.assertNotIn("chapter", body)
+
+        # 唯一判据：双方战役累计比分单调不减。
         self.assertIn("scoreA < g_iCampaignLastScoreA || scoreB < g_iCampaignLastScoreB", body)
+        self.assertIn("g_bCampaignHasScoreBaseline", body)
         self.assertIn("g_hScoreGuard.BoolValue", body)
 
     def test_campaign_map_name_parsing_accepts_official_and_workshop_names(self):
@@ -100,15 +109,12 @@ class RatingProBackendTests(unittest.TestCase):
         self.assertLess(
             body.index("UpdateCampaignProgress();"),
             body.index("SaveRoundRawHistory();"),
-            "必须先判定章节连续性再写入原始分槽位",
+            "必须先判定对局连续性再写入原始分槽位",
         )
 
-    def test_history_slot_carries_its_campaign_key(self):
+    def test_history_slot_carries_its_sequence_id(self):
         body = extract_function(self.plugin, "void SaveRoundRawHistory()")
-        self.assertIn(
-            "strcopy(g_sRawHistoryCampaign[slot], sizeof(g_sRawHistoryCampaign[]), g_sCampaignKey);",
-            body,
-        )
+        self.assertIn("g_iRawHistorySeq[slot] = g_iCampaignSeqId;", body)
 
     # ------------------------- 上传触发 -------------------------
 
@@ -118,9 +124,11 @@ class RatingProBackendTests(unittest.TestCase):
         self.assertIn("int requiredMaps = g_hUploadMaps.IntValue;", body)
         self.assertIn("g_iCampaignMaps < requiredMaps", body)
 
-        # 跨段覆盖只提示不阻断：上传决策只看本段战役累计了多少张图。
+        # 跨段覆盖只提示不阻断：上传决策只看本段累计了多少张图。
         window = body[body.index("int foreignSlots = 0;"):body.index("BuildUploadPayload();")]
-        self.assertIn("!StrEqual(g_sRawHistoryCampaign[slot], g_sCampaignKey, false)", window)
+        self.assertIn("g_iRawHistorySeq[slot] != g_iCampaignSeqId", window)
+        self.assertIn("g_iRawHistorySeq[slot] > 0", window)
+        self.assertNotIn("StrEqual", window)
         self.assertNotIn("return;", window)
 
     def test_upload_resets_the_campaign_counter(self):
