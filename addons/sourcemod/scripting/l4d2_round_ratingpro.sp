@@ -156,10 +156,10 @@ enum struct RatingProClientInfo
 public Plugin myinfo =
 {
 	name = "L4D2 Round RatingPro",
-	author = "Codex",
+	author = "Sir.P",
 	description = "基于比赛生还者与特感表现评估回合 RatingPro 评分。",
 	version = PLUGIN_VERSION,
-	url = ""
+	url = "https://github.com/PencilMario/L4D2-Competitive-Rework"
 };
 
 Logger g_RatingLogger;

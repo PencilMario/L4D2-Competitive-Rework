@@ -11,10 +11,10 @@
 
 public Plugin myinfo = {
 	name = "MixTeamRating",
-	author = "Codex",
+	author = "Sir.P",
 	description = "按最近 N 场平均 RatingPro 分队的 mix 类型",
 	version = "build_0001",
-	url = "https://github.com/TouchMe-Inc/l4d2_mix_team"
+	url = "https://github.com/PencilMario/L4D2-Competitive-Rework"
 };
 
 

@@ -46,10 +46,10 @@ int g_iRetryCount[MAXPLAYERS + 1];
 public Plugin myinfo =
 {
 	name = "L4D2 RatingPro ELO",
-	author = "Codex",
+	author = "Sir.P",
 	description = "玩家进服提示其 ELO 与最近变化，并提供 !elo 手动查询。",
 	version = PLUGIN_VERSION,
-	url = ""
+	url = "https://github.com/PencilMario/L4D2-Competitive-Rework"
 };
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int errMax)
