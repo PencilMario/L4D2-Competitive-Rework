@@ -35,9 +35,13 @@
 #define UPLOAD_RETRY_DELAY 10.0
 #define RATING_REFRESH_DELAY 5.0
 
-// 结算时地图分常常落后于 round_end：一次读不到就按秒重试，别让时序失误丢掉整局胜负与比分。
+// 结算时地图分常常落后于 round_end：一次读不到就按秒重试一会儿，别让时序失误丢掉胜负与比分。
+// 上限刻意压得很小：结算定时器是唯一的上传入口（没有 OnMapEnd 兜底），
+// 而 TIMER_FLAG_NO_MAPCHANGE 会在换图时把定时器直接杀掉 —— 重试拖太久，
+// 丢的就不是「胜负」而是「整张图不计数、不上传」，代价不对等。
+// 默认 3s 延迟 + 2 次重试 = 最坏 5s，仍在换图窗口之内。
 #define MAP_RESULT_RETRY_DELAY 1.0
-#define MAP_RESULT_MAX_ATTEMPTS 6
+#define MAP_RESULT_MAX_ATTEMPTS 2
 
 // 后端接入专用日志：单独一个文件 logs/l4d2_ratingpro_api.log，
 // 不跟结算明细（ratingpro.log / ratingpro_<地图>_<时间>.log）混在一起。
@@ -930,6 +934,14 @@ public void OnTankRockEaten(int tank, int survivor)
 
 public Action Timer_PrintBestRating(Handle timer)
 {
+	// 这条链只在「本回合已结束」时有效：g_bRoundEnded 被清掉说明回合重开过
+	// （Event_RoundStart / ResetRoundStats），此时再结算就是拿一局刚开场的数据算账。
+	if (!g_bRoundEnded)
+	{
+		LogMessage("[RatingPro] 回合已重开，放弃本次结算（胜负/比分未上报）。");
+		return Plugin_Stop;
+	}
+
 	// 本图胜负与比分必须在生成快照、上传之前定下来；读不全就按秒重试。
 	// 重试放在 UpdateCampaignProgress 之前 —— 那里会累加「本段已结算张数」，
 	// 重试路径重复调用会把同一张图算成两张。

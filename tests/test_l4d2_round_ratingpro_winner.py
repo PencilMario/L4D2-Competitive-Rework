@@ -75,10 +75,14 @@ class RatingProWinnerUploadTests(unittest.TestCase):
         """重试会重新进 Timer_PrintBestRating，顺序错了同一张图会被计两次。"""
         body = extract_function(self.source, "public Action Timer_PrintBestRating(Handle timer)")
         self.assertTrue(body, "Timer_PrintBestRating 缺失")
+        # 回合重开过（g_bRoundEnded 被清）时这条链作废：不能拿刚开局的空数据结算
+        stale_at = body.find("if (!g_bRoundEnded)")
         resolve_at = body.find("ResolveMapWinner()")
         progress_at = body.find("UpdateCampaignProgress()")
+        self.assertNotEqual(stale_at, -1, "缺少「回合已重开」的作废判据")
         self.assertNotEqual(resolve_at, -1)
         self.assertNotEqual(progress_at, -1)
+        self.assertLess(stale_at, resolve_at)
         self.assertLess(resolve_at, progress_at, "ResolveMapWinner 必须在 UpdateCampaignProgress 之前")
         self.assertIn("CreateTimer(MAP_RESULT_RETRY_DELAY, Timer_PrintBestRating", body)
 
