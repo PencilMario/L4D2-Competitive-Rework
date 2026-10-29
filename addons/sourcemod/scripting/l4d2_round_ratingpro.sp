@@ -9,7 +9,7 @@
 #include <SteamWorks>
 #include <l4d2_round_ratingpro>
 
-#define PLUGIN_VERSION "1.1.3"
+#define PLUGIN_VERSION "1.2.0"
 
 #define TEAM_SURVIVOR 2
 #define TEAM_INFECTED 3
@@ -189,10 +189,17 @@ float g_fLastQueryTime[MAXPLAYERS + 1];
 
 bool g_bRoundEnded;
 
+// 本图胜负：由双方地图分判定，按「第二半场所在方」的编号（2=生还方 / 3=特感方）记录，
+// 与 players[].team 同口径，后端据此走团队 ELO；0 = 未判定（分数读不到 / 打平 / 单人半场）。
+int g_iFirstHalfLogicalTeam;
+int g_iMapWinnerTeam;
+
 // 参与者记录按 SteamID（Steam2）归档：退服后数据仍保留，直到本图结算生成新快照为止。
 char g_sParticipantAuth[MAX_PARTICIPANTS][64];
 char g_sParticipantName[MAX_PARTICIPANTS][MAX_NAME_LENGTH];
 int g_iParticipantTeam[MAX_PARTICIPANTS];
+// 是否在第二半场露过面：没露面的人最后所在边是第一半场的边，结算队伍要取反。
+bool g_bParticipantSecondHalf[MAX_PARTICIPANTS];
 int g_iParticipantCount;
 bool g_bParticipantOverflowLogged;
 
@@ -504,6 +511,14 @@ int AcquireParticipant(int client)
 
 	GetClientName(client, g_sParticipantName[participant], sizeof(g_sParticipantName[]));
 	g_iParticipantTeam[participant] = GetClientTeam(client);
+
+	// 对抗每图换边，队伍编号统一按「第二半场所在方」定义：这里只记这个人有没有在第二半场露面，
+	// 生成快照时再决定是否需要取反（见 ResolveSnapshotTeam）。
+	if (InSecondHalfOfRound())
+	{
+		g_bParticipantSecondHalf[participant] = true;
+	}
+
 	return participant;
 }
 
@@ -513,6 +528,13 @@ public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 	for (int client = 1; client <= MaxClients; client++)
 	{
 		g_bBiled[client] = false;
+	}
+
+	// 第二半场开局再确认一次「第一半场谁当生还者」：round_end 那一刻地图分可能还没落账
+	// （L4D_GetTeamScore 会返回 -1），到半场真正开始时读到的才是稳定值。
+	if (g_iFirstHalfLogicalTeam == 0 && InSecondHalfOfRound())
+	{
+		RememberFirstHalfSurvivorTeam();
 	}
 }
 
@@ -527,6 +549,8 @@ public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 
 	if (!InSecondHalfOfRound())
 	{
+		// 第一半场结束：记下这半场当生还者的是哪支逻辑队，第二半场结算时用它换算胜方编号。
+		RememberFirstHalfSurvivorTeam();
 		return;
 	}
 
@@ -887,6 +911,9 @@ public Action Timer_PrintBestRating(Handle timer)
 	// 先判定本图是否仍属于同一战役：中途换图会在这里重置上传计数（本段不上传）。
 	UpdateCampaignProgress();
 
+	// 本图胜负必须在生成快照/上传之前定下来：上传的 winner_team 就是这张图的胜负。
+	ResolveMapWinner();
+
 	SaveLatestTankRaw();
 	SaveRoundRawHistory();
 
@@ -1045,12 +1072,15 @@ void ResetRoundStats()
 	g_bRoundEnded = false;
 	g_iParticipantCount = 0;
 	g_bParticipantOverflowLogged = false;
+	g_iFirstHalfLogicalTeam = 0;
+	g_iMapWinnerTeam = 0;
 
 	for (int participant = 0; participant < MAX_PARTICIPANTS; participant++)
 	{
 		g_sParticipantAuth[participant][0] = '\0';
 		g_sParticipantName[participant][0] = '\0';
 		g_iParticipantTeam[participant] = 0;
+		g_bParticipantSecondHalf[participant] = false;
 
 		g_iSiDamage[participant] = 0;
 		g_iCiKilled[participant] = 0;
@@ -1674,7 +1704,7 @@ void SaveRatingSnapshot(bool hasRanges, float outputMin, float outputMax, float 
 
 		RatingSnapshotEntry entry;
 		entry.valid = true;
-		entry.team = g_iParticipantTeam[participant];
+		entry.team = ResolveSnapshotTeam(participant);
 
 		AggregateHistoricalActions(g_sParticipantAuth[participant], entry);
 		entry.mapCount = CollectHistoryMaps(g_sParticipantAuth[participant], entry.maps, sizeof(entry.maps), SNAPSHOT_MAP_SEPARATOR);
@@ -2044,6 +2074,27 @@ void GetTeamNameString(int team, char[] buffer, int maxlen)
 	}
 }
 
+// 结算日志里的一行胜负说明。uploader 会从 "winner_team=N" 里取胜负，
+// 所以这行同时是给人看的结论和给 agent 用的字段（格式别随意改）。
+void PrintMapWinnerLine(int requester, bool logToFile)
+{
+	if (g_iMapWinnerTeam == TEAM_SURVIVOR)
+	{
+		PrintToConsoleOrLog(requester, logToFile,
+			"本图胜负: 队伍 1（winner_team=2） | 第二半场生还方所在队获胜");
+	}
+	else if (g_iMapWinnerTeam == TEAM_INFECTED)
+	{
+		PrintToConsoleOrLog(requester, logToFile,
+			"本图胜负: 队伍 2（winner_team=3） | 第二半场特感方所在队获胜");
+	}
+	else
+	{
+		PrintToConsoleOrLog(requester, logToFile,
+			"本图胜负: 未判定（地图分缺失、未打满两半场或打平） | 本局按表现 ELO 结算");
+	}
+}
+
 void RecordRatingSettlement()
 {
 	char timestamp[32];
@@ -2070,6 +2121,7 @@ void RecordRatingSettlement()
 
 	PrintToConsoleOrLog(0, true, "==================== RatingPro 结算 ====================");
 	PrintToConsoleOrLog(0, true, "结算地图: %s | 结算时间: %s | 快照编号: #%d", g_sSnapshotMap, g_sSnapshotTime, g_iSnapshotRoundId);
+	PrintMapWinnerLine(0, true);
 	PrintSnapshotCoverage(0, true);
 	for (int participant = 0; participant < g_iParticipantCount; participant++)
 	{
@@ -2786,6 +2838,96 @@ bool TryGetCampaignScores(int &scoreA, int &scoreB)
 	return scoreA >= 0 && scoreB >= 0;
 }
 
+// ------------------------------ 胜负判定 ------------------------------
+
+bool HasTeamScoreNative()
+{
+	return GetFeatureStatus(FeatureType_Native, "L4D_GetTeamScore") == FeatureStatus_Available;
+}
+
+// 第一半场结束时只有一支逻辑队已经打过分（另一支返回 -1），打过的那支就是这半场的生还方。
+// 记下来是为了在第二半场结算时把「逻辑队」换算成「第二半场所在方」的编号。
+void RememberFirstHalfSurvivorTeam()
+{
+	g_iFirstHalfLogicalTeam = 0;
+
+	if (!HasTeamScoreNative())
+	{
+		return;
+	}
+
+	int scoreA = L4D_GetTeamScore(1, false);
+	int scoreB = L4D_GetTeamScore(2, false);
+
+	if (scoreA >= 0 && scoreB < 0)
+	{
+		g_iFirstHalfLogicalTeam = 1;
+	}
+	else if (scoreB >= 0 && scoreA < 0)
+	{
+		g_iFirstHalfLogicalTeam = 2;
+	}
+}
+
+// 本图胜负 = 双方地图分高的一方（一张图两个半场，各当一次生还者，比分可直接比较）。
+// 结果换算成「第二半场所在方」的编号，和 players[].team 同口径，后端据此走团队 ELO。
+// 分数读不到、两支逻辑队都没打完、或打平时不判定 —— 后端会退回表现 ELO。
+void ResolveMapWinner()
+{
+	g_iMapWinnerTeam = 0;
+
+	if (g_iFirstHalfLogicalTeam != 1 && g_iFirstHalfLogicalTeam != 2)
+	{
+		return;
+	}
+
+	if (!HasTeamScoreNative())
+	{
+		return;
+	}
+
+	int scoreA = L4D_GetTeamScore(1, false);
+	int scoreB = L4D_GetTeamScore(2, false);
+
+	if (scoreA < 0 || scoreB < 0)
+	{
+		return;
+	}
+
+	if (scoreA == scoreB)
+	{
+		LogMessage("[RatingPro] 本图双方地图分相同（%d:%d），不判定胜负，按表现 ELO 结算。", scoreA, scoreB);
+		return;
+	}
+
+	int winnerLogical = (scoreA > scoreB) ? 1 : 2;
+	int secondHalfLogical = (g_iFirstHalfLogicalTeam == 1) ? 2 : 1;
+
+	g_iMapWinnerTeam = (winnerLogical == secondHalfLogical) ? TEAM_SURVIVOR : TEAM_INFECTED;
+
+	LogMessage("[RatingPro] 本图胜负：地图分 A=%d / B=%d，第一半场生还方为逻辑队 %d，第二半场生还方为逻辑队 %d → winner_team=%d。",
+		scoreA, scoreB, g_iFirstHalfLogicalTeam, secondHalfLogical, g_iMapWinnerTeam);
+}
+
+// 快照里的队伍编号：统一按「第二半场所在方」。
+// 只在第一半场露过面的人（中途退服等），最后所在边是第一半场的边，取反后才是结算时所属的那一队。
+int ResolveSnapshotTeam(int participant)
+{
+	int lastTeam = g_iParticipantTeam[participant];
+
+	if (lastTeam != TEAM_SURVIVOR && lastTeam != TEAM_INFECTED)
+	{
+		return lastTeam;
+	}
+
+	if (g_bParticipantSecondHalf[participant])
+	{
+		return lastTeam;
+	}
+
+	return (lastTeam == TEAM_SURVIVOR) ? TEAM_INFECTED : TEAM_SURVIVOR;
+}
+
 // 唯一判据：双方战役累计比分单调不减。回退了就说明有人重开过战役，这段序列作废。
 // 地图名一概不参与判定（连解析都不做）—— 仓库里有插件能把随机地图拼成章节序列，
 // 前缀和章节号在那种服务器上说明不了连续性，日志里只记原始图名。
@@ -3070,6 +3212,13 @@ void BuildUploadPayload()
 	{
 		JsonEscape(g_sSnapshotTime, escaped, sizeof(escaped));
 		Format(temp, sizeof(temp), ",\"settled_at\":\"%s\"", escaped);
+		StrCat(g_sUploadPayload, sizeof(g_sUploadPayload), temp);
+	}
+
+	// 有明确胜负才带 winner_team：后端见到它就按团队 ELO 结算（2/3 与 players[].team 同口径）。
+	if (g_iMapWinnerTeam == TEAM_SURVIVOR || g_iMapWinnerTeam == TEAM_INFECTED)
+	{
+		Format(temp, sizeof(temp), ",\"winner_team\":%d", g_iMapWinnerTeam);
 		StrCat(g_sUploadPayload, sizeof(g_sUploadPayload), temp);
 	}
 
