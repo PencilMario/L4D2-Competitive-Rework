@@ -22,7 +22,7 @@
 - 地图名解析层已整条删除（`ParseCampaignProgress`、`g_sCampaignKey`、`g_iCampaignLastChapter` 都不存在了）：仓库里有插件能把随机地图拼成章节序列，前缀与章节号说明不了连续性，留着的解析代码只会被后来者误认为仍在参与判定。日志与 `!apidebug` 只报本段起点图名。
 - 比分单调性是**唯一**判据，依赖 left4dhooks `L4D_GetTeamScore(team, campaign_score=true)`，以 `native` + `MarkNativeAsOptional` 声明避免硬依赖；native 不可用或返回负数时不再检测中断（`sm_ratingpro_score_guard 0` 同理），上传计数只在攒满上传时归零。
 
-**载荷：** `schema_version: 2` + `stats_scope: cumulative`，字段与 `docs/API.md` §4.2–4.4 一一对应（`snapshot` / `players[]` / 23 项行为计数 / 五维归一化 / 五维原始分）。不发送 `winner_team`，走文档默认的**表现 ELO**。`external_id` 固定为 `服务器key|地图|快照号|结算时间`，重试时完全一致，后端据此幂等去重。
+**载荷：** `schema_version: 2` + `stats_scope: cumulative`，字段与 `docs/API.md` §4.2–4.4 一一对应（`snapshot` / `players[]` / 23 项行为计数 / 五维归一化 / 五维原始分）。~~不发送 `winner_team`，走文档默认的**表现 ELO**。~~（已修订：2026-10-30 起上传 `winner_team` 与 `team_scores`，ELO 改为「表现 + 胜负」加权混合，见文末「修订记录」。）`external_id` 固定为 `服务器key|地图|快照号|结算时间`，重试时完全一致，后端据此幂等去重。
 
 **网络层：** 统一用 SteamWorks extension（用户指定优先），不引入 RIPExt；GET 超时 10s、上传 20s；上传失败按 `UPLOAD_RETRY_DELAY × 次数` 退避，最多 3 次，仅对网络失败 / 429 / 5xx 重试，4xx 视为载荷或鉴权问题直接放弃。响应体读入全局固定缓冲 `g_sHttpResponse`（32 KiB），不分配堆内存。
 
@@ -56,4 +56,8 @@
 - SteamWorks 是**硬依赖**（`#include <SteamWorks>` 且调用了其 native）：缺扩展时整个插件不会加载，`!rating` 也会一起失效。
   仓库只带了 `addons/sourcemod/extensions/SteamWorks.ext.so`（Linux）；Windows 服需自行补 `SteamWorks.ext.dll`。
   这里刻意不做「缺扩展就静默降级」：上传静默失效比加载失败更难排查。
-- `left4dhooks`（`L4D_GetTeamScore`）是**软依赖**：`MarkNativeAsOptional` + `GetFeatureStatus` 检查，缺失时只关掉「比分不减」这一条辅助判定。
+- `left4dhooks`（`L4D_GetTeamScore`）是**软依赖**：`MarkNativeAsOptional` + `GetFeatureStatus` 检查，缺失时只关掉「按地图分判胜负」这一条；胜负与比分都不上报，本局 ELO 只剩表现分量。
+
+## 修订记录
+
+- **2026-10-30｜补齐双方胜负与比分**：插件 1.3.0 结算时按双方地图分判定 `winner_team`、上传 `team_scores`（键 `2`/`3` 与 `players[].team` 同口径），地图分没落账就按秒重试（`MAP_RESULT_MAX_ATTEMPTS`），结算日志同一行追加 `比分 team2=X team3=Y`；后端 1.3.0 落库 `score_team2/score_team3`（带迁移），`winner_team` 缺失时按比分自动判定，并把 ELO 从「表现/团队二选一」改为加权混合：`Δ = K × [(1−w)×表现 + w×胜负]`，`w = RP_ELO_RESULT_WEIGHT`（默认 `0.5`），`elo_mode` 记 `performance` / `blended` / `team`。

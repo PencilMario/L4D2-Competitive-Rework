@@ -9,7 +9,7 @@
 #include <SteamWorks>
 #include <l4d2_round_ratingpro>
 
-#define PLUGIN_VERSION "1.2.0"
+#define PLUGIN_VERSION "1.3.0"
 
 #define TEAM_SURVIVOR 2
 #define TEAM_INFECTED 3
@@ -34,6 +34,10 @@
 #define UPLOAD_MAX_ATTEMPTS 3
 #define UPLOAD_RETRY_DELAY 10.0
 #define RATING_REFRESH_DELAY 5.0
+
+// 结算时地图分常常落后于 round_end：一次读不到就按秒重试，别让时序失误丢掉整局胜负与比分。
+#define MAP_RESULT_RETRY_DELAY 1.0
+#define MAP_RESULT_MAX_ATTEMPTS 6
 
 // 后端接入专用日志：单独一个文件 logs/l4d2_ratingpro_api.log，
 // 不跟结算明细（ratingpro.log / ratingpro_<地图>_<时间>.log）混在一起。
@@ -189,10 +193,22 @@ float g_fLastQueryTime[MAXPLAYERS + 1];
 
 bool g_bRoundEnded;
 
-// 本图胜负：由双方地图分判定，按「第二半场所在方」的编号（2=生还方 / 3=特感方）记录，
-// 与 players[].team 同口径，后端据此走团队 ELO；0 = 未判定（分数读不到 / 打平 / 单人半场）。
+// 本图结果：由双方地图分判定，按「第二半场所在方」的编号（2=生还方 / 3=特感方）记录，
+// 与 players[].team 同口径。后端拿它走「表现 + 胜负」混合 ELO，`team_scores` 用来展示比分。
+// 0 / -1 = 未判定或读不到（打平、只有一队打过分、left4dhooks 缺失）。
+//
+// 判定分两段：
+//   1. 第一半场结束时记下「哪支逻辑队当生还者」（RememberFirstHalfSurvivorTeam），
+//      第二半场开场再补读一次 —— round_end 那一刻地图分常常还没落账。
+//   2. 第二半场结算时读双方地图分（ResolveMapWinner），没读全就按秒重试。
+// 把逻辑队 A/B 换算成 2/3 队伍编号需要第一段的结果，所以映射未知时比分与胜负一起不发。
 int g_iFirstHalfLogicalTeam;
+int g_iFirstHalfScoreA = -1;
+int g_iFirstHalfScoreB = -1;
+int g_iMapScoreA = -1;
+int g_iMapScoreB = -1;
 int g_iMapWinnerTeam;
+int g_iMapResultAttempts;
 
 // 参与者记录按 SteamID（Steam2）归档：退服后数据仍保留，直到本图结算生成新快照为止。
 char g_sParticipantAuth[MAX_PARTICIPANTS][64];
@@ -535,6 +551,12 @@ public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 	if (g_iFirstHalfLogicalTeam == 0 && InSecondHalfOfRound())
 	{
 		RememberFirstHalfSurvivorTeam();
+
+		// 个别环境半场刚开时仍返回 -1：隔两秒再补一次（只补，不覆盖已经定下来的值）。
+		if (g_iFirstHalfLogicalTeam == 0)
+		{
+			CreateTimer(2.0, Timer_RememberFirstHalfTeam, _, TIMER_FLAG_NO_MAPCHANGE);
+		}
 	}
 }
 
@@ -908,11 +930,26 @@ public void OnTankRockEaten(int tank, int survivor)
 
 public Action Timer_PrintBestRating(Handle timer)
 {
+	// 本图胜负与比分必须在生成快照、上传之前定下来；读不全就按秒重试。
+	// 重试放在 UpdateCampaignProgress 之前 —— 那里会累加「本段已结算张数」，
+	// 重试路径重复调用会把同一张图算成两张。
+	if (!ResolveMapWinner())
+	{
+		if (g_iMapResultAttempts < MAP_RESULT_MAX_ATTEMPTS)
+		{
+			g_iMapResultAttempts++;
+			LogMessage("[RatingPro] 地图分还没落账，%.1f 秒后重试判定（%d/%d）。",
+				MAP_RESULT_RETRY_DELAY, g_iMapResultAttempts, MAP_RESULT_MAX_ATTEMPTS);
+			CreateTimer(MAP_RESULT_RETRY_DELAY, Timer_PrintBestRating, _, TIMER_FLAG_NO_MAPCHANGE);
+			return Plugin_Stop;
+		}
+
+		LogMessage("[RatingPro] 地图分重试 %d 次仍未读到，本图不判定胜负，也不上报比分。",
+			g_iMapResultAttempts);
+	}
+
 	// 先判定本图是否仍属于同一战役：中途换图会在这里重置上传计数（本段不上传）。
 	UpdateCampaignProgress();
-
-	// 本图胜负必须在生成快照/上传之前定下来：上传的 winner_team 就是这张图的胜负。
-	ResolveMapWinner();
 
 	SaveLatestTankRaw();
 	SaveRoundRawHistory();
@@ -1073,7 +1110,12 @@ void ResetRoundStats()
 	g_iParticipantCount = 0;
 	g_bParticipantOverflowLogged = false;
 	g_iFirstHalfLogicalTeam = 0;
+	g_iFirstHalfScoreA = -1;
+	g_iFirstHalfScoreB = -1;
+	g_iMapScoreA = -1;
+	g_iMapScoreB = -1;
 	g_iMapWinnerTeam = 0;
+	g_iMapResultAttempts = 0;
 
 	for (int participant = 0; participant < MAX_PARTICIPANTS; participant++)
 	{
@@ -2074,24 +2116,48 @@ void GetTeamNameString(int team, char[] buffer, int maxlen)
 	}
 }
 
-// 结算日志里的一行胜负说明。uploader 会从 "winner_team=N" 里取胜负，
-// 所以这行同时是给人看的结论和给 agent 用的字段（格式别随意改）。
+// 结算日志里的一行胜负说明。uploader 会从 "winner_team=N" 取胜负、从
+// "team2=X team3=Y" 取比分，所以这行同时是给人看的结论和给 agent 用的字段（格式别随意改）。
 void PrintMapWinnerLine(int requester, bool logToFile)
 {
+	char scoreNote[96];
+	FormatScoreNote(scoreNote, sizeof(scoreNote));
+
 	if (g_iMapWinnerTeam == TEAM_SURVIVOR)
 	{
 		PrintToConsoleOrLog(requester, logToFile,
-			"本图胜负: 队伍 1（winner_team=2） | 第二半场生还方所在队获胜");
+			"本图胜负: 队伍 1（winner_team=2）%s | 第二半场生还方所在队获胜", scoreNote);
 	}
 	else if (g_iMapWinnerTeam == TEAM_INFECTED)
 	{
 		PrintToConsoleOrLog(requester, logToFile,
-			"本图胜负: 队伍 2（winner_team=3） | 第二半场特感方所在队获胜");
+			"本图胜负: 队伍 2（winner_team=3）%s | 第二半场特感方所在队获胜", scoreNote);
 	}
 	else
 	{
 		PrintToConsoleOrLog(requester, logToFile,
-			"本图胜负: 未判定（地图分缺失、未打满两半场或打平） | 本局按表现 ELO 结算");
+			"本图胜负: 未判定（地图分缺失、未打满两半场或打平）%s | 本局 ELO 只按表现结算", scoreNote);
+	}
+}
+
+// 比分片段：`team2=312 team3=245` 是无歧义的机器可读 token（不依赖先后顺序）。
+// 只读到逻辑队分数、却换算不出 2/3 归属时，退化成诊断信息且不带上报字段。
+void FormatScoreNote(char[] buffer, int size)
+{
+	int team2Score;
+	int team3Score;
+
+	if (TryGetTeamScores(team2Score, team3Score))
+	{
+		Format(buffer, size, " | 比分 team2=%d team3=%d", team2Score, team3Score);
+	}
+	else if (g_iMapScoreA >= 0 && g_iMapScoreB >= 0)
+	{
+		Format(buffer, size, " | 地图分 A=%d B=%d（队伍归属未知，未上报）", g_iMapScoreA, g_iMapScoreB);
+	}
+	else
+	{
+		buffer[0] = '\0';
 	}
 }
 
@@ -2847,10 +2913,9 @@ bool HasTeamScoreNative()
 
 // 第一半场结束时只有一支逻辑队已经打过分（另一支返回 -1），打过的那支就是这半场的生还方。
 // 记下来是为了在第二半场结算时把「逻辑队」换算成「第二半场所在方」的编号。
+// 只在拿到确定答案时写入，绝不把已经记下来的值清成 0（后面还有补读的机会）。
 void RememberFirstHalfSurvivorTeam()
 {
-	g_iFirstHalfLogicalTeam = 0;
-
 	if (!HasTeamScoreNative())
 	{
 		return;
@@ -2859,31 +2924,51 @@ void RememberFirstHalfSurvivorTeam()
 	int scoreA = L4D_GetTeamScore(1, false);
 	int scoreB = L4D_GetTeamScore(2, false);
 
+	int logicalTeam = 0;
 	if (scoreA >= 0 && scoreB < 0)
 	{
-		g_iFirstHalfLogicalTeam = 1;
+		logicalTeam = 1;
 	}
 	else if (scoreB >= 0 && scoreA < 0)
 	{
-		g_iFirstHalfLogicalTeam = 2;
+		logicalTeam = 2;
 	}
+
+	if (logicalTeam == 0)
+	{
+		return;
+	}
+
+	g_iFirstHalfLogicalTeam = logicalTeam;
+	g_iFirstHalfScoreA = scoreA;
+	g_iFirstHalfScoreB = scoreB;
+
+	LogMessage("[RatingPro] 第一半场生还方 = 逻辑队 %d（地图分 A=%d / B=%d）。", logicalTeam, scoreA, scoreB);
+}
+
+// 第二半场开场后延迟补读一次第一半场的生还方（半场刚开时个别环境仍读到 -1）。
+public Action Timer_RememberFirstHalfTeam(Handle timer)
+{
+	if (g_iFirstHalfLogicalTeam == 0)
+	{
+		RememberFirstHalfSurvivorTeam();
+	}
+
+	return Plugin_Stop;
 }
 
 // 本图胜负 = 双方地图分高的一方（一张图两个半场，各当一次生还者，比分可直接比较）。
-// 结果换算成「第二半场所在方」的编号，和 players[].team 同口径，后端据此走团队 ELO。
-// 分数读不到、两支逻辑队都没打完、或打平时不判定 —— 后端会退回表现 ELO。
-void ResolveMapWinner()
+// 结果换算成「第二半场所在方」的编号，和 players[].team 同口径，后端据此结算「表现 + 胜负」。
+// 返回 false = 地图分还没落账、值得稍后重试；true = 已有终局答案（含打平 / 无 native / 映射未知）。
+bool ResolveMapWinner()
 {
 	g_iMapWinnerTeam = 0;
-
-	if (g_iFirstHalfLogicalTeam != 1 && g_iFirstHalfLogicalTeam != 2)
-	{
-		return;
-	}
+	g_iMapScoreA = -1;
+	g_iMapScoreB = -1;
 
 	if (!HasTeamScoreNative())
 	{
-		return;
+		return true;
 	}
 
 	int scoreA = L4D_GetTeamScore(1, false);
@@ -2891,13 +2976,23 @@ void ResolveMapWinner()
 
 	if (scoreA < 0 || scoreB < 0)
 	{
-		return;
+		return false;
+	}
+
+	g_iMapScoreA = scoreA;
+	g_iMapScoreB = scoreB;
+
+	if (g_iFirstHalfLogicalTeam != 1 && g_iFirstHalfLogicalTeam != 2)
+	{
+		LogMessage("[RatingPro] 读到地图分 A=%d / B=%d，但第一半场生还方未知，本图不判定胜负（比分也换算不出 2/3 队伍编号）。",
+			scoreA, scoreB);
+		return true;
 	}
 
 	if (scoreA == scoreB)
 	{
 		LogMessage("[RatingPro] 本图双方地图分相同（%d:%d），不判定胜负，按表现 ELO 结算。", scoreA, scoreB);
-		return;
+		return true;
 	}
 
 	int winnerLogical = (scoreA > scoreB) ? 1 : 2;
@@ -2907,6 +3002,32 @@ void ResolveMapWinner()
 
 	LogMessage("[RatingPro] 本图胜负：地图分 A=%d / B=%d，第一半场生还方为逻辑队 %d，第二半场生还方为逻辑队 %d → winner_team=%d。",
 		scoreA, scoreB, g_iFirstHalfLogicalTeam, secondHalfLogical, g_iMapWinnerTeam);
+
+	return true;
+}
+
+// 把逻辑队 A/B 的地图分换算成 players[].team 的 2/3 编号（= 第二半场所在方）。
+// 换算依赖「第一半场谁是生还者」，映射未知时返回 false —— 宁可不上报，也不上报错位的比分。
+bool TryGetTeamScores(int &team2Score, int &team3Score)
+{
+	team2Score = -1;
+	team3Score = -1;
+
+	if (g_iMapScoreA < 0 || g_iMapScoreB < 0)
+	{
+		return false;
+	}
+
+	if (g_iFirstHalfLogicalTeam != 1 && g_iFirstHalfLogicalTeam != 2)
+	{
+		return false;
+	}
+
+	int secondHalfLogical = (g_iFirstHalfLogicalTeam == 1) ? 2 : 1;
+	team2Score = (secondHalfLogical == 1) ? g_iMapScoreA : g_iMapScoreB;
+	team3Score = (secondHalfLogical == 1) ? g_iMapScoreB : g_iMapScoreA;
+
+	return true;
 }
 
 // 快照里的队伍编号：统一按「第二半场所在方」。
@@ -3215,10 +3336,21 @@ void BuildUploadPayload()
 		StrCat(g_sUploadPayload, sizeof(g_sUploadPayload), temp);
 	}
 
-	// 有明确胜负才带 winner_team：后端见到它就按团队 ELO 结算（2/3 与 players[].team 同口径）。
+	// 有明确胜负才带 winner_team：后端拿它当「表现 + 胜负」混合 ELO 的胜负分量，
+	// 2/3 与 players[].team 同口径（= 第二半场所在方）。
 	if (g_iMapWinnerTeam == TEAM_SURVIVOR || g_iMapWinnerTeam == TEAM_INFECTED)
 	{
 		Format(temp, sizeof(temp), ",\"winner_team\":%d", g_iMapWinnerTeam);
+		StrCat(g_sUploadPayload, sizeof(g_sUploadPayload), temp);
+	}
+
+	// 双方地图分：前端展示比分，也是 winner_team 缺失时后端自行判胜负的依据。
+	// 换算不出 2/3 归属就不带 —— 错位的比分比没有比分更糟。
+	int team2Score;
+	int team3Score;
+	if (TryGetTeamScores(team2Score, team3Score))
+	{
+		Format(temp, sizeof(temp), ",\"team_scores\":{\"2\":%d,\"3\":%d}", team2Score, team3Score);
 		StrCat(g_sUploadPayload, sizeof(g_sUploadPayload), temp);
 	}
 
@@ -3828,6 +3960,29 @@ public Action Command_ApiDebug(int client, int args)
 
 	ReplyToCommand(client, "[RatingPro] 上传门槛: 人数>=%d（本图参与 %d 人）",
 		g_hMinPlayers.IntValue, g_iParticipantCount);
+
+	// 胜负/比分的原始读数：判定不出来时，这一行就是唯一能分清「没读到分」还是「映射没捕获」的证据。
+	{
+		char scoreText[32];
+		int team2Score;
+		int team3Score;
+		if (TryGetTeamScores(team2Score, team3Score))
+		{
+			Format(scoreText, sizeof(scoreText), "team2=%d team3=%d", team2Score, team3Score);
+		}
+		else
+		{
+			strcopy(scoreText, sizeof(scoreText), "未上报");
+		}
+
+		ReplyToCommand(client,
+			"[RatingPro] 本图结果: 第一半场生还方=%s（当时 A=%d B=%d）地图分 A=%d B=%d 比分=%s winner_team=%d 重试=%d/%d（native %s）",
+			g_iFirstHalfLogicalTeam == 0 ? "未知" : (g_iFirstHalfLogicalTeam == 1 ? "逻辑队 1" : "逻辑队 2"),
+			g_iFirstHalfScoreA, g_iFirstHalfScoreB,
+			g_iMapScoreA, g_iMapScoreB, scoreText, g_iMapWinnerTeam,
+			g_iMapResultAttempts, MAP_RESULT_MAX_ATTEMPTS,
+			HasTeamScoreNative() ? "可用" : "缺失");
+	}
 
 	ReplyToCommand(client, "[RatingPro] 快照窗口: %d 槽 待上传=%d 在途=%d 重试次数=%d 载荷长度=%d",
 		g_iRawHistoryCount, g_bUploadPending ? 1 : 0, g_bUploadInFlight ? 1 : 0,
