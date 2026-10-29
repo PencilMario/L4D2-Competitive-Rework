@@ -11,10 +11,10 @@
 
 public Plugin myinfo = {
 	name = "MixTeamElo",
-	author = "Codex",
+	author = "Sir.P",
 	description = "按 ELO 分队（RatingPro Hub 的当前 ELO）的 mix 类型",
 	version = "build_0001",
-	url = "https://github.com/TouchMe-Inc/l4d2_mix_team"
+	url = "https://github.com/PencilMario/L4D2-Competitive-Rework"
 };
 
 
@@ -30,7 +30,8 @@ public Plugin myinfo = {
 
 ConVar
 	g_hRequireData = null,
-	g_hDefaultElo = null;
+	g_hDefaultElo = null,
+	g_hShapeWeight = null;
 
 // 强度分与「是否用了缺省值」，均以 client index 为键，供 mt_balance 使用
 float
@@ -91,6 +92,10 @@ public void OnPluginStart()
 	g_hDefaultElo = CreateConVar("sm_mt_elo_default_elo", "1500.0",
 		"sm_mt_elo_require_data=0 时，没有 ELO 数据的玩家使用的占位 ELO",
 		FCVAR_NONE, true, 0.0, true, 10000.0);
+
+	g_hShapeWeight = CreateConVar("sm_mt_elo_shape_weight", "0.5",
+		"队形平衡权重：0 = 只看两队总分差；越大越压「一队 1 带 3、另一队四条平线」",
+		FCVAR_NONE, true, 0.0, true, 2.0);
 
 	// 让 cfg/sourcemod/mt_elo.cfg 真正被执行：sourcemod 只自动执行调用了
 	// AutoExecConfig 的插件配置，缺这一句时那个文件形同废纸。
@@ -247,14 +252,15 @@ public Action OnMixInProgress()
 		g_fScores[iClient] = fElo;
 	}
 
-	// 排序 + 分队：人数对半，两边 ELO 总和尽量接近
+	// 排序 + 分队：人数对半，先保证两队 ELO 均值接近，再压队形差（避免一带三）
 	MtBalanceSortDesc(iClients, iCount, g_fScores);
 
 	int[] iSurvivors = new int[MT_BALANCE_MAX_PLAYERS];
 	int[] iInfected = new int[MT_BALANCE_MAX_PLAYERS];
 
 	MtSplit tSplit;
-	MtBalanceSplit(iClients, iCount, iTeamSize, g_fScores, iSurvivors, iInfected, tSplit);
+	MtBalanceSplitWeighted(iClients, iCount, iTeamSize, g_fScores, iSurvivors, iInfected, tSplit,
+		g_hShapeWeight.FloatValue);
 
 	if (!MtBalanceApply(iSurvivors, iTeamSize, iInfected, iTeamSize, TEAM_SURVIVOR, TEAM_INFECTED))
 	{

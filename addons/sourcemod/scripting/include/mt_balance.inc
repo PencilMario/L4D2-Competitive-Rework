@@ -345,6 +345,147 @@ stock void MtBalanceSplit(const int[] sorted, int count, int teamSize, const flo
 }
 
 /**
+ * 精确分队（带队形权重）。
+ *
+ * 同时压两个目标：
+ *   胜率平衡  |Δmean|     —— Elo 团队模型只吃均值，均值相等即 50%
+ *   队形平衡  |σA − σB|   —— 压掉「一队 1 带 3、另一队四条平线」
+ *
+ * 目标函数：score = |Δmean| + shapeWeight × |σA − σB|
+ * shapeWeight = 0 时等价于「只让两队总分差最小」。
+ *
+ * @return              选中的分队的两队总分差
+ */
+stock float MtBalanceSplitShape(const int[] sorted, int teamSize, const float[] scores,
+	float shapeWeight, int[] teamA, int[] teamB)
+{
+	int count = teamSize * 2;
+	int index[MAXPLAYERS + 1];
+	int best[MAXPLAYERS + 1];
+
+	float total = 0.0;
+	float totalSq = 0.0;
+
+	for (int i = 0; i < count; i++)
+	{
+		float value = scores[sorted[i]];
+		total += value;
+		totalSq += value * value;
+	}
+
+	bool bFound = false;
+	float bestScore = 0.0;
+	float bestDiff = 0.0;
+
+	for (int i = 0; i < teamSize; i++) {
+		index[i] = i;
+	}
+
+	do
+	{
+		float sumA = 0.0;
+		float sqA = 0.0;
+
+		for (int i = 0; i < teamSize; i++)
+		{
+			float value = scores[sorted[index[i]]];
+			sumA += value;
+			sqA += value * value;
+		}
+
+		float sumB = total - sumA;
+		float sqB = totalSq - sqA;
+
+		float meanA = sumA / float(teamSize);
+		float meanB = sumB / float(teamSize);
+
+		float varA = sqA / float(teamSize) - meanA * meanA;
+		float varB = sqB / float(teamSize) - meanB * meanB;
+
+		if (varA < 0.0) {
+			varA = 0.0;
+		}
+
+		if (varB < 0.0) {
+			varB = 0.0;
+		}
+
+		float dMean = FloatAbs(meanA - meanB);
+		float dSpread = FloatAbs(SquareRoot(varA) - SquareRoot(varB));
+		float score = dMean + shapeWeight * dSpread;
+		float diff = FloatAbs(sumA - sumB);
+
+		// 先比综合分，同分时再比总分差，保证结果稳定可复现
+		if (!bFound || score < bestScore - 0.0001
+			|| (FloatAbs(score - bestScore) <= 0.0001 && diff < bestDiff))
+		{
+			bFound = true;
+			bestScore = score;
+			bestDiff = diff;
+
+			for (int i = 0; i < teamSize; i++) {
+				best[i] = index[i];
+			}
+
+			// 综合分已经是 0（均值、队形都完全一致），继续枚举不会更好
+			if (bestScore <= 0.0001) {
+				break;
+			}
+		}
+	}
+	while (MtBalanceNextCombination(index, teamSize, count));
+
+	int iTeamA = 0;
+	int iTeamB = 0;
+	int iBest = 0;
+
+	for (int i = 0; i < count; i++)
+	{
+		if (iBest < teamSize && i == best[iBest])
+		{
+			teamA[iTeamA++] = sorted[i];
+			iBest++;
+		}
+
+		else {
+			teamB[iTeamB++] = sorted[i];
+		}
+	}
+
+	return bestDiff;
+}
+
+/**
+ * 带队形权重的分队入口：常规规模精确枚举，超出枚举上限时退回蛇形 + 交换优化。
+ *
+ * 与 MtBalanceSplit 的唯一区别是多一个 shapeWeight；MtBalanceSplit 保持原行为，
+ * 供 mt_rating 等「只按分数接近」的类型继续使用。
+ */
+stock void MtBalanceSplitWeighted(const int[] sorted, int count, int teamSize, const float[] scores,
+	int[] teamA, int[] teamB, MtSplit split, float shapeWeight)
+{
+	split.size = teamSize;
+	split.leftover = (count > teamSize * 2) ? (count - teamSize * 2) : 0;
+	split.diff = 0.0;
+
+	if (teamSize <= 0) {
+		return;
+	}
+
+	if (teamSize <= MT_BALANCE_EXACT_MAX_TEAM_SIZE) {
+		split.diff = MtBalanceSplitShape(sorted, teamSize, scores, shapeWeight, teamA, teamB);
+	}
+
+	else {
+		MtBalanceSplitGreedy(sorted, teamSize, teamA, teamB);
+		split.diff = MtBalanceImproveBySwap(teamSize, scores, teamA, teamB);
+	}
+
+	MtBalanceSortDesc(teamA, teamSize, scores);
+	MtBalanceSortDesc(teamB, teamSize, scores);
+}
+
+/**
  * 把两队玩家真正放进游戏里的队伍。
  *
  * 顺序有讲究：生还者要靠接管 survivor bot 才能落位，所以必须先处理其它队伍，

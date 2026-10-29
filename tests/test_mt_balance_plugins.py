@@ -295,6 +295,46 @@ class SplitPluginContractTests(unittest.TestCase):
                 self.assertIn("public Action OnMixInProgress()", source)
 
 
+class ShapeWeightedSplitTests(unittest.TestCase):
+    """队形权重分队：算法仍只在 include 里，只有 mt_elo 走加权入口。"""
+
+    def test_include_exposes_shape_aware_split(self):
+        source = read(BALANCE_INCLUDE)
+        self.assertIn("MtBalanceSplitWeighted", source)
+
+        body = extract_function(
+            source, "stock float MtBalanceSplitShape(const int[] sorted, int teamSize"
+        )
+        self.assertTrue(body, "MtBalanceSplitShape must be defined")
+        self.assertIn("MtBalanceNextCombination", body)
+        self.assertIn("shapeWeight", body)
+        self.assertIn("SquareRoot", body, "队形差要用标准差，不是方差")
+
+    def test_shape_split_falls_back_past_enumeration_limit(self):
+        body = extract_function(
+            read(BALANCE_INCLUDE), "stock void MtBalanceSplitWeighted("
+        )
+        self.assertTrue(body, "MtBalanceSplitWeighted must be defined")
+        self.assertIn("MT_BALANCE_EXACT_MAX_TEAM_SIZE", body)
+        self.assertIn("MtBalanceImproveBySwap", body, "超出枚举上限仍要有贪心兜底")
+
+    def test_elo_uses_shape_weighted_split(self):
+        source = read(SCRIPTING / "mt_elo.sp")
+        self.assertIn("MtBalanceSplitWeighted(", source)
+        self.assertIn("sm_mt_elo_shape_weight", source)
+        self.assertRegex(source, r'sm_mt_elo_shape_weight",\s*"0\.5"')
+        self.assertNotIn(
+            "MtBalanceSplit(", source, "mt_elo 不能退回只看总分差的旧入口"
+        )
+
+    def test_rating_keeps_the_plain_split(self):
+        source = read(SCRIPTING / "mt_rating.sp")
+        self.assertIn("MtBalanceSplit(", source)
+        self.assertNotIn(
+            "MtBalanceSplitWeighted", source, "mt_rating 的行为不应被这次改动改变"
+        )
+
+
 class PhraseCoverageTests(unittest.TestCase):
     def test_every_used_phrase_is_translated(self):
         for filename, info in PLUGINS.items():
