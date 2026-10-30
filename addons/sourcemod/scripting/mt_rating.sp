@@ -184,8 +184,9 @@ public Action OnMixInProgress()
 {
 	if (!g_bMixTeamAvailable || !g_bRatingProAvailable)
 	{
-		CPrintToChatAll("%t", "MIX_UNAVAILABLE");
+		// 先回滚队伍（换队会触发系统提示），再播报原因，避免原因被提示挤掉
 		Call_AbortMix();
+		CPrintToChatAll("%t", "MIX_UNAVAILABLE");
 		return Plugin_Handled;
 	}
 
@@ -203,8 +204,8 @@ public Action OnMixInProgress()
 
 	if (iTeamSize < 1)
 	{
-		CPrintToChatAll("%t", "MIX_NOT_ENOUGH_PLAYERS");
 		Call_AbortMix();
+		CPrintToChatAll("%t", "MIX_NOT_ENOUGH_PLAYERS");
 		return Plugin_Handled;
 	}
 
@@ -233,8 +234,9 @@ public Action OnMixInProgress()
 				char sName[MAX_NAME_LENGTH];
 				GetClientName(iClient, sName, sizeof(sName));
 
-				CPrintToChatAll("%t", "MIX_NO_DATA", sName);
+				// 先回滚队伍：换队有系统提示，失败原因必须排在提示之后
 				Call_AbortMix();
+				CPrintToChatAll("%t", "MIX_NO_DATA", sName);
 				return Plugin_Handled;
 			}
 
@@ -261,8 +263,8 @@ public Action OnMixInProgress()
 
 	if (!MtBalanceApply(iSurvivors, iTeamSize, iInfected, iTeamSize, TEAM_SURVIVOR, TEAM_INFECTED))
 	{
-		CPrintToChatAll("%t", "MIX_ASSIGN_FAILED");
 		Call_AbortMix();
+		CPrintToChatAll("%t", "MIX_ASSIGN_FAILED");
 		return Plugin_Handled;
 	}
 

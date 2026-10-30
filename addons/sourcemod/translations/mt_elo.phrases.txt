@@ -12,31 +12,39 @@
 
 	"MIX_HEADER"
 	{
+		"#format"		"{1:d},{2:d},{3:s}"
 		"en"			"[ELO mix] {1} players, {2} per team, ELO gap {3}"
 	}
 
 	"SURVIVORS_LINE"
 	{
+		"#format"		"{1:s},{2:s},{3:s}"
 		"en"			"Survivors total {1} avg {2}: {3}"
 	}
 
 	"SURVIVORS_LINE_MORE"
 	{
+		// 续行只发名册一个参数，所以 #format 只声明 {1}
+		"#format"		"{1:s}"
 		"en"			"Survivors (cont.): {1}"
 	}
 
 	"INFECTED_LINE"
 	{
+		"#format"		"{1:s},{2:s},{3:s}"
 		"en"			"Infected total {1} avg {2}: {3}"
 	}
 
 	"INFECTED_LINE_MORE"
 	{
+		// 同上：续行只有名册
+		"#format"		"{1:s}"
 		"en"			"Infected (cont.): {1}"
 	}
 
 	"MIX_NO_DATA"
 	{
+		"#format"		"{1:s}"
 		"en"			"No ELO data for {1}, mix cancelled"
 	}
 
@@ -52,6 +60,7 @@
 
 	"MIX_LEFTOVER"
 	{
+		"#format"		"{1:d}"
 		"en"			"{1} player(s) stay in spectator (odd count or survivor_limit reached)"
 	}
 

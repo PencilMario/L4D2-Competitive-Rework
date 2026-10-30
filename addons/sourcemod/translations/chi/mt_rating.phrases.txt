@@ -12,31 +12,39 @@
 
 	"MIX_HEADER"
 	{
+		"#format"		"{1:d},{2:d},{3:s}"
 		"chi"			"【RatingPro 分队】{1} 人，每队 {2} 人，两队 RatingPro 总和差 {3}"
 	}
 
 	"SURVIVORS_LINE"
 	{
+		"#format"		"{1:s},{2:s},{3:s}"
 		"chi"			"生还者 合计 {1} 平均 {2}：{3}"
 	}
 
 	"SURVIVORS_LINE_MORE"
 	{
+		// 续行只发名册一个参数，所以 #format 只声明 {1}
+		"#format"		"{1:s}"
 		"chi"			"生还者（续）：{1}"
 	}
 
 	"INFECTED_LINE"
 	{
+		"#format"		"{1:s},{2:s},{3:s}"
 		"chi"			"感染者 合计 {1} 平均 {2}：{3}"
 	}
 
 	"INFECTED_LINE_MORE"
 	{
+		// 同上：续行只有名册
+		"#format"		"{1:s}"
 		"chi"			"感染者（续）：{1}"
 	}
 
 	"MIX_NO_DATA"
 	{
+		"#format"		"{1:s}"
 		"chi"			"{1} 没有最近 RatingPro 数据，已取消本次 mix"
 	}
 
@@ -52,6 +60,7 @@
 
 	"MIX_LEFTOVER"
 	{
+		"#format"		"{1:d}"
 		"chi"			"{1} 名玩家留在旁观（人数为奇数或已达 survivor_limit）"
 	}
 

@@ -575,7 +575,7 @@ stock void MtBalancePrintTeam(const char[] firstPhrase, const char[] morePhrase,
 
 		if (sRoster[0] != '\0' && (strlen(sRoster) + strlen(sEntry) + 4) > MT_BALANCE_ROSTER_CHUNK)
 		{
-			MtBalancePrintRoster(bFirstChunk ? firstPhrase : morePhrase, sTotal, sAverage, sRoster);
+			MtBalancePrintRoster(bFirstChunk ? firstPhrase : morePhrase, bFirstChunk, sTotal, sAverage, sRoster);
 			bFirstChunk = false;
 			sRoster[0] = '\0';
 		}
@@ -588,17 +588,27 @@ stock void MtBalancePrintTeam(const char[] firstPhrase, const char[] morePhrase,
 	}
 
 	if (sRoster[0] != '\0') {
-		MtBalancePrintRoster(bFirstChunk ? firstPhrase : morePhrase, sTotal, sAverage, sRoster);
+		MtBalancePrintRoster(bFirstChunk ? firstPhrase : morePhrase, bFirstChunk, sTotal, sAverage, sRoster);
 	}
 }
 
 /**
  * 发出一条名册播报。单独包一层是为了把「翻译键」当字符串参数显式传进去，
  * 不依赖三元表达式直接进可变参数列表。
+ *
+ * 首行带合计/平均（3 个参数），续行只有名册（1 个参数）。参数个数必须和翻译里的
+ * #format 对得上，否则占位符不会被替换，玩家会看到原样的 {1}。
  */
-stock void MtBalancePrintRoster(const char[] sPhrase, const char[] sTotal, const char[] sAverage, const char[] sRoster)
+stock void MtBalancePrintRoster(const char[] sPhrase, bool bFirstLine, const char[] sTotal,
+	const char[] sAverage, const char[] sRoster)
 {
-	CPrintToChatAll("%t", sPhrase, sTotal, sAverage, sRoster);
+	if (bFirstLine)
+	{
+		CPrintToChatAll("%t", sPhrase, sTotal, sAverage, sRoster);
+		return;
+	}
+
+	CPrintToChatAll("%t", sPhrase, sRoster);
 }
 
 /**

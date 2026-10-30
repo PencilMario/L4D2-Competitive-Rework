@@ -80,6 +80,25 @@ def defined_phrase_keys(path: Path) -> set:
     return set(re.findall(r'^\t"([A-Za-z0-9_]+)"\s*$', read(path), re.MULTILINE))
 
 
+def phrase_blocks(path: Path):
+    """Yield (phrase key, block text) for every phrase entry in a dictionary."""
+    key = None
+    block = []
+
+    for line in read(path).splitlines():
+        header = re.match(r'^\t"([A-Za-z0-9_]+)"\s*$', line)
+        if header:
+            if key is not None:
+                yield key, "\n".join(block)
+            key = header.group(1)
+            block = []
+        elif key is not None:
+            block.append(line)
+
+    if key is not None:
+        yield key, "\n".join(block)
+
+
 class BalanceIncludeContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -172,6 +191,9 @@ class BalanceIncludeContractTests(unittest.TestCase):
             printer,
             "名册播报必须走 %t 翻译，不能把中文写死在代码里",
         )
+        # 首行三个参数、续行只有名册，必须和翻译里的 #format 对齐
+        self.assertIn("sPhrase, sTotal, sAverage, sRoster", printer)
+        self.assertIn("sPhrase, sRoster", printer)
 
     def test_no_dynamic_array_allocation(self):
         # SourcePawn 里 new int[变量] 是堆分配且不会自动释放，逐次调用会泄漏
@@ -360,6 +382,73 @@ class PhraseCoverageTests(unittest.TestCase):
             self.assertEqual(
                 english, chinese, "en 与 chi 的翻译键必须一一对应"
             )
+
+
+class PhraseFormatTests(unittest.TestCase):
+    """占位符只有在 #format 声明过参数时才会被替换。
+
+    SourceMod 的 {1} 是跟着 #format 走的：没有 #format 时翻译文本原样输出，
+    玩家会看到「{1} 没有 ELO 数据，已取消本次 mix」这种带占位符的原文。
+    """
+
+    def phrase_files(self):
+        yield from sorted(TRANSLATIONS.glob("mt_*.phrases.txt"))
+        yield from sorted((TRANSLATIONS / "chi").glob("mt_*.phrases.txt"))
+
+    def test_placeholders_declare_their_format(self):
+        for path in self.phrase_files():
+            for key, block in phrase_blocks(path):
+                used = {int(n) for n in re.findall(r"\{(\d+)\}", block)}
+                if not used:
+                    continue
+
+                with self.subTest(locale=path.parent.name, phrase=key):
+                    fmt = re.search(r'"#format"\s+"([^"]*)"', block)
+                    self.assertIsNotNone(
+                        fmt,
+                        f"{path.name} 的 {key} 用了占位符但没有 #format，"
+                        "实际会把 {1} 原样打给玩家",
+                    )
+                    declared = len(re.findall(r"\{\d+:", fmt.group(1)))
+                    self.assertGreaterEqual(
+                        declared,
+                        max(used),
+                        f"{path.name} 的 {key} 用到了 {{{max(used)}}}，"
+                        f"但 #format 只声明了 {declared} 个参数",
+                    )
+
+
+class AbortMessageOrderTests(unittest.TestCase):
+    """失败原因要在队伍回滚之后播报。
+
+    Call_AbortMix() 会把成员恢复到原队伍，换队本身会弹系统提示，
+    先播报原因会被提示挤掉，所以顺序必须是 abort -> 播报 -> return。
+    """
+
+    ABORT_PHRASES = (
+        "MIX_UNAVAILABLE",
+        "MIX_NOT_ENOUGH_PLAYERS",
+        "MIX_NO_DATA",
+        "MIX_ASSIGN_FAILED",
+    )
+
+    def test_abort_reasons_are_printed_after_the_rollback(self):
+        for filename in PLUGINS:
+            body = extract_function(read(SCRIPTING / filename), "public Action OnMixInProgress()")
+            self.assertTrue(body, f"{filename} 必须实现 OnMixInProgress")
+
+            for key in self.ABORT_PHRASES:
+                with self.subTest(plugin=filename, phrase=key):
+                    print_at = body.find(f'CPrintToChatAll("%t", "{key}"')
+                    self.assertNotEqual(print_at, -1, f"{filename} 缺少 {key} 播报")
+
+                    abort_at = body.rfind("Call_AbortMix();", 0, print_at)
+                    self.assertNotEqual(
+                        abort_at,
+                        -1,
+                        f"{filename} 的 {key} 必须在 Call_AbortMix() 之后播报，"
+                        "否则换队提示会把失败原因顶掉",
+                    )
 
 
 class DeploymentTests(unittest.TestCase):
